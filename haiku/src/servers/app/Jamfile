@@ -1,0 +1,126 @@
+SubDir HAIKU_TOP src servers app ;
+
+UseLibraryHeaders agg ;
+UsePrivateHeaders app graphics input interface kernel shared storage support ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing Painter ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing Painter drawing_modes ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing interface local ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing interface remote ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app stackandtile ] ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app decorator ] ;
+local decorator_src =
+	DecorManager.cpp
+	Decorator.cpp
+	DefaultDecorator.cpp
+	DefaultWindowBehaviour.cpp
+	MagneticBorder.cpp
+	TabDecorator.cpp
+	WindowBehaviour.cpp
+	;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app font ] ;
+local font_src =
+	FontCache.cpp
+	FontCacheEntry.cpp
+	FontEngine.cpp
+	FontFamily.cpp
+	FontManager.cpp
+	FontStyle.cpp
+	GlobalFontManager.cpp
+	AppFontManager.cpp
+	;
+
+UseBuildFeatureHeaders freetype ;
+if [ FIsBuildFeatureEnabled fontconfig ] {
+	SubDirC++Flags -DFONTCONFIG_ENABLED ;
+	UseBuildFeatureHeaders fontconfig ;
+	Includes [ FGristFiles AppServer.cpp BitmapManager.cpp Canvas.cpp
+	ClientMemoryAllocator.cpp Desktop.cpp DesktopSettings.cpp
+	DrawState.cpp DrawingEngine.cpp Layer.cpp PictureBoundingBoxPlayer.cpp
+	ServerApp.cpp ServerBitmap.cpp ServerCursor.cpp ServerFont.cpp
+	ServerPicture.cpp ServerWindow.cpp View.cpp Window.cpp WorkspacesView.cpp
+	$(decorator_src) $(font_src) ]
+	: [ BuildFeatureAttribute freetype : headers ]
+	  [ BuildFeatureAttribute fontconfig : headers ] ;
+} else {
+	Includes [ FGristFiles AppServer.cpp BitmapManager.cpp Canvas.cpp
+	ClientMemoryAllocator.cpp Desktop.cpp DesktopSettings.cpp
+	DrawState.cpp DrawingEngine.cpp Layer.cpp PictureBoundingBoxPlayer.cpp
+	ServerApp.cpp ServerBitmap.cpp ServerCursor.cpp ServerFont.cpp
+	ServerPicture.cpp ServerWindow.cpp View.cpp Window.cpp WorkspacesView.cpp
+	$(decorator_src) $(font_src) ]
+	: [ BuildFeatureAttribute freetype : headers ] ;
+}
+
+Server app_server :
+	Angle.cpp
+	AppServer.cpp
+	#BitfieldRegion.cpp
+	BitmapManager.cpp
+	Canvas.cpp
+	ClientMemoryAllocator.cpp
+	CursorData.cpp
+	CursorManager.cpp
+	CursorSet.cpp
+	DelayedMessage.cpp
+	Desktop.cpp
+	DesktopListener.cpp
+	DesktopSettings.cpp
+	DirectWindowInfo.cpp
+	DrawState.cpp
+	EventDispatcher.cpp
+	EventStream.cpp
+	InputManager.cpp
+	IntPoint.cpp
+	IntRect.cpp
+	Layer.cpp
+	MessageLooper.cpp
+	MultiLocker.cpp
+	OffscreenServerWindow.cpp
+	OffscreenWindow.cpp
+	PictureBoundingBoxPlayer.cpp
+	ProfileMessageSupport.cpp
+	RGBColor.cpp
+	RegionPool.cpp
+	Screen.cpp
+	ScreenConfigurations.cpp
+	ScreenManager.cpp
+	ServerApp.cpp
+	ServerBitmap.cpp
+	ServerCursor.cpp
+	ServerFont.cpp
+	ServerPicture.cpp
+	ServerWindow.cpp
+	SystemPalette.cpp
+	View.cpp
+	VirtualScreen.cpp
+	Window.cpp
+	WindowList.cpp
+	Workspace.cpp
+	WorkspacesView.cpp
+
+	$(decorator_src)
+	$(font_src)
+
+	# libraries
+	:
+	libtranslation.so libbe.so libbnetapi.so
+	libaslocal.a libasremote.a
+	libasdrawing.a libpainter.a libagg.a
+	[ BuildFeatureAttribute freetype : library ]
+	[ BuildFeatureAttribute fontconfig : library ]
+	libstackandtile.a liblinprog.a libtextencoding.so shared
+	[ TargetLibstdc++ ]
+
+	: app_server.rdef
+;
+
+SEARCH on [ FGristFiles $(decorator_src) ] = [ FDirName $(HAIKU_TOP) src servers app decorator ] ;
+SEARCH on [ FGristFiles $(font_src) ] = [ FDirName $(HAIKU_TOP) src servers app font ] ;
+
+
+SubInclude HAIKU_TOP src servers app drawing ;
+SubInclude HAIKU_TOP src servers app stackandtile ;

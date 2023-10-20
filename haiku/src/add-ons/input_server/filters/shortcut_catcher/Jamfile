@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src add-ons input_server filters shortcut_catcher ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UsePrivateHeaders storage ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		# Common files used here and in the app
+		StaticLibrary [ MultiArchDefaultGristFiles libshortcuts_shared.a ] :
+			BitFieldTesters.cpp
+			CommandActuators.cpp
+			KeyInfos.cpp
+			ParseCommandLine.cpp
+			;
+	}
+}
+
+Addon shortcut_catcher : 
+	CommandExecutor.cpp
+	KeyCommandMap.cpp
+	ShortcutsServerFilter.cpp
+	: be game input_server libshortcuts_shared.a [ TargetLibstdc++ ] [ TargetLibsupc++ ] ;

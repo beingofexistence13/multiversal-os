@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols unix ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+UsePrivateHeaders shared ;
+
+KernelAddon unix :
+	unix.cpp
+	UnixAddress.cpp
+	UnixEndpoint.cpp
+	UnixFifo.cpp
+
+	UnixDatagramEndpoint.cpp
+	UnixStreamEndpoint.cpp
+;

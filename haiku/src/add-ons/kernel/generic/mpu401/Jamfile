@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src add-ons kernel generic mpu401 ;
+
+UsePrivateSystemHeaders ;
+
+KernelAddon mpu401 :
+	mpu401.c
+	debug.c
+;
+

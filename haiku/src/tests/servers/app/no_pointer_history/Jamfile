@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src tests servers app no_pointer_history ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UseHeaders [ FDirName os app ] ;
+UseHeaders [ FDirName os interface ] ;
+
+Application NoPointerHistory :
+	NoPointerHistory.cpp
+	: be [ TargetLibstdc++ ]
+;
+
+if $(TARGET_PLATFORM) = libbe_test {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : NoPointerHistory
+		: tests!apps ;
+}
+

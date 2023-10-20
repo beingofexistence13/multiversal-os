@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src add-ons translators hvif ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources HVIFTranslator : HVIFTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles HVIFTranslator ] :
+			HVIFMain.cpp
+			HVIFTranslator.cpp
+			HVIFView.cpp
+			: be translation 
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs HVIFTranslator :
+	x-vnd.Haiku-HVIFTranslator
+	:
+	HVIFMain.cpp
+	HVIFTranslator.cpp
+	HVIFView.cpp
+;

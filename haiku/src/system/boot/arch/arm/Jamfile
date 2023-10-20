@@ -1,0 +1,56 @@
+SubDir HAIKU_TOP src system boot arch arm ;
+
+UsePrivateHeaders [ FDirName kernel arch arm ] ;
+UsePrivateHeaders [ FDirName kernel boot arch arm ] ;
+UsePrivateHeaders [ FDirName kernel platform $(TARGET_BOOT_PLATFORM) ] ;
+
+local librootGenericSources =
+	memcpy.c
+	memset.c
+;
+
+local kernelLibArchObjects =
+	<src!system!kernel!lib!arch!$(TARGET_ARCH)>byteorder.o
+;
+
+local kernelArchSources =
+	arch_elf.cpp
+	arch_uart_pl011.cpp
+;
+
+local kernelGenericDriverSources =
+	debug_uart.cpp
+	debug_uart_8250.cpp
+;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup efi ] {
+    on $(platform) {
+		BootMergeObject [ FGristFiles boot_arch_$(TARGET_KERNEL_ARCH).o ] :
+			# Kernel Drivers (src/system/kernel)
+			$(kernelGenericDriverSources)
+			$(kernelArchSources)
+
+			arch_cpu.cpp
+
+			$(librootGenericSources)
+			$(librootArchSources)
+			:
+			:
+			$(kernelLibArchObjects)
+		;
+
+		SEARCH on [ FGristFiles $(kernelGenericSources) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+
+		SEARCH on [ FGristFiles $(kernelArchSources) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+
+		SEARCH on [ FGristFiles $(kernelGenericDriverSources) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel arch generic ] ;
+
+		SEARCH on [ FGristFiles $(librootGenericSources) ]
+			= [ FDirName $(HAIKU_TOP) src system libroot posix string arch generic ] ;
+	}
+}
+

@@ -1,0 +1,37 @@
+SubDir HAIKU_TOP src preferences input ;
+
+UsePrivateHeaders input ;
+
+Preference Input :
+	Input.cpp
+	InputDeviceView.cpp
+	InputIcons.cpp
+	InputKeyboard.cpp
+	InputMouse.cpp
+	InputTouchpadPref.cpp
+	InputTouchpadPrefView.cpp
+	InputWindow.cpp
+	KeyboardSettings.cpp
+	KeyboardView.cpp
+	MouseView.cpp
+	MouseSettings.cpp
+	SettingsView.cpp
+	: be [ TargetLibsupc++ ] localestub
+	: Input.rdef
+	;
+DoCatalogs Input :
+	x-vnd.Haiku-Input
+	:
+	Input.cpp
+	InputDeviceView.cpp
+	InputKeyboard.cpp
+	InputMouse.cpp
+	InputTouchpadPref.cpp
+	InputTouchpadPrefView.cpp
+	InputWindow.cpp
+	KeyboardSettings.cpp
+	KeyboardView.cpp
+	MouseView.cpp
+	MouseSettings.cpp
+	SettingsView.cpp
+;

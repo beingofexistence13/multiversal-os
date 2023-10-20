@@ -1,0 +1,14 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio ac97 ichaudio ;
+
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) src add-ons media media-add-ons lala ] ;
+
+
+KernelAddon ichaudio :
+	ichaudio.c
+	io.c
+	: ichaudio_lala.o
+;
+
+
+SubInclude HAIKU_TOP src add-ons kernel drivers audio ac97 ichaudio lala ;

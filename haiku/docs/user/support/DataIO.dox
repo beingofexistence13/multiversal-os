@@ -1,0 +1,695 @@
+/*
+ * Copyright 2007-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Stefano Ceccherini, burton666@libero.it
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/support/DataIO.h	hrev47418
+ *		src/kits/support/DataIO.cpp	hrev47418
+ */
+
+
+/*!
+	\file DataIO.h
+	\ingroup support
+	\ingroup libbe
+	\brief Defines abstract BDataIO and BPositionIO and the derived BMallocIO
+	       and BMemoryIO classes.
+
+	Pure virtual BDataIO and BPositioIO classes provide the protocol for
+	Read(), Write(), and Seek().
+
+	BMallocIO and BMemoryIO classes implement the protocol, as does BFile in
+	the Storage Kit.
+*/
+
+
+///// BDataIO /////
+
+
+/*!
+	\class BDataIO
+	\ingroup support
+	\ingroup libbe
+	\brief Abstract interface for objects that provide read and write access to 
+	       data.
+
+	The interface provided by this class applies to objects or data that are
+	limited to reading and writing data. Classes derived from this class should
+	re-implement the Read() or the Write() method from this class or both.
+
+	Candidates of types of data or objects that should be derived from this class
+	are probably broadcasting media streams (which don't support reading at a
+	certain point in the data) or network streams that output data continuously.
+	Objects and data that support more advanced operations like seeking or
+	reading at writing at defined positions should derive their classes from
+	BPositionIO, which inherits this class.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BDataIO::BDataIO()
+	\brief This constructor does nothing.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BDataIO::~BDataIO()
+	\brief This destructor does nothing.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual ssize_t BDataIO::Read(void* buffer, size_t size)
+	\brief Reads data from the object into a buffer.
+
+	Your implementation should copy data into \c buffer, with the maximum size
+	of \c size. 
+
+	The default implementation is a no-op returning \c B_NOT_SUPPORTED.
+
+	\return You should return the amount of bytes actually read, or an error
+	        code in case of failure.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual ssize_t BDataIO::Write(const void* buffer, size_t size)
+	\brief Writes data from a buffer to the object.
+
+	Your implementation should copy data from \c buffer, with the maximum size
+	of \c size.
+
+	The default implementation is a no-op returning \c B_NOT_SUPPORTED.
+
+	\return You should return the amount of bytes actually written, or an error
+	        code in case of failure.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual status_t BDataIO::Flush()
+	\brief Writes pending data to underlying storage.
+
+	This method is relevant for BDataIO implementations that buffer data passed
+	to Write(). The Flush() implementation should make sure that all such data
+	are written to the underlying storage.
+
+	The default implementation is a no-op returning \c B_OK.
+
+	\return An error code indicating whether flushing the buffered data
+		succeeded.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual status_t BDataIO::ReadExactly(void* buffer, size_t size, size_t* _bytesRead)
+	\brief Reads an exact amount of data from the object into a buffer.
+
+	This is a convenience wrapper method for Read() for code that expects the
+	exact number of bytes requested to be read. This method calls Read() in a
+	loop to read the data. It fails when Read() returns an error or fails to
+	read any more data (i.e. returns 0).
+
+	\param buffer Pointer to pre-allocated storage of at least \a size bytes
+	       into which the data shall be read. Won't be dereferenced, when
+	       \a size is 0.
+	\param size The number of bytes to be read.
+	\param _bytesRead Optional pointer to a pre-allocated size_t into which the
+	       number of bytes actually read will be written. When the method
+	       returns \c B_OK this will always be \a size. Can be \c NULL.
+
+	\return An error code indicating whether or not the method succeeded.
+	\retval B_OK All data have been read.
+	\retval B_PARTIAL_READ Read() didn't fail, but couldn't provide as many
+	        bytes as requested.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual status_t BDataIO::WriteExactly(const void* buffer, size_t size,
+		size_t* _bytesWritten)
+	\brief Writes an exact amount of data from a buffer to the object.
+
+	This is a convenience wrapper method for Write() for code that expects the
+	exact number of bytes given to be written. This method calls Write() in a
+	loop to write the data. It fails when Write() returns an error or fails to
+	write any more data (i.e. returns 0).
+
+	\param buffer Pointer to a buffer of at least \a size bytes containing the
+	       data to be written. Won't be dereferenced, when \a size is 0.
+	\param size The number of bytes to be written.
+	\param _bytesWritten Optional pointer to a pre-allocated size_t into which
+	       the number of bytes actually written will be written. When the
+	       method returns \c B_OK this will always be \a size. Can be \c NULL.
+
+	\return An error code indicated whether the method succeeded.
+	\retval B_OK All data have been written.
+	\retval B_PARTIAL_READ Write() didn't fail, but couldn't write as many
+	        bytes as provided.
+
+	\since Haiku R1
+*/
+
+
+//////////// BPositionIO
+
+
+/*!
+	\class BPositionIO
+	\ingroup support
+	\ingroup libbe
+	\brief Abstract interface that provides advanced read, write and seek access
+	       to data.
+
+	The interface of this object applies to objects or data that allows
+	position-aware reading and writing of data. Classes that derive from this
+	class should at least re-implement ReadAt(), WriteAt(), Seek(), 
+	Position(), SetSize() and GetSize() methods.
+
+	A good example of a form of data that can derive from this object, are 
+	files. The BFile class derives from BPositionIO and provides this 
+	interface to files. If your object or data only supports linear reading 
+	and writing, consider deriving from the base-class BDataIO.
+
+	A final note, from BDataIO this class inherits Read() and Write(). The 
+	default implementation is to read or write the data at the current 
+	position indicated by Position(). Re-implement the methods if you require 
+	a different behavior.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BPositionIO::BPositionIO()
+	\brief This constructor does nothing.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual BPositionIO::~BPositionIO()
+	\brief This destructor does nothing.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual ssize_t BPositionIO::Read(void* buffer, size_t size)
+	\brief Read data from current position.
+
+	This method is derived from BDataIO. The default implementation reads data 
+	from the current position of the cursor, pointed at by Position(). If you
+	require different behaviour, please look at BDataIO::Read() for what is 
+	expected of this method.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual ssize_t BPositionIO::Write(const void *buffer, size_t size)
+	\brief Write data to the current position.
+
+	This method is derived from BDataIO. The default implementation writes data
+	to the current position of the cursor, pointed at by Position(). If you
+	require different behaviour, please look at BDataIO::Write() for what is
+	expected of this method.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual ssize_t BPositionIO::ReadAt(off_t position, void* buffer,
+		size_t size) = 0
+	\brief Pure virtual to read data from a certain position.
+
+	Your implementation should copy data from the position indicated by 
+	\a position into the \a buffer with the maximum size of \a size.
+
+	\return The amount of bytes actually read, or an error code.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual ssize_t BPositionIO::WriteAt(off_t position, const void *buffer,
+		size_t size) = 0
+	\brief Pure virtual to write data to a certain position.
+
+	Your implementation should copy data from \a buffer to the position indicated
+	by \a buffer with the maximum size of \a size.
+
+	\return The amount of bytes actually written, or an error code.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual status_t BPositionIO::ReadAtExactly(off_t position, void* buffer, size_t size, size_t* _bytesRead)
+	\brief Reads an exact amount of data from the object at the specified
+		position into a buffer.
+
+	This is a convenience wrapper method for ReadAt() for code that expects the
+	exact number of bytes requested to be read. This method calls ReadAt() in a
+	loop to read the data. It fails when ReadAt() returns an error or fails to
+	read any more data (i.e. returns 0).
+
+	\param position The object position at which to read the data.
+	\param buffer Pointer to pre-allocated storage of at least \a size bytes
+	       into which the data shall be read. Won't be dereferenced, when
+	       \a size is 0.
+	\param size The number of bytes to be read.
+	\param _bytesRead Optional pointer to a pre-allocated size_t into which the
+	       number of bytes actually read will be written. When the method
+	       returns \c B_OK this will always be \a size. Can be \c NULL.
+
+	\return An error code indicating whether or not the method succeeded.
+	\retval B_OK All data have been read.
+	\retval B_PARTIAL_READ ReadAt() didn't fail, but couldn't provide as many
+	        bytes as requested.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual status_t BPositionIO::WriteAtExactly(off_t position, const void* buffer, size_t size,
+		size_t* _bytesWritten)
+	\brief Writes an exact amount of data from a buffer to the object at the
+		specified position.
+
+	This is a convenience wrapper method for WriteAt() for code that expects the
+	exact number of bytes given to be written. This method calls WriteAt() in a
+	loop to write the data. It fails when WriteAt() returns an error or fails to
+	write any more data (i.e. returns 0).
+
+	\param position The object position at which to write the data.
+	\param buffer Pointer to a buffer of at least \a size bytes containing the
+	       data to be written. Won't be dereferenced, when \a size is 0.
+	\param size The number of bytes to be written.
+	\param _bytesWritten Optional pointer to a pre-allocated size_t into which
+	       the number of bytes actually written will be written. When the
+	       method returns \c B_OK this will always be \a size. Can be \c NULL.
+
+	\return An error code indicated whether the method succeeded.
+	\retval B_OK All data have been written.
+	\retval B_PARTIAL_READ WriteAt() didn't fail, but couldn't write as many
+	        bytes as provided.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual off_t BPositionIO::Seek(off_t position, uint32 seekMode) = 0
+	\brief Pure virtual to move the cursor to a certain position.
+
+	Your implementation should move the position of the cursor to the provided
+	point. What this actually means, depends on your object or data. 
+
+	\param position An integer that defines a position.
+	\param seekMode You will get one of the following values:
+	       - \c SEEK_SET Set the cursor to the position indicated by
+	         \c position.
+	       - \c SEEK_END Set the cursor to the end of the buffer, and go
+	         \c position beyond that.
+	       - \c SEEK_CUR Set the cursor the the current position plus
+	         \c position.
+	\return The new position.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual off_t BPositionIO::Position() const = 0
+	\brief Pure virtual to return the current position of the cursor.
+
+	\return Your implementation should return the current position of the cursor.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual status_t BPositionIO::SetSize(off_t size)
+	\brief Set the size of the object or data.
+
+	The default implementation returns \c B_ERROR. If your object or data allows
+	the size to be changed, reimplement this method.
+
+	\return Return \c B_OK if everything succeeded, else return the appropriate
+	        error code.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn virtual status_t BPositionIO::GetSize(off_t* size) const
+	\brief Get the size of the object or data.
+
+	The default implementation uses Seek() with the \c SEEK_END flag to
+	determine the size of the buffer. If your data or object has a different way
+	of determining size, reimplement this method.
+
+	Please check that NULL is not passed into \c size if you reimplement it in
+	your class.
+
+	\param[out] size The size of the object is put into this parameter.
+
+	\return This method returns \c B_OK on success or an error code on error.
+
+	\see SetSize()
+	\see Seek()
+
+	\since BeOS R3
+*/
+
+
+//////////// BMemoryIO
+
+
+/*!
+	\class BMemoryIO
+	\ingroup support
+	\ingroup libbe
+	\brief A BPositionIO derived class that works on memory buffers.
+
+	This class is used if you require access that confirms to the BPositionIO
+	interface on memory buffers that you created. If you would like to use that
+	interface on new buffers, have a look at BMallocIO.
+
+	This class is particularly useful if you would like to use a class or method
+	that are written to make use of the BPositionIO interface. It might also
+	be used for 'secure' reading and writing from buffers, since this class
+	automatically checks the bounds of anything you might want to do.
+
+	This class reimplements the Read(), Write(), ReadAt(), Writeat(), Seek() and
+	Position() interface from BPositionIO.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BMemoryIO::BMemoryIO(void *data, size_t length)
+	\brief Create a read/write object.
+
+	\param data A pointer to the buffer to adopt.
+	\param length The size of the buffer.
+
+	\see BMemoryIO(const void *buffer, size_t length) for a read-only 
+         implementation.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BMemoryIO::BMemoryIO(const void *buffer, size_t length)
+	\brief Create a read-only object.
+
+	\param buffer A pointer to the \c const (read-only) buffer to adopt.
+	\param length The size of the buffer.
+
+	\see BMemoryIO(void *buffer, size_t length) for a read-write implementation.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BMemoryIO::~BMemoryIO()
+	\brief The destructor does nothing.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn ssize_t BMemoryIO::ReadAt(off_t pos, void *buffer, size_t size)
+	\brief Read from a given position.
+
+	\param[in] pos The offset where to start reading data.
+	\param[out] buffer The buffer to copy the read bytes into.
+	\param[in] size The size of the \a buffer.
+
+	\return The amount of read bytes or an error code.
+	\retval B_BAD_VALUE The position is less than zero or the buffer given on
+	        construction is invalid.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn ssize_t BMemoryIO::WriteAt(off_t pos, const void *buffer, size_t size)
+	\brief Write at a given position.
+
+	\param pos The offset to write to.
+	\param buffer The buffer to copy the bytes from.
+	\param size The number of bytes to write.
+
+	\return The amount of bytes written or an error code.
+	\retval B_NOT_ALLOWED The object is constructed as a read-only object.
+	\retval B_BAD_VALUE The position is less than zero or the buffer given on
+	        construction is invalid.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn off_t BMemoryIO::Seek(off_t position, uint32 seek_mode)
+	\brief Move the cursor to a given position.
+
+	\param position The position to move the cursor to.
+	\param seek_mode The mode determines where the cursor is placed.
+	       Possibilities include:
+	       - \c SEEK_SET The cursor is set to \a position.
+	       - \c SEEK_CUR The \a position is added to the current position of
+	         the cursor.
+	       - \c SEEK_END The cursor is put at the end of the data, plus
+	         \a position added to it.
+
+	\return The new position.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn off_t BMemoryIO::Position() const
+	\brief Return the current position.
+
+	\return The current position as an off_t.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BMemoryIO::SetSize(off_t size)
+	\brief Resize the buffer.
+
+	This method does not actually resize the buffer. If the new size is greater
+	than the size of the buffer, resizing will fail. It will only succeed if the 
+	new size is less than the size of the buffer. The buffer itself will not be
+	resized though. 
+
+	This method might be useful in some cases. If the buffer is larger than the
+	data it holds, changing the size will enable you to use the Seek() method
+	with the flag \c SEEK_END and not get an error if you read or write from
+	that position, since you actually have a buffer at the end.
+
+	\retval B_OK The buffer is resized.
+	\retval B_NOT_ALLOWED The buffer is read-only.
+	\retval B_ERROR The \c size is larger than the size of the buffer.
+
+	\since BeOS R3
+*/
+
+
+//////////// BMallocIO
+
+
+/*!
+	\class BMallocIO
+	\ingroup support
+	\ingroup libbe
+	\brief A BPositionIO derived class that creates a memory buffer.
+
+	This class creates a memory buffer and provides a BPositionIO interface to
+	work on it. The memory buffer grows and shrinks automatically.
+	This is especially useful if you want to use a method or function that
+	works on an object derived from BPositionIO and you want to do something with
+	the resulting data, or it could be useful if you want to read and write to
+	memory in a safe way, since this class has boundary checking.
+
+	BMallocIO allocates a buffer based on a certain block size. This provides a
+	mechanism that will prevent it from needing to allocate new memory too often.
+	The default block size is 256 bytes, you can change it with SetBlockSize(). If
+	you are sure you are going to use a bigger buffer, change the block size so 
+	that you won't have to allocate more memory too often, especially if you use
+	this class in performance-critical code.
+
+	If you require a BPositionIO derived object that works on buffers you
+	provide, have a look at BMemoryIO.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BMallocIO::BMallocIO()
+	\brief Create a new memory buffer with block size 256.
+
+	\see SetBlockSize()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BMallocIO::~BMallocIO()
+	\brief Destroy the object and free the internal buffer.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn ssize_t BMallocIO::ReadAt(off_t pos, void *buffer, size_t size)
+	\brief Read data at a certain position.
+
+	\param[in] pos Offset into the data where to read from.
+	\param[out] buffer The buffer to copy the read bytes in.
+	\param [in] size Size of the buffer.
+
+	\return The number of read bytes, or \c B_BAD_VALUE if
+		    the provided \a buffer is invalid.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn ssize_t BMallocIO::WriteAt(off_t pos, const void *buffer, size_t size)
+	\brief Write data to a certain position.
+
+	\param pos Offset into the data where to write to.
+	\param buffer The buffer to copy from.
+	\param size The size of the buffer.
+
+	\return The number of bytes written or \c B_BAD_VALUE if the provided.
+	        \a buffer is invalid.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn off_t BMallocIO::Seek(off_t position, uint32 seekMode)
+	\brief Move the cursor to a given position.
+
+	\param position The position to move the cursor to.
+	\param seekMode The mode determines where the cursor is placed. Possibilities:
+	       - \c SEEK_SET The cursor is set to \a position.
+	       - \c SEEK_CUR The \c position is added to the current position of the
+	         cursor.
+	       - \c SEEK_END The cursor is put at the end of the data, plus
+	         \a position added to it.
+
+	\return The new position as an off_t.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn off_t BMallocIO::Position() const
+	\brief Return the position of the cursor.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BMallocIO::SetSize(off_t size)
+	\brief Change the size of the buffer.
+
+	This method changes the size of the current buffer. If \a size is smaller 
+	than the current size, the data will be cleared.
+
+	\param size The new size of the buffer.
+
+	\return A status code.
+	\retval B_OK Resizing the data succeeded.
+	\retval B_NO_MEMORY Failed to allocate the necessary memory.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BMallocIO::SetBlockSize(size_t blockSize)
+	\brief Change the block size to a certain value.
+
+	This class allocates memory in blocks. If you are in performance-critical
+	code you might want to tweak this setting to create a better performance in
+	case you know you are going to allocate more than the default block size of
+	256.
+
+	\param blockSize The new block size.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn const void* BMallocIO::Buffer() const
+	\brief Return a pointer to the internal buffer.
+
+	As with any pointer to internal buffers the Haiku API exposes,
+	make sure you don't change anything since it doesn't belong to you.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn size_t BMallocIO::BufferLength() const
+	\brief Return the number of bytes in the buffer.
+
+	This number doesn't have to be the same size as the buffer is. Because memory
+	is allocated in blocks the actual size of the buffer may be greater, but this
+	method only returns the number of bytes that are actually used.
+
+	\since BeOS R3
+*/

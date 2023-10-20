@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src libs util ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) headers compatibility bsd ] : true ;
+
+local defines = [ FDefines SCCSID=0 ] ;
+SubDirCcFlags $(defines) ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+
+		StaticLibrary [ MultiArchDefaultGristFiles libutil.a ] :
+			fparseln.c
+			pidfile.c
+			realhostname.c
+			trimdomain.c
+		;
+
+	}
+}

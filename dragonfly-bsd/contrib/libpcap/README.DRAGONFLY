@@ -1,0 +1,21 @@
+LIBPCAP
+=======
+
+Original source can be downloaded from:
+https://www.tcpdump.org/release/
+
+file = libpcap-1.10.1.tar.gz
+date = 23 October 2021
+size = 935221 
+sha1 = 4343528176e0402cce807a09a97191069a1e3dd9
+
+A list of files and directories removed is in README.DELETED.
+
+Use "git diff vendor/LIBPCAP contrib/libpcap" to see local modifications.
+
+Remember to update lib/libpcap/config.h and bump library version in
+lib/libpcap/Makefile.
+
+Configure with:
+./configure --disable-universal --disable-usb --disable-bluetooth \
+            --disable-dbus --disable-packet-ring --disable-remote

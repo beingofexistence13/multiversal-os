@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src add-ons kernel file_cache ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders [ FDirName kernel arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+
+KernelAddon log :
+	log.cpp
+	;
+
+KernelAddon launch_speedup :
+	launch_speedup.cpp
+	;
+
+KernelAddon rule_based_prefetcher :
+	rule_based_prefetcher.cpp
+	;
+

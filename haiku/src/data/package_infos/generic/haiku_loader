@@ -1,0 +1,19 @@
+name			haiku_loader
+version			%HAIKU_VERSION%
+architecture	%HAIKU_PACKAGING_ARCH%
+summary			"The Haiku boot loader"
+description		"The Haiku boot loader."
+
+packager		"The Haiku build system"
+vendor			"Haiku Project"
+
+copyrights		"2001-2020 Haiku, Inc. et al"
+licenses		"MIT"
+flags			system_package
+
+provides {
+	haiku_loader=%HAIKU_VERSION%
+}
+
+requires {
+}

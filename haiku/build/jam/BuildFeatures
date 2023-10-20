@@ -1,0 +1,769 @@
+# This file contains setup for build features that require external packages. It
+# is included once for each configured packaging architecture (with
+# TARGET_PACKAGING_ARCH set accordingly).
+
+
+local architecture = $(TARGET_PACKAGING_ARCH) ;
+local secondaryArchSubDir = [ MultiArchIfPrimary "" : /$(architecture) ] ;
+local libDir = lib$(secondaryArchSubDir) ;
+local developLibDir = develop/lib$(secondaryArchSubDir) ;
+local developHeadersDir = develop/headers$(secondaryArchSubDir) ;
+
+local unavailableBuildFeatures ;
+
+
+# SSL
+
+# Automatically enable the SSL feature, when the OpenSSL package is enabled.
+if [ IsHaikuImagePackageAdded openssl ] {
+	HAIKU_BUILD_FEATURE_SSL = 1 ;
+}
+
+if $(HAIKU_BUILD_FEATURE_SSL) {
+	if [ IsPackageAvailable openssl_devel ] {
+		ExtractBuildFeatureArchives openssl :
+			file: base openssl
+				runtime: lib
+			file: devel openssl_devel
+				depends: base
+				libraries:
+					$(developLibDir)/libcrypto.so
+					$(developLibDir)/libssl.so
+				headers: $(developHeadersDir)
+			;
+
+		EnableBuildFeatures openssl ;
+	} else {
+		unavailableBuildFeatures += openssl ;
+	}
+}
+
+
+# gcc_syslibs
+
+if $(TARGET_PACKAGING_ARCH) != x86_gcc2 {
+	if [ IsPackageAvailable gcc_syslibs ] {
+		ExtractBuildFeatureArchives gcc_syslibs :
+			file: base gcc_syslibs
+				libgcc_s.so.1: $(libDir)/libgcc_s.so.1
+				libstdc++.so: $(libDir)/libstdc++.so
+				libsupc++.so: $(libDir)/libsupc++.so
+			;
+
+		EnableBuildFeatures gcc_syslibs ;
+	} else {
+		unavailableBuildFeatures += gcc_syslibs ;
+	}
+}
+
+
+# gcc_syslibs_devel
+
+if [ IsPackageAvailable gcc_syslibs_devel ] {
+	if $(TARGET_PACKAGING_ARCH) = x86_gcc2 {
+		ExtractBuildFeatureArchives gcc_syslibs_devel :
+			file: base gcc_syslibs_devel
+				libgcc.a: $(developLibDir)/libgcc.a
+				libgcc_eh.a:
+				libgcc-kernel.a: $(developLibDir)/libgcc.a
+				libgcc_eh-kernel.a:
+				libstdc++.a:
+				libsupc++.a:
+				libsupc++-kernel.a:
+			;
+	} else {
+		ExtractBuildFeatureArchives gcc_syslibs_devel :
+			file: base gcc_syslibs_devel
+				libgcc.a: $(developLibDir)/libgcc.a
+				libgcc_eh.a: $(developLibDir)/libgcc_eh.a
+				libgcc-kernel.a: $(developLibDir)/libgcc-kernel.a
+				libgcc_eh-kernel.a: $(developLibDir)/libgcc_eh.a
+				libgcc-boot.a: $(developLibDir)/libgcc-boot.a
+				libgcc_eh-boot.a: $(developLibDir)/libgcc_eh-boot.a
+				libstdc++.a: $(developLibDir)/libstdc++.a
+				libsupc++.a: $(developLibDir)/libsupc++.a
+				libsupc++-kernel.a: $(developLibDir)/libsupc++-kernel.a
+				libsupc++-boot.a: $(developLibDir)/libsupc++-boot.a
+				c++-headers: $(developHeadersDir)/c++
+				gcc-headers: $(developHeadersDir)/gcc
+			;
+	}
+
+	EnableBuildFeatures gcc_syslibs_devel ;
+} else {
+	unavailableBuildFeatures += gcc_syslibs_devel ;
+}
+
+
+# ICU
+
+if [ IsPackageAvailable icu_devel ] {
+	ExtractBuildFeatureArchives icu :
+		file: base icu
+			runtime: lib
+		file: devel icu_devel
+			depends: base
+			libraries:
+				$(developLibDir)/libicudata.so
+				$(developLibDir)/libicui18n.so
+				$(developLibDir)/libicuio.so
+				$(developLibDir)/libicuuc.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures icu ;
+} else if [ IsPackageAvailable icu66_devel ] {
+	ExtractBuildFeatureArchives icu :
+		file: base icu66
+			runtime: lib
+		file: devel icu66_devel
+			depends: base
+			libraries:
+				$(developLibDir)/libicudata.so
+				$(developLibDir)/libicui18n.so
+				$(developLibDir)/libicuio.so
+				$(developLibDir)/libicuuc.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures icu ;
+} else {
+	unavailableBuildFeatures += icu ;
+}
+
+
+# CLucene
+
+# TODO: Update to packages!
+if ! 1 {
+
+# Automatically install the CLucene feature, when the CLucene package is
+# enabled.
+if [ IsHaikuImagePackageAdded clucene ] {
+	HAIKU_BUILD_FEATURE_CLUCENE = 1 ;
+}
+
+
+HAIKU_CLUCENE_PACKAGE = clucene-0.9.21-x86-gcc4-haiku-2009-08-11.zip ;
+HAIKU_CLUCENE_URL = $(baseURL)/$(HAIKU_CLUCENE_PACKAGE) ;
+
+if $(HAIKU_BUILD_FEATURE_CLUCENE) {
+	if $(TARGET_ARCH) != x86 {
+		Echo "CLucene build feature not available for"
+			"$(TARGET_PACKAGING_ARCH)" ;
+	} else {
+		# Download the zip archive.
+		local zipFile = [ DownloadFile $(HAIKU_CLUCENE_PACKAGE)
+			: $(HAIKU_CLUCENE_URL) ] ;
+
+		# zip file and output directory
+		HAIKU_CLUCENE_ZIP_FILE = $(zipFile) ;
+		HAIKU_CLUCENE_DIR = [ FDirName $(HAIKU_OPTIONAL_BUILD_PACKAGES_DIR)
+			$(HAIKU_CLUCENE_PACKAGE:B) ] ;
+
+		# extract headers and libraries
+		HAIKU_CLUCENE_HEADERS_DEPENDENCY = [ ExtractArchive $(HAIKU_CLUCENE_DIR)
+			: common/include/ : $(zipFile) : extracted-clucene
+		] ;
+
+		HAIKU_CLUCENE_LIBS = [ ExtractArchive $(HAIKU_CLUCENE_DIR)
+			:
+			common/lib/libclucene.a
+			: $(zipFile)
+			 : extracted-clucene
+		] ;
+
+		HAIKU_CLUCENE_HEADERS
+			= [ FDirName $(HAIKU_CLUCENE_DIR) common include ] ;
+
+		EnableBuildFeatures clucene ;
+	}
+}
+
+} # ! 1
+
+
+# Giflib
+if [ IsPackageAvailable giflib_devel ] {
+	ExtractBuildFeatureArchives giflib :
+		file: base giflib
+			runtime: lib
+		file: devel giflib_devel
+			depends: base
+			library: $(developLibDir)/libgif.so.7
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures giflib ;
+} else {
+	unavailableBuildFeatures += giflib ;
+}
+
+
+# GLU (GL Utilities)
+if [ IsPackageAvailable glu_devel ] {
+	ExtractBuildFeatureArchives glu :
+		file: base glu
+			runtime: lib
+		file: devel glu_devel
+			depends: base
+			library: $(developLibDir)/libGLU.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures glu ;
+} else {
+	unavailableBuildFeatures += glu ;
+}
+
+
+# GL (GL Kit, Mesa3D)
+if [ IsPackageAvailable mesa_devel ] {
+	ExtractBuildFeatureArchives mesa :
+		file: base mesa
+			runtime: lib
+		file: devel mesa_devel
+			depends: base
+			library: $(developLibDir)/libGL.so
+			headers: $(developHeadersDir)/os/opengl
+		;
+
+	EnableBuildFeatures mesa ;
+} else {
+	unavailableBuildFeatures += mesa ;
+}
+
+
+# FFmpeg
+if [ IsPackageAvailable ffmpeg_devel ] {
+	local ffmpegLibs = libavformat.so libavcodec.so libavfilter.so libswscale.so
+		libavutil.so libswresample.so ;
+
+	ExtractBuildFeatureArchives ffmpeg :
+		file: base ffmpeg
+			runtime: lib
+		file: devel ffmpeg_devel
+			depends: base
+			libraries: $(developLibDir)/$(ffmpegLibs)
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures ffmpeg ;
+
+} else {
+	unavailableBuildFeatures += ffmpeg ;
+}
+
+
+# Fluidlite
+if [ IsPackageAvailable fluidlite_devel ] && [ IsPackageAvailable libvorbis_devel ] {
+	ExtractBuildFeatureArchives fluidlite :
+		file: devel fluidlite_devel
+			library: $(developLibDir)/libfluidlite-static.a
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures fluidlite ;
+} else {
+	unavailableBuildFeatures += fluidlite ;
+}
+
+
+# Libvorbis
+if [ IsPackageAvailable libvorbis_devel ] {
+	ExtractBuildFeatureArchives libvorbis :
+		file: base libvorbis
+			runtime: lib
+		file: devel libvorbis_devel
+			depends: base
+			library: $(developLibDir)/libvorbisfile.so.3
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libvorbis ;
+} else {
+	unavailableBuildFeatures += libvorbis ;
+}
+
+
+# Freetype
+if [ IsPackageAvailable freetype_devel ] {
+	ExtractBuildFeatureArchives freetype :
+		file: base freetype
+			runtime: lib
+		file: devel freetype_devel
+			depends: base
+			library: $(developLibDir)/libfreetype.so
+			headers: $(developHeadersDir) $(developHeadersDir)/freetype2
+		;
+
+	EnableBuildFeatures freetype ;
+} else {
+	unavailableBuildFeatures += freetype ;
+}
+
+# fontconfig
+if [ IsPackageAvailable fontconfig_devel ] {
+	ExtractBuildFeatureArchives fontconfig :
+		file: base fontconfig
+			runtime: lib
+		file: devel fontconfig_devel
+			depends: base
+			library: $(developLibDir)/libfontconfig.so
+			headers: $(developHeadersDir) $(developHeadersDir)/fontconfig
+		;
+
+	EnableBuildFeatures fontconfig ;
+} else {
+	unavailableBuildFeatures += fontconfig ;
+}
+
+# Gutenprint
+if [ IsPackageAvailable gutenprint8_devel ] {
+	ExtractBuildFeatureArchives gutenprint :
+		file: base gutenprint8
+			runtime: lib
+		file: devel gutenprint8_devel
+			depends: base
+			library: $(developLibDir)/libgutenprint.so
+			headers: $(developHeadersDir) $(developHeadersDir)/gutenprint
+		;
+
+	EnableBuildFeatures gutenprint ;
+} else {
+	unavailableBuildFeatures += gutenprint ;
+}
+
+
+# TagLib
+
+# TODO: Update to packages!
+if ! 1 {
+
+# Automatically install the TagLib feature, when the optional TagLib optional
+# package is enabled.
+if [ IsHaikuImagePackageAdded taglib ] {
+	HAIKU_BUILD_FEATURE_TAGLIB = 1 ;
+}
+
+HAIKU_TAGLIB_PACKAGE = taglib-1.6.3-r1a4-x86-gcc2-2012-09-03.zip ;
+HAIKU_TAGLIB_URL = $(baseURL)/$(HAIKU_TAGLIB_PACKAGE) ;
+
+if $(HAIKU_BUILD_FEATURE_TAGLIB) {
+	if $(TARGET_ARCH) != x86 {
+		Echo "TagLib build feature not available for $(TARGET_PACKAGING_ARCH)" ;
+	} else {
+		# Download the zip archive.
+		local zipFile = [ DownloadFile $(HAIKU_TAGLIB_PACKAGE)
+			: $(HAIKU_TAGLIB_URL) ] ;
+
+		# zip file and output directory
+		HAIKU_TAGLIB_ZIP_FILE = $(zipFile) ;
+		HAIKU_TAGLIB_DIR = [ FDirName $(HAIKU_OPTIONAL_BUILD_PACKAGES_DIR)
+			$(HAIKU_TAGLIB_PACKAGE:B) ] ;
+
+		# extract headers and libraries
+		HAIKU_TAGLIB_HEADERS_DEPENDENCY = [ ExtractArchive $(HAIKU_TAGLIB_DIR)
+			: common/include/ : $(zipFile) : extracted-taglib
+		] ;
+
+		HAIKU_TAGLIB_LIBS = [ ExtractArchive $(HAIKU_TAGLIB_DIR)
+			:
+			common/lib/libtag.so
+			common/lib/libtag_c.so
+			: $(zipFile)
+			: extracted-taglib
+		] ;
+
+		HAIKU_TAGLIB_HEADERS
+			= [ FDirName $(HAIKU_TAGLIB_DIR) common include taglib ] ;
+
+		EnableBuildFeatures taglib ;
+	}
+}
+
+} # ! 1
+
+
+# WebKit
+if [ IsPackageAvailable haikuwebkit_devel ] {
+	ExtractBuildFeatureArchives webkit :
+		file: base haikuwebkit
+			runtime: lib
+		file: devel haikuwebkit_devel
+			depends: base
+			libraries:
+				$(developLibDir)/libWebKitLegacy.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures webkit ;
+} else {
+	unavailableBuildFeatures += webkit ;
+}
+
+
+# libpng
+if [ IsPackageAvailable libpng16_devel ] {
+	ExtractBuildFeatureArchives libpng :
+		file: base libpng16
+			runtime: lib
+		file: devel libpng16_devel
+			depends: base
+			library: $(developLibDir)/libpng16.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libpng ;
+} else {
+	unavailableBuildFeatures += libpng ;
+}
+
+
+# libicns
+if [ IsPackageAvailable libicns_devel ] {
+	ExtractBuildFeatureArchives libicns :
+		file: base libicns
+			runtime: lib
+		file: devel libicns_devel
+			depends: base
+			library: $(developLibDir)/libicns.so.1
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libicns ;
+} else {
+	unavailableBuildFeatures += libicns ;
+}
+
+
+# Jasper
+if [ IsPackageAvailable jasper_devel ] {
+	ExtractBuildFeatureArchives jasper :
+		file: base jasper
+			runtime: lib
+		file: devel jasper_devel
+			depends: base
+			library: $(developLibDir)/libjasper.so.4
+			headers: $(developHeadersDir) $(developHeadersDir)/jasper
+		;
+
+	EnableBuildFeatures jasper ;
+} else {
+	unavailableBuildFeatures += jasper ;
+}
+
+
+# jpeg
+if [ IsPackageAvailable libjpeg_turbo_devel ] {
+	ExtractBuildFeatureArchives jpeg :
+		file: base libjpeg_turbo
+			runtime: lib
+		file: devel libjpeg_turbo_devel
+			depends: base
+			library: $(developLibDir)/libjpeg.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures jpeg ;
+} else {
+	unavailableBuildFeatures += jpeg ;
+}
+
+
+# zlib
+if [ IsPackageAvailable zlib_devel ] {
+	ExtractBuildFeatureArchives zlib :
+		file: base zlib
+			runtime: lib
+		file: devel zlib_devel
+			depends: base
+			library: $(developLibDir)/libz.so
+			headers: $(developHeadersDir)
+		# sources are required for the primary architecture only
+		primary @{
+			file: source zlib_source
+				sources: develop/sources/%portRevisionedName%/sources
+		}@
+		;
+
+	EnableBuildFeatures zlib ;
+} else {
+	unavailableBuildFeatures += zlib ;
+}
+
+
+# libedit
+if [ IsPackageAvailable libedit_devel ] {
+	ExtractBuildFeatureArchives libedit :
+		file: base libedit
+			runtime: lib
+		file: devel libedit_devel
+			depends: base
+			library: $(developLibDir)/libedit.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libedit ;
+} else {
+	unavailableBuildFeatures += libedit ;
+}
+
+
+# libsolv
+if [ IsPackageAvailable libsolv_devel ] {
+	ExtractBuildFeatureArchives libsolv :
+		file: base libsolv
+			runtime: lib
+		file: devel libsolv_devel
+			depends: base
+			libraries:
+				$(developLibDir)/libsolv.so
+				$(developLibDir)/libsolvext.so
+			headers: $(developHeadersDir)
+		# sources are required for the primary architecture only
+		primary @{
+			file: source libsolv_source
+				sources: develop/sources/%portRevisionedName%/sources
+		}@
+		;
+
+	EnableBuildFeatures libsolv ;
+} else {
+	unavailableBuildFeatures += libsolv ;
+}
+
+
+# qrencode
+if [ IsPackageAvailable qrencode_kdl_devel ] {
+	ExtractBuildFeatureArchives libqrencode_kdl :
+		file: devel qrencode_kdl_devel
+			library: $(developLibDir)/libqrencode_kdl.a
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libqrencode_kdl ;
+} else {
+	unavailableBuildFeatures += qrencode_kdl ;
+}
+
+
+# tiff
+if [ IsPackageAvailable tiff4_devel ] {
+	ExtractBuildFeatureArchives tiff :
+		file: base tiff4
+			runtime: lib
+		file: devel tiff4_devel
+			depends: base
+			library: $(developLibDir)/libtiff.so.5
+			headers: $(developHeadersDir) $(developHeadersDir)/tiff
+		;
+
+	EnableBuildFeatures tiff ;
+} else {
+	unavailableBuildFeatures += tiff ;
+}
+
+
+# openexr
+if [ IsPackageAvailable openexr_devel ] {
+	ExtractBuildFeatureArchives openexr :
+		file: base openexr
+			runtime: lib
+		file: devel openexr_devel
+			depends: base
+			libraries:
+				$(developLibDir)/libIlmImf.so
+				$(developLibDir)/libIlmImfUtil.so
+				$(developLibDir)/libHalf.so
+				$(developLibDir)/libIex.so
+				$(developLibDir)/libIexMath.so
+				$(developLibDir)/libIlmThread.so
+				$(developLibDir)/libImath.so
+			headers: $(developHeadersDir) $(developHeadersDir)/OpenEXR
+		;
+
+	EnableBuildFeatures openexr ;
+} else {
+	unavailableBuildFeatures += openexr ;
+}
+
+
+# libdvdread
+if [ IsPackageAvailable libdvdread_devel ] {
+	ExtractBuildFeatureArchives libdvdread :
+		file: base libdvdread
+			runtime: lib
+		file: devel libdvdread_devel
+			depends: base
+			libraries: $(developLibDir)/libdvdread.so.4
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libdvdread ;
+} else {
+	unavailableBuildFeatures += libdvdread ;
+}
+
+
+# libdvdnav
+if [ IsPackageAvailable libdvdnav_devel ] {
+	ExtractBuildFeatureArchives libdvdnav :
+		file: base libdvdnav
+			runtime: lib
+		file: devel libdvdnav_devel
+			depends: base
+			libraries: $(developLibDir)/libdvdnav.so.4
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libdvdnav ;
+} else {
+	unavailableBuildFeatures += libdvdnav ;
+}
+
+
+# libraw
+if [ IsPackageAvailable libraw_devel ] {
+	ExtractBuildFeatureArchives libraw :
+		file: base libraw
+			runtime: lib
+		file: devel libraw_devel
+			depends: base
+			libraries: $(developLibDir)/libraw.so
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures libraw ;
+} else {
+	unavailableBuildFeatures += libraw ;
+}
+
+
+# libwebp
+if [ IsPackageAvailable libwebp_devel ] {
+	if $(HAIKU_PACKAGING_ARCH) = x86 && $(TARGET_PACKAGING_ARCH) = x86_gcc2 {
+		ExtractBuildFeatureArchives libwebp :
+			file: base libwebp
+				runtime: lib
+			file: devel libwebp_devel
+				depends: base
+				library: $(developLibDir)/libwebp.so.6
+				headers: $(developHeadersDir) $(developHeadersDir)/webp
+			;
+	} else {
+		ExtractBuildFeatureArchives libwebp :
+			file: base libwebp
+				runtime: lib
+			file: devel libwebp_devel
+				depends: base
+				library: $(developLibDir)/libwebp.so.7
+				headers: $(developHeadersDir) $(developHeadersDir)/webp
+			;
+	}
+
+	EnableBuildFeatures libwebp ;
+} else {
+	unavailableBuildFeatures += libwebp ;
+}
+
+
+# libavif
+if [ IsPackageAvailable libavif_devel ] {
+	ExtractBuildFeatureArchives libavif :
+		file: base libavif
+			runtime: lib
+		file: devel libavif_devel
+			depends: base
+			library: $(developLibDir)/libavif.so
+			headers: $(developHeadersDir) $(developHeadersDir)/avif
+		;
+	EnableBuildFeatures libavif ;
+} else {
+	unavailableBuildFeatures += libavif ;
+}
+
+
+# live555
+if [ IsPackageAvailable live555_devel ] {
+	ExtractBuildFeatureArchives live555 :
+		file: devel live555_devel
+			libraries:
+				$(developLibDir)/libliveMedia.a
+				$(developLibDir)/libBasicUsageEnvironment.a
+				$(developLibDir)/libgroupsock.a
+				$(developLibDir)/libUsageEnvironment.a
+
+			headers: $(developHeadersDir)
+				$(developHeadersDir)/liveMedia
+				$(developHeadersDir)/BasicUsageEnvironment
+				$(developHeadersDir)/groupsock
+				$(developHeadersDir)/UsageEnvironment
+		;
+	EnableBuildFeatures live555 ;
+} else {
+	unavailableBuildFeatures += live555 ;
+}
+
+
+# ncurses
+if [ IsPackageAvailable ncurses6_devel ] {
+	ExtractBuildFeatureArchives ncurses :
+		file: base ncurses6
+			runtime: lib
+		file: devel ncurses6_devel
+			depends: base
+			library: $(developLibDir)/libncurses.so.6
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures ncurses ;
+} else {
+	unavailableBuildFeatures += ncurses6 ;
+}
+
+
+# expat
+if [ IsPackageAvailable expat_devel ] {
+	ExtractBuildFeatureArchives expat :
+		file: base expat
+			runtime: lib
+		file: devel expat_devel
+			depends: base
+			library: $(developLibDir)/libexpat.so.1
+			headers: $(developHeadersDir)
+		;
+
+	EnableBuildFeatures expat ;
+} else {
+	unavailableBuildFeatures += expat ;
+}
+
+
+# zstd
+if [ IsPackageAvailable zstd_devel ] {
+	ExtractBuildFeatureArchives zstd :
+		file: base zstd
+			runtime: lib
+		file: devel zstd_devel
+			depends: base
+			library: $(developLibDir)/libzstd.so
+			headers: $(developHeadersDir)
+		# sources are required for the primary architecture only
+		primary @{
+			file: source zstd_source
+				sources: develop/sources/%portRevisionedName%/sources
+		}@
+		;
+
+	EnableBuildFeatures zstd ;
+} else {
+	unavailableBuildFeatures += zstd ;
+}
+
+
+# Print a diagnostic message with build features not presently available.
+if $(unavailableBuildFeatures) {
+	Echo "build-feature packages unavailable on $(TARGET_PACKAGING_ARCH):"
+		"$(unavailableBuildFeatures)" ;
+}

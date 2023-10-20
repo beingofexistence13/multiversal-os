@@ -1,0 +1,44 @@
+DF404.0 {
+    _int_to_time;
+    _long_to_time;
+    _time32_to_time;
+    _time64_to_time;
+    _time_to_int;
+    _time_to_long;
+    _time_to_time32;
+    _time_to_time64;
+    asctime;
+    asctime_r;
+    ctime;
+    ctime_r;
+    daylight;
+    difftime;
+    gmtime;
+    gmtime_r;
+    localtime;
+    localtime_r;
+    mktime;
+    offtime;
+    posix2time;
+    strftime;
+    strftime_l;
+    strptime;
+    strptime_l;
+    timegm;
+    time2posix;
+    timelocal;
+    timeoff;
+    timezone;
+    tzname;
+    tzset;
+    tzsetwall;
+};
+
+DF406.0 {
+    timespec_get;
+};
+
+DF510.0 {
+    getdate;
+    getdate_err;
+};

@@ -1,0 +1,11 @@
+1	spanish; castilian	x-vnd.Haiku-KeyboardInputServerDevice	131044710
+If the application will not quit you may have to kill it.	Team monitor		Si la aplicación no se cierra, quizás tenga que matar su proceso.
+Quit application	Team monitor		Salir de la aplicación
+Open Terminal	Team monitor		Abrir terminal
+{0, plural,one{Hold CONTROL+ALT+DELETE for # second to reboot.}other{Hold CONTROL+ALT+DELETE for # seconds to reboot.}}	Team monitor		{0, plural,one{Mantenga presionados CONTROL+ALT+SUPRIMIR durante # segundo para reiniciar.}other{Mantenga presionados CONTROL+ALT+SUPRIMIR durante # segundos para reiniciar.}}
+Restart the desktop	Team monitor		Reiniciar el escritorio
+Force reboot	Team monitor		Forzar reinicio
+Team monitor	Team monitor		Monitor de equipo
+Kill application	Team monitor		Matar aplicación
+Cancel	Team monitor		Cancelar
+(This team is a system component)	Team monitor		(Este equipo es un componente de sistema)

@@ -1,0 +1,219 @@
+rule SetupKernel
+{
+	# Usage SetupKernel <sources_or_objects> : <extra_cc_flags> : <include_private_headers> ;
+	#
+	# <sources_or_objects> - Ideally sources, otherwise HDRSEARCH can not be
+	#                        set for the sources and the sources some header
+	#                        dependencies might be missing.
+
+	local sources = [ FGristFiles $(1) ] ;
+	local objects = $(sources:S=$(SUFOBJ)) ;
+
+	# add private kernel headers
+	if $(3) != false {
+		SourceSysHdrs $(sources) : $(TARGET_PRIVATE_KERNEL_HEADERS) ;
+	}
+
+	local object ;
+	for object in $(objects) {
+		TARGET_PACKAGING_ARCH on $(object) = $(TARGET_KERNEL_ARCH) ;
+
+		# add kernel flags for the object
+		ObjectCcFlags $(object) : $(TARGET_KERNEL_CCFLAGS) $(2) ;
+		ObjectC++Flags $(object) : $(TARGET_KERNEL_C++FLAGS) $(2) ;
+		ObjectDefines $(object) : $(TARGET_KERNEL_DEFINES) ;
+
+		# override regular CCFLAGS/C++FLAGS, as we don't want them
+		TARGET_CCFLAGS_$(TARGET_KERNEL_ARCH) on $(object) = ;
+		TARGET_C++FLAGS_$(TARGET_KERNEL_ARCH) on $(object) = ;
+
+		# override warning flags
+		TARGET_WARNING_CCFLAGS_$(TARGET_PACKAGING_ARCH) on $(object)
+			= $(TARGET_KERNEL_WARNING_CCFLAGS) ;
+		TARGET_WARNING_C++FLAGS_$(TARGET_PACKAGING_ARCH) on $(object)
+			= $(TARGET_KERNEL_WARNING_C++FLAGS) ;
+	}
+}
+
+rule KernelObjects
+{
+	SetupKernel $(1) : $(2) ;
+	Objects $(1) ;
+}
+
+rule KernelLd
+{
+	# KernelLd <name> : <objs> : <linkerscript> : <args> ;
+
+	LINK on $(1) = $(TARGET_LD_$(HAIKU_KERNEL_ARCH)) ;
+
+	LINKFLAGS on $(1) = $(4) ;
+	if $(3) {
+		LINKFLAGS on $(1) += --script=$(3) ;
+		Depends $(1) : $(3) ;
+	}
+
+	# Remove any preset LINKLIBS, but link against libgcc.a. Linking against
+	# libsupc++ is opt-out.
+	local libs ;
+	if ! [ on $(1) return $(HAIKU_NO_LIBSUPC++) ] {
+		libs += [ TargetKernelLibsupc++ true ] ;
+		Depends $(1) : [ TargetKernelLibsupc++ ] ;
+	}
+	LINKLIBS on $(1) = $(libs) [ TargetKernelLibgcc true ] ;
+	Depends $(1) : [ TargetKernelLibgcc ] ;
+
+	HAIKU_TARGET_IS_EXECUTABLE on $(1) = 1 ;
+
+	# TODO: Do we really want to invoke SetupKernel here? The objects should
+	# have been compiled with KernelObjects anyway, so we're doing that twice.
+	SetupKernel $(2) ;
+
+	# Show that we depend on the libraries we need
+	LocalClean clean : $(1) ;
+	LocalDepends all : $(1) ;
+	Depends $(1) : $(2) ;
+
+	MakeLocateDebug $(1) ;
+
+	on $(1) XRes $(1) : $(RESFILES) ;
+	if ! [ on $(1) return $(DONT_USE_BEOS_RULES) ] {
+		SetType $(1) ;
+		MimeSet $(1) ;
+		SetVersion $(1) ;
+	}
+}
+
+actions KernelLd bind VERSION_SCRIPT
+{
+	$(LINK) $(LINKFLAGS) -o "$(1)" "$(2)" $(LINKLIBS) \
+		--version-script=$(VERSION_SCRIPT)
+}
+
+rule KernelSo target : source
+{
+	# KernelSo <target> : <source>
+
+	Depends $(target) : <build>copyattr $(source) ;
+
+	MakeLocateDebug $(1) ;
+	KernelSo1 $(target) : <build>copyattr $(source) ;
+}
+
+actions KernelSo1
+{
+	export $(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR)
+
+	$(2[1]) --data $(2[2]) $(1) &&
+	$(HAIKU_ELFEDIT_$(HAIKU_KERNEL_ARCH)) --output-type dyn $(1)
+}
+
+rule KernelAddon
+{
+	# KernelAddon <name> : <sources> : <static-libraries> : <res> ;
+	#
+	local target = $(1) ;
+	local sources = $(2) ;
+	local libs = $(3) ;
+	AddResources $(1) : $(4) ;
+
+	TARGET_PACKAGING_ARCH on $(target) = $(TARGET_KERNEL_ARCH) ;
+
+	local kernel ;
+	local beginGlue ;
+	local endGlue ;
+	on $(target) {
+		# platform supported?
+		if ! $(PLATFORM) in $(SUPPORTED_PLATFORMS) {
+			return ;
+		}
+
+		# determine which kernel and glue code to link against
+		if $(PLATFORM) = haiku {
+			kernel = <nogrist>kernel.so ;
+			beginGlue = $(HAIKU_KERNEL_ADDON_BEGIN_GLUE_CODE) ;
+			endGlue
+				= [ TargetKernelLibgcc ] $(HAIKU_KERNEL_ADDON_END_GLUE_CODE) ;
+		} else if $(PLATFORM) = haiku_host {
+			kernel = /boot/develop/lib/x86/kernel.so ;
+			beginGlue = $(HAIKU_KERNEL_ADDON_BEGIN_GLUE_CODE) ;
+			endGlue = $(HAIKU_KERNEL_ADDON_END_GLUE_CODE) ;
+		} else {
+			kernel = /boot/develop/lib/x86/_KERNEL_ ;
+		}
+	}
+
+	# add glue code
+	LINK_BEGIN_GLUE on $(target) = $(beginGlue) ;
+	LINK_END_GLUE on $(target) = $(endGlue) ;
+	Depends $(target) : $(beginGlue) $(endGlue) ;
+
+	# compile and link
+	SetupKernel $(sources) : : false ;
+	local linkFlags = -shared -nostdlib -Xlinker --no-undefined
+		-Xlinker -soname=\"$(target:G=)\" $(TARGET_KERNEL_ADDON_LINKFLAGS) ;
+	LINKFLAGS on $(target) = [ on $(target) return $(LINKFLAGS) ] $(linkFlags) ;
+	Main $(target) : $(sources) ;
+	LinkAgainst $(target) : $(libs) $(kernel) ;
+}
+
+rule KernelMergeObject
+{
+	# KernelMergeObject <name> : <sources> : <extra CFLAGS> : <other objects> ;
+	# Compiles source files and merges the object files to an object file.
+	# <name>: Name of the object file to create. No grist will be added.
+	# <sources>: Sources to be compiled. Grist will be added.
+	# <extra CFLAGS>: Additional flags for compilation.
+	# <other objects>: Object files or static libraries to be merged. No grist
+	#                  will be added.
+	#
+
+	TARGET_PACKAGING_ARCH on $(1) = $(TARGET_KERNEL_ARCH) ;
+
+	SetupKernel $(2) : $(3) ;
+	Objects $(2) ;
+	MergeObjectFromObjects $(1) : $(2:S=$(SUFOBJ)) : $(4) ;
+}
+
+rule KernelStaticLibrary
+{
+	# KernelStaticLibrary <name> : <sources> : <extra cc flags> ;
+	# This is designed to take a set of sources and libraries and create
+	# a static library.
+	local extraFlags = $(3) ;
+
+	TARGET_PACKAGING_ARCH on $(1) = $(TARGET_KERNEL_ARCH) ;
+
+	if $(TARGET_CC_IS_LEGACY_GCC_$(TARGET_KERNEL_ARCH)) = 0
+			&& [ on $(1) return $(NO_HIDDEN_VISIBILITY) ] != 1 {
+		extraFlags += -fvisibility=hidden ;
+	}
+
+	SetupKernel $(2) : $(extraFlags) : false ;
+	Library $(1) : $(2) ;
+}
+
+rule KernelStaticLibraryObjects
+{
+	# Usage KernelStaticLibrary <name> : <sources> ;
+	# This is designed to take a set of sources and libraries and create
+	# a file called <name>
+
+	TARGET_PACKAGING_ARCH on $(1) = $(TARGET_KERNEL_ARCH) ;
+
+	# Show that we depend on the libraries we need
+	SetupKernel $(2) ;
+	LocalClean clean : $(1) ;
+	LocalDepends all : $(1) ;
+	Depends $(1) : $(2) ;
+
+	MakeLocateDebug $(1) ;
+}
+
+actions KernelStaticLibraryObjects
+{
+	# Force recreation of the archive to avoid build errors caused by
+	# stale dependencies after renaming or deleting object files.
+	$(RM) "$(1)"
+	$(HAIKU_AR_$(HAIKU_KERNEL_ARCH)) -r "$(1)" "$(2)" ;
+}

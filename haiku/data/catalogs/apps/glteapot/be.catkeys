@@ -1,0 +1,23 @@
+1	belarusian	x-vnd.Haiku-GLTeapot	400822745
+Right	TeapotWindow		Зправа
+Backface culling	TeapotWindow		Адкідаць заднія
+Add a teapot	TeapotWindow		Дадаць чайнік
+Yellow	TeapotWindow		Жоўты
+Perspective	TeapotWindow		Перспектыва
+Off	TeapotWindow		Выключыць
+Quit	TeapotWindow		Выйсці
+Green	TeapotWindow		Зялёны
+Blue	TeapotWindow		Блакітны
+White	TeapotWindow		Белы
+Upper center	TeapotWindow		Зверху
+Filled polygons	TeapotWindow		Запоўненыя палігоны
+Lower left	TeapotWindow		Знізу злева
+Fog	TeapotWindow		Туман
+FPS display	TeapotWindow		Паказваць ФПС
+GLTeapot	System name		GL Чайнік
+Settings	TeapotWindow		Наладкі
+Gouraud shading	TeapotWindow		Адценне Gouraud
+Lighting	TeapotWindow		Падсветка
+Z-buffered	TeapotWindow		Z-буферызаваны
+Red	TeapotWindow		Чырвоны
+Lights	TeapotWindow		Ліхтары

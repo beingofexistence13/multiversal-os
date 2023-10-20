@@ -1,0 +1,629 @@
+.\"
+.\" Copyright (c) 2006, 2007
+.\"	The DragonFly Project.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\" 3. Neither the name of The DragonFly Project nor the names of its
+.\"    contributors may be used to endorse or promote products derived
+.\"    from this software without specific, prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+.\" FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+.\" COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING,
+.\" BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+.\" AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+.\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+.\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd September 7, 2021
+.Dt VKERNEL 7
+.Os
+.Sh NAME
+.Nm vkernel ,
+.Nm vcd ,
+.Nm vkd ,
+.Nm vke
+.Nd virtual kernel architecture
+.Sh SYNOPSIS
+.Cd "platform vkernel64 # for 64 bit vkernels"
+.Cd "device vcd"
+.Cd "device vkd"
+.Cd "device vke"
+.Pp
+.Pa /var/vkernel/boot/kernel/kernel
+.Op Fl hstUvz
+.Op Fl c Ar file
+.Op Fl e Ar name Ns = Ns Li value : Ns Ar name Ns = Ns Li value : Ns ...
+.Op Fl i Ar file
+.Op Fl I Ar interface Ns Op Ar :address1 Ns Oo Ar :address2 Oc Ns Oo Ar /netmask Oc Ns Oo Ar =mac Oc
+.Op Fl l Ar cpulock
+.Op Fl m Ar size
+.Op Fl n Ar numcpus Ns Op Ar :lbits Ns Oo Ar :cbits Oc
+.Op Fl p Ar pidfile
+.Op Fl r Ar file Ns Op Ar :serno
+.Op Fl R Ar file Ns Op Ar :serno
+.Sh DESCRIPTION
+The
+.Nm
+architecture allows for running
+.Dx
+kernels in userland.
+.Pp
+The following options are available:
+.Bl -tag -width ".Fl m Ar size"
+.It Fl c Ar file
+Specify a readonly CD-ROM image
+.Ar file
+to be used by the kernel, with the first
+.Fl c
+option defining
+.Li vcd0 ,
+the second one
+.Li vcd1 ,
+and so on.
+The first
+.Fl r ,
+.Fl R ,
+or
+.Fl c
+option specified on the command line will be the boot disk.
+The CD9660 filesystem is assumed when booting from this media.
+.It Fl e Ar name Ns = Ns Li value : Ns Ar name Ns = Ns Li value : Ns ...
+Specify an environment to be used by the kernel.
+This option can be specified more than once.
+.It Fl h
+Shows a list of available options, each with a short description.
+.It Fl i Ar file
+Specify a memory image
+.Ar file
+to be used by the virtual kernel.
+If no
+.Fl i
+option is given, the kernel will generate a name of the form
+.Pa /var/vkernel/memimg.XXXXXX ,
+with the trailing
+.Ql X Ns s
+being replaced by a sequential number, e.g.\&
+.Pa memimg.000001 .
+.It Fl I Ar interface Ns Op Ar :address1 Ns Oo Ar :address2 Oc Ns Oo Ar /netmask Oc Ns Oo Ar =MAC Oc
+Create a virtual network device, with the first
+.Fl I
+option defining
+.Li vke0 ,
+the second one
+.Li vke1 ,
+and so on.
+.Pp
+The
+.Ar interface
+argument is the name of a
+.Xr tap 4
+device node or the path to a
+.Xr vknetd 8
+socket.
+The
+.Pa /dev/
+path prefix does not have to be specified and will be automatically prepended
+for a device node.
+Specifying
+.Cm auto
+will pick the first unused
+.Xr tap 4
+device.
+.Pp
+The
+.Ar address1
+and
+.Ar address2
+arguments are the IP addresses of the
+.Xr tap 4
+and
+.Nm vke
+interfaces.
+Optionally,
+.Ar address1
+may be of the form
+.Li bridge Ns Em X
+in which case the
+.Xr tap 4
+interface is added to the specified
+.Xr bridge 4
+interface.
+The
+.Nm vke
+address is not assigned until the interface is brought up in the guest.
+.Pp
+The
+.Ar netmask
+argument applies to all interfaces for which an address is specified.
+.Pp
+The
+.Ar MAC
+argument is the MAC address of the
+.Xr vke 4
+interface.
+If not specified, a pseudo-random one will be generated.
+.Pp
+When running multiple vkernels it is often more convenient to simply
+connect to a
+.Xr vknetd 8
+socket and let vknetd deal with the tap and/or bridge.
+An example of this would be
+.Pa /var/run/vknet:0.0.0.0:10.2.0.2/16 .
+.It Fl l Ar cpulock
+Specify which, if any, real CPUs to lock virtual CPUs to.
+.Ar cpulock
+is one of
+.Cm any ,
+.Cm map Ns Op , Ns Ar startCPU ,
+or
+.Ar CPU .
+.Pp
+.Cm any
+does not map virtual CPUs to real CPUs.
+This is the default.
+.Pp
+.Cm map Ns Op , Ns Ar startCPU
+maps each virtual CPU to a real CPU starting with real CPU 0 or
+.Ar startCPU
+if specified.
+.Pp
+.Ar CPU
+locks all virtual CPUs to the real CPU specified by
+.Ar CPU .
+.Pp
+Locking the vkernel to a set of cpus is recommended on multi-socket systems
+to improve NUMA locality of reference.
+.It Fl m Ar size
+Specify the amount of memory to be used by the kernel in bytes,
+.Cm K
+.Pq kilobytes ,
+.Cm M
+.Pq megabytes
+or
+.Cm G
+.Pq gigabytes .
+Lowercase versions of
+.Cm K , M ,
+and
+.Cm G
+are allowed.
+.It Fl n Ar numcpus Ns Op Ar :lbits Ns Oo Ar :cbits Oc
+.Ar numcpus
+specifies the number of CPUs you wish to emulate.
+Up to 16 CPUs are supported with 2 being the default unless otherwise
+specified.
+.Pp
+.Ar lbits
+specifies the number of bits within APICID(=CPUID) needed for representing
+the logical ID.
+Controls the number of threads/core (0 bits - 1 thread, 1 bit - 2 threads).
+This parameter is optional (mandatory only if
+.Ar cbits
+is specified).
+.Pp
+.Ar cbits
+specifies the number of bits within APICID(=CPUID) needed for representing
+the core ID.
+Controls the number of core/package (0 bits - 1 core, 1 bit - 2 cores).
+This parameter is optional.
+.It Fl p Ar pidfile
+Specify a pidfile in which to store the process ID.
+Scripts can use this file to locate the vkernel pid for the purpose of
+shutting down or killing it.
+.Pp
+The vkernel will hold a lock on the pidfile while running.
+Scripts may test for the lock to determine if the pidfile is valid or
+stale so as to avoid accidentally killing a random process.
+Something like '/usr/bin/lockf -ks -t 0 pidfile echo -n' may be used
+to test the lock.
+A non-zero exit code indicates that the pidfile represents a running
+vkernel.
+.Pp
+An error is issued and the vkernel exits if this file cannot be opened for
+writing or if it is already locked by an active vkernel process.
+.It Fl r Ar file Ns Op Ar :serno
+Specify a R/W disk image
+.Ar file
+to be used by the kernel, with the first
+.Fl r
+option defining
+.Li vkd0 ,
+the second one
+.Li vkd1 ,
+and so on.
+A serial number for the virtual disk can be specified in
+.Ar serno .
+.Pp
+The first
+.Fl r
+or
+.Fl c
+option specified on the command line will be the boot disk.
+.It Fl R Ar file Ns Op Ar :serno
+Works like
+.Fl r
+but treats the disk image as copy-on-write.  This allows
+a private copy of the image to be modified but does not
+modify the image file.  The image file will not be locked
+in this situation and multiple vkernels can run off the
+same image file if desired.
+.Pp
+Since modifications are thrown away, any data you wish
+to retain across invocations needs to be exported over
+the network prior to shutdown.
+This gives you the flexibility to mount the disk image
+either read-only or read-write depending on what is
+convenient.
+However, keep in mind that when mounting a COW image
+read-write, modifications will eat system memory and
+swap space until the vkernel is shut down.
+.It Fl s
+Boot into single-user mode.
+.It Fl t
+Tell the vkernel to use a precise host timer when calculating clock values.
+If the TSC isn't used, this will impose higher overhead on the vkernel as it
+will have to make a system call to the real host every time it wants to get
+the time.
+However, the more precise timer might be necessary for your application.
+.Pp
+By default, the vkernel uses the TSC cpu timer if possible, or an imprecise
+(host-tick-resolution) timer which uses a user-mapped kernel page and does
+not have any syscall overhead.
+To disable the TSC cpu timer, use the
+.Fl e Ar hw.tsc_cputimer_enable=0
+flag.
+.It Fl U
+Enable writing to kernel memory and module loading.
+By default, those are disabled for security reasons.
+.It Fl v
+Turn on verbose booting.
+.It Fl z
+Force the vkernel's ram to be pre-zerod.  Useful for benchmarking on
+single-socket systems where the memory allocation does not have to be
+NUMA-friendly.
+This options is not recommended on multi-socket systems or when the
+.Fl l
+option is used.
+.El
+.Sh DEVICES
+A number of virtual device drivers exist to supplement the virtual kernel.
+.Ss Disk device
+The
+.Nm vkd
+driver allows for up to 16
+.Xr vn 4
+based disk devices.
+The root device will be
+.Li vkd0
+(see
+.Sx EXAMPLES
+for further information on how to prepare a root image).
+.Ss CD-ROM device
+The
+.Nm vcd
+driver allows for up to 16 virtual CD-ROM devices.
+Basically this is a read only
+.Nm vkd
+device with a block size of 2048.
+.Ss Network interface
+The
+.Nm vke
+driver supports up to 16 virtual network interfaces which are associated with
+.Xr tap 4
+devices on the host.
+For each
+.Nm vke
+device, the per-interface read only
+.Xr sysctl 3
+variable
+.Va hw.vke Ns Em X Ns Va .tap_unit
+holds the unit number of the associated
+.Xr tap 4
+device.
+.Pp
+By default, half of the total mbuf clusters available is distributed equally
+among all the vke devices up to 256.
+This can be overridden with the tunable
+.Va hw.vke.max_ringsize .
+Take into account the number passed will be aligned to the lower power of two.
+.Sh SIGNALS
+The virtual kernel only enables
+.Dv SIGQUIT
+and
+.Dv SIGTERM
+while operating in regular console mode.
+Sending
+.Ql \&^\e
+.Pq Dv SIGQUIT
+to the virtual kernel causes the virtual kernel to enter its internal
+.Xr ddb 4
+debugger and re-enable all other terminal signals.
+Sending
+.Dv SIGTERM
+to the virtual kernel triggers a clean shutdown by passing a
+.Dv SIGUSR2
+to the virtual kernel's
+.Xr init 8
+process.
+.Sh DEBUGGING
+It is possible to directly gdb the virtual kernel's process.
+It is recommended that you do a
+.Ql handle SIGSEGV noprint
+to ignore page faults processed by the virtual kernel itself and
+.Ql handle SIGUSR1 noprint
+to ignore signals used for simulating inter-processor interrupts.
+.Sh FILES
+.Bl -tag -width ".It Pa /sys/config/VKERNEL64" -compact
+.It Pa /dev/vcdX
+.Nm vcd
+device nodes
+.It Pa /dev/vkdX
+.Nm vkd
+device nodes
+.It Pa /sys/config/VKERNEL64
+.El
+.Pp
+.Nm
+configuration file, for
+.Xr config 8 .
+.Sh CONFIGURATION FILES
+Your virtual kernel is a complete
+.Dx
+system, but you might not want to run all the services a normal kernel runs.
+Here is what a typical virtual kernel's
+.Pa /etc/rc.conf
+file looks like, with some additional possibilities commented out.
+.Bd -literal
+hostname="vkernel"
+network_interfaces="lo0 vke0"
+ifconfig_vke0="DHCP"
+sendmail_enable="NO"
+#syslog_enable="NO"
+blanktime="NO"
+.Ed
+.Sh BOOT DRIVE SELECTION
+You can override the default boot drive selection and filesystem
+using a kernel environment variable.  Note that the filesystem
+selected must be compiled into the vkernel and not loaded as
+a module.  You need to escape some quotes around the variable data
+to avoid mis-interpretation of the colon in the
+.Fl e
+option.  For example:
+.Pp
+.Fl e
+vfs.root.mountfrom=\\"hammer:vkd0s1d\\"
+.Sh DISKLESS OPERATION
+To boot a
+.Nm
+from a NFS root, a number of tunables need to be set:
+.Bl -tag -width indent
+.It Va boot.netif.ip
+IP address to be set in the vkernel interface.
+.It Va boot.netif.netmask
+Netmask for the IP to be set.
+.It Va boot.netif.name
+Network interface name inside the vkernel.
+.It Va boot.nfsroot.server
+Host running
+.Xr nfsd 8 .
+.It Va boot.nfsroot.path
+Host path where a world and distribution
+targets are properly installed.
+.El
+.Pp
+See an example on how to boot a diskless
+.Nm
+in the
+.Sx EXAMPLES
+section.
+.Sh EXAMPLES
+A couple of steps are necessary in order to prepare the system to build and
+run a virtual kernel.
+.Ss Setting up the filesystem
+The
+.Nm
+architecture needs a number of files which reside in
+.Pa /var/vkernel .
+Since these files tend to get rather big and the
+.Pa /var
+partition is usually of limited size, we recommend the directory to be
+created in the
+.Pa /home
+partition with a link to it in
+.Pa /var :
+.Bd -literal
+mkdir -p /home/var.vkernel/boot
+ln -s /home/var.vkernel /var/vkernel
+.Ed
+.Pp
+Next, a filesystem image to be used by the virtual kernel has to be
+created and populated (assuming world has been built previously).
+If the image is created on a UFS filesystem you might want to pre-zero it.
+On a HAMMER filesystem you should just truncate-extend to the image size
+as HAMMER does not re-use data blocks already present in the file.
+.Bd -literal
+vnconfig -c -S 2g -T vn0 /var/vkernel/rootimg.01
+disklabel -r -w vn0s0 auto
+disklabel -e vn0s0	# add `a' partition with fstype `4.2BSD'
+newfs /dev/vn0s0a
+mount /dev/vn0s0a /mnt
+cd /usr/src
+make installworld DESTDIR=/mnt
+cd etc
+make distribution DESTDIR=/mnt
+echo '/dev/vkd0s0a	/	ufs	rw	1  1' >/mnt/etc/fstab
+echo 'proc		/proc	procfs	rw	0  0' >>/mnt/etc/fstab
+.Ed
+.Pp
+Edit
+.Pa /mnt/etc/ttys
+and replace the
+.Li console
+entry with the following line and turn off all other gettys.
+.Bd -literal
+console	"/usr/libexec/getty Pc"		cons25	on  secure
+.Ed
+.Pp
+Replace
+.Li \&Pc
+with
+.Li al.Pc
+if you would like to automatically log in as root.
+.Pp
+Then, unmount the disk.
+.Bd -literal
+umount /mnt
+vnconfig -u vn0
+.Ed
+.Ss Compiling the virtual kernel
+In order to compile a virtual kernel use the
+.Li VKERNEL64
+kernel configuration file residing in
+.Pa /sys/config
+(or a configuration file derived thereof):
+.Bd -literal
+cd /usr/src
+make -DNO_MODULES buildkernel KERNCONF=VKERNEL64
+make -DNO_MODULES installkernel KERNCONF=VKERNEL64 DESTDIR=/var/vkernel
+.Ed
+.Ss Enabling virtual kernel operation
+A special
+.Xr sysctl 8 ,
+.Va vm.vkernel_enable ,
+must be set to enable
+.Nm
+operation:
+.Bd -literal
+sysctl vm.vkernel_enable=1
+.Ed
+.Ss Configuring the network on the host system
+In order to access a network interface of the host system from the
+.Nm ,
+you must add the interface to a
+.Xr bridge 4
+device which will then be passed to the
+.Fl I
+option:
+.Bd -literal
+kldload if_bridge.ko
+kldload if_tap.ko
+ifconfig bridge0 create
+ifconfig bridge0 addm re0	# assuming re0 is the host's interface
+ifconfig bridge0 up
+.Ed
+.Ss Running the kernel
+Finally, the virtual kernel can be run:
+.Bd -literal
+cd /var/vkernel
+\&./boot/kernel/kernel -m 1g -r rootimg.01 -I auto:bridge0
+.Ed
+.Pp
+You can issue the
+.Xr reboot 8 ,
+.Xr halt 8 ,
+or
+.Xr shutdown 8
+commands from inside a virtual kernel.
+After doing a clean shutdown the
+.Xr reboot 8
+command will re-exec the virtual kernel binary while the other two will
+cause the virtual kernel to exit.
+.Ss Diskless operation (vkernel as a NFS client)
+Booting a
+.Nm
+with a
+.Xr vknetd 8
+network configuration.  The line continuation backslashes have been
+omitted.  For convenience and to reduce confusion I recommend mounting
+the server's remote vkernel root onto the host running the vkernel binary
+using the same path as the NFS mount.  It is assumed that a full system
+install has been made to /var/vkernel/root using a kernel KERNCONF=VKERNEL64
+for the kernel build.
+.Bd -literal
+\&/var/vkernel/root/boot/kernel/kernel
+	-m 1g -n 4 -I /var/run/vknet
+	-e boot.netif.ip=10.100.0.2
+	-e boot.netif.netmask=255.255.0.0
+	-e boot.netif.gateway=10.100.0.1
+	-e boot.netif.name=vke0
+	-e boot.nfsroot.server=10.0.0.55
+	-e boot.nfsroot.path=/var/vkernel/root
+.Ed
+.Pp
+In this example vknetd is assumed to have been started as shown below, before
+running the vkernel, using an unbridged TAP configuration routed through
+the host.
+IP forwarding must be turned on, and in this example the server resides
+on a different network accessible to the host executing the vkernel but not
+directly on the vkernel's subnet.
+.Bd -literal
+kldload if_tap
+sysctl net.inet.ip.forwarding=1
+vknetd -t tap0 10.100.0.1/16
+.Ed
+.Pp
+You can run multiple vkernels trivially with the same NFS root as long as
+you assign each one a different IP on the subnet (2, 3, 4, etc).  You
+should also be careful with certain directories, particularly /var/run
+and possibly also /var/db depending on what your vkernels are going to be
+doing.
+This can complicate matters with /var/db/pkg.
+.Sh BUILDING THE WORLD UNDER A VKERNEL
+The virtual kernel platform does not have all the header files expected
+by a world build, so the easiest thing to do right now is to specify a
+pc64 (in a 64 bit vkernel) target when building the world under a virtual
+kernel, like this:
+.Bd -literal
+vkernel# make MACHINE_PLATFORM=pc64 buildworld
+vkernel# make MACHINE_PLATFORM=pc64 installworld
+.Ed
+.Sh SEE ALSO
+.Xr vknet 1 ,
+.Xr bridge 4 ,
+.Xr ifmedia 4 ,
+.Xr tap 4 ,
+.Xr vn 4 ,
+.Xr sysctl.conf 5 ,
+.Xr build 7 ,
+.Xr config 8 ,
+.Xr disklabel 8 ,
+.Xr ifconfig 8 ,
+.Xr vknetd 8 ,
+.Xr vnconfig 8
+.Rs
+.%A Aggelos Economopoulos
+.%D March 2007
+.%T "A Peek at the DragonFly Virtual Kernel"
+.Re
+.Sh HISTORY
+Virtual kernels were introduced in
+.Dx 1.7 .
+.Sh AUTHORS
+.An -nosplit
+.An Matt Dillon
+thought up and implemented the
+.Nm
+architecture and wrote the
+.Nm vkd
+device driver.
+.An Sepherosa Ziehau
+wrote the
+.Nm vke
+device driver.
+This manual page was written by
+.An Sascha Wildner .

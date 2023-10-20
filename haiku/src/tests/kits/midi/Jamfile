@@ -1,0 +1,6 @@
+SubDir HAIKU_TOP src tests kits midi ;
+
+SimpleTest miditest1 : test1.cpp : libmidi.so be stdc++.r4 ;
+
+SubInclude HAIKU_TOP src tests kits midi synth_file_reader ;
+

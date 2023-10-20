@@ -1,0 +1,58 @@
+
+os=$(uname)
+
+case $os in
+	FreeBSD)	libdl=;;
+	Linux)		libdl=-ldl;;
+	Haiku)		libdl=;;
+	*)			echo "Unsupported OS: $os"; exit 1;;
+esac
+
+testdir=${testdir-testdir}/$(basename $0)
+
+rm -rf $testdir
+mkdir -p $testdir
+cd $testdir
+
+# test_run_ok <program> <expected return value>
+test_run_ok()
+{
+	# exists?
+	if [ ! -f $1 ]; then
+		exit 1
+	fi
+
+	case $os in
+		FreeBSD|Linux)	export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH;;
+		Haiku)		export LIBRARY_PATH=.:$LIBRARY_PATH;;
+		*)			echo "Unsupported OS: $os"; exit 1;;
+	esac
+
+	# run
+	$1
+	retval=$?
+	if [ $retval != $2 ]; then
+		echo "test_run_ok: $1: return value: $retval, expected: $2"
+		exit 1
+	fi
+}
+
+compile_lib()
+{
+	gcc -shared -Wl,--no-as-needed -D_GNU_SOURCE -fPIC $@
+}
+
+compile_lib_dl()
+{
+	compile_lib $@ $libdl
+}
+
+compile_program()
+{
+	gcc -Wl,--no-as-needed $@ -D_GNU_SOURCE -Wl,-rpath,.,--export-dynamic
+}
+
+compile_program_dl()
+{
+	compile_program $@ $libdl
+}

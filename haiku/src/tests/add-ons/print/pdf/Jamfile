@@ -1,0 +1,4 @@
+SubDir HAIKU_TOP src tests add-ons print pdf ;
+
+SubInclude HAIKU_TOP src tests add-ons print pdf bezierbounds ;
+SubInclude HAIKU_TOP src tests add-ons print pdf linepathbuilder ;

@@ -1,0 +1,156 @@
+#!/bin/bash
+#
+# A quick standard test of Haiku booting under qemu in various configurations
+#
+# Example usages:
+#   x86_64 bios
+#     ../src/tests/qemu-boot-test x86_64 bios haiku-nightly-anyboot.iso
+#   x86_64 efi
+#     ../src/tests/qemu-boot-test x86_64 efi haiku-nightly-anyboot.iso
+#   riscv64 opensbi  w/u-boot payload
+#     ../src/tests/qemu-boot-test riscv64 kernel:~/Code/firmware/u-boot/riscv64/qemu/u-boot.bin haiku-mmc.image
+
+if [ $# -lt 3 ]; then
+	echo "Usage: $0 <arch> <bios|efi|bios:(file)|kernel:(file)> <image>"
+	exit 1;
+fi
+
+ARCH=$1
+PLATFORM=$2
+IMAGE=$3
+EMULATOR=qemu-system-$ARCH
+EXTRAS="-parallel none"
+
+function check_logs {
+	echo "=============================================="
+	FILE=$1
+	echo -n "    Haiku kernel loaded: "
+	# First output from kernel on boot
+	if grep -q "Welcome to kernel debugger output" $FILE; then
+		echo "YES"
+	else
+		echo "NO"
+	fi
+	# Checking for a KDL
+	echo -n "    Potential KDL Detected: "
+	if grep -q "kdebug>" $FILE; then
+		echo "YES"
+	else
+		echo "NO"
+	fi
+	echo "=============================================="
+	echo "    Summary of issues in logs:"
+	grep -E -i "FATAL|ERROR|FAIL|GDB" $FILE | grep -vi " No error" | cut -d':' -f1 | sort | uniq -c | sort -nr
+	echo "=============================================="
+	echo "    Potential issues in logs:"
+	grep -E -i "FATAL|ERROR|FAIL|GDB" $FILE | grep -vi " No error"
+	echo "=============================================="
+}
+
+case "$PLATFORM" in
+bios)
+	EXTRAS="$EXTRAS"
+	;;
+efi)
+	eval BIOS="${EFI_BIOS}:-/usr/share/edk2/ovmf/OVMF_CODE.fd"
+	EXTRAS="$EXTRAS -bios $QEMU_BIOS"
+	;;
+bios:*)
+	eval BIOS=$(echo "$PLATFORM" | cut -d":" -f2)
+	EXTRAS="$EXTRAS -bios $BIOS"
+	;;
+kernel:*)
+	eval BIOS=$(echo "$PLATFORM" | cut -d":" -f2)
+	EXTRAS="$EXTRAS -kernel $BIOS"
+	;;
+*)
+	EXTRAS="$EXTRAS"
+	;;
+esac
+
+echo "We're going to step through the potential boot options for $ARCH under qemu"
+echo ""
+echo -n "Press enter to begin..."
+read
+
+TEST_SERIALLOG="/tmp/test-$ARCH-serial.mon"
+NETWORK="-netdev user,id=testnet,net=192.168.76.0/24,dhcpstart=192.168.76.9,hostfwd=tcp::5555-:22"
+#NETWORK="-netdev tap,id=testnet,ifname=Ethernet"
+EXTRAS="$EXTRAS $NETWORK -chardev vc,id=serial,logfile=$TEST_SERIALLOG,signal=off -serial chardev:serial"
+> $TEST_SERIALLOG
+
+case "$ARCH" in
+"x86" | "x86_64")
+	MEMORY=2048
+	TEST_FILE="/tmp/test-$ARCH.iso"
+	EMULATOR="$EMULATOR --enable-kvm -m $MEMORY $EXTRAS"
+	rm -f $TEST_FILE
+
+	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "+++ Testing $PLATFORM CDROM boot..."
+	cp $IMAGE $TEST_FILE
+	$EMULATOR -cdrom $TEST_FILE
+	check_logs $TEST_SERIALLOG
+	rm -f $TEST_FILE $TEST_SERIALLOG
+
+	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "+++ Testing $PLATFORM IDE boot..."
+	cp $IMAGE $TEST_FILE
+	$EMULATOR -drive file=$TEST_FILE,format=raw,if=ide
+	check_logs $TEST_SERIALLOG
+	rm -f $TEST_FILE $TEST_SERIALLOG
+
+	echo "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "+++ Testing $PLATFORM USB boot..."
+	cp $IMAGE $TEST_FILE
+	$EMULATOR -drive if=none,id=stick,file=$TEST_FILE,format=raw -device qemu-xhci,id=xhci -device usb-storage,bus=xhci.0,drive=stick
+	check_logs $TEST_SERIALLOG
+	rm -f $TEST_FILE $TEST_SERIALLOG
+    ;;
+"arm64")
+	EMULATOR=qemu-system-aarch64
+	MEMORY=2048
+	TEST_FILE="/tmp/test-$ARCH.mmu"
+	EMULATOR="$EMULATOR -m $MEMORY -M virt $EXTRAS"
+	rm -f $TEST_FILE $TEST_SERIALLOG
+
+	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "+++ Testing $PLATFORM boot..."
+	cp $IMAGE $TEST_FILE
+	$EMULATOR \
+		-cpu max \
+		-global virtio-mmio.force-legacy=false \
+		-device qemu-xhci -device usb-tablet -device usb-kbd \
+		-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0 \
+		-device virtio-net-device,netdev=testnet,bus=virtio-mmio-bus.1 \
+		-drive file=$TEST_FILE,format=raw,if=none,id=x0
+	check_logs $TEST_SERIALLOG
+	rm -f $TEST_FILE $TEST_SERIALLOG
+	;;
+"riscv64")
+	MEMORY=2048
+	TEST_FILE="/tmp/test-$ARCH.mmu"
+	EMULATOR="$EMULATOR -m $MEMORY -M virt $EXTRAS"
+	rm -f $TEST_FILE $TEST_SERIALLOG
+
+	echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+	echo "+++ Testing $PLATFORM boot..."
+	cp $IMAGE $TEST_FILE
+	# virtio broken currently for input:
+	#  -device virtio-tablet-device,bus=virtio-mmio-bus.2
+	#  -device virtio-keyboard-device,bus=virtio-mmio-bus.3
+	# Network communication doesn't work:
+	#  -device virtio-net-device,netdev=testnet,bus=virtio-mmio-bus.1 \
+	$EMULATOR -device ati-vga \
+		-global virtio-mmio.force-legacy=false \
+		-device qemu-xhci -device usb-tablet -device usb-kbd \
+		-device virtio-blk-device,drive=x0,bus=virtio-mmio-bus.0 \
+		-device usb-net,netdev=testnet \
+		-drive file=$TEST_FILE,format=raw,if=none,id=x0
+	check_logs $TEST_SERIALLOG
+	rm -f $TEST_FILE $TEST_SERIALLOG
+	;;
+*)
+	echo "Error: Unknown architecture!"
+    ;;
+esac

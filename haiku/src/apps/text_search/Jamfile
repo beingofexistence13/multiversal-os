@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src apps text_search ;
+
+UsePrivateHeaders shared ;
+UsePrivateHeaders storage ;
+
+Application TextSearch :
+	ChangesIterator.cpp
+	FileIterator.cpp
+	InitialIterator.cpp
+	GrepApp.cpp
+	GrepListView.cpp
+	Grepper.cpp
+	GrepWindow.cpp
+	Model.cpp
+	TextSearch.cpp
+	: be localestub tracker textencoding shared
+		[ TargetLibsupc++ ]
+	: TextSearch.rdef
+;
+
+DoCatalogs TextSearch :
+	x-vnd.Haiku.TextSearch
+	:
+	GrepWindow.cpp
+	Grepper.cpp
+;

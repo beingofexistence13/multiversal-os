@@ -1,0 +1,84 @@
+<html>
+<head>
+<title>Changes</title>
+</head>
+<body>
+<p><h2>Changes done for each driverversion:</h2></p>
+<p><h1>head (svn 0.14, Rudolf)</h1></p>
+<ul>
+<li>Added capability to driver to run without an INT assigned. Driver will now automatically disable the 'Sync_to_Retrace' function if no INT was assigned instead of not loading/running at all;<br>
+<strong>Note please:</strong>
+<ul>
+ <li>The retrace semaphore is always disabled yet due to lack of specs for interrupt handling.
+</ul>
+<li>Several ProposeMode updates and fixes making the Neomagic driver better compatible with Dualhead Setup 0.04 (although this driver doesn't support dualhead and TVout yet);
+<li>The overlay engine code now respects the B_OVERLAY_COLOR_KEY flag instead of forcing keying ON;
+<li>Hook GET_ACCELERANT_DEVICE_INFO now returns much more detailed info about the card in use;
+<li>Hooks INIT_ACCELERANT and CLONE_ACCELERANT now enforce their correct use; returning error B_NOT_ALLOWED in case of errors.
+</ul>
+<p><h1>nm_driver 0.11 (Rudolf)</h1></p>
+<ul>
+	<li>Added full 2D acceleration for all remaining cards that did not have that yet with this driver (still largely untested);
+	<li>Fixed a long standing problem with MagicMedia (all NM2200 and later) cards with overlay: buffer width is programmed correctly now. Can't believe I didn't see that before!
+	<li>Updated NM2200 and later cards workspace virtualsize restrictions for accelerated modes: it turns out these cards engines have the same restrictions as most older ones, being 1600x1024 resolution;
+	<li>Updated overlay scaling restrictions: officially the cards support upto and including 8x upscaling;
+	<li>Fixed error regarding calculating overlay engine register value for right-clipping video output: on NM2200 and later this was (probably) responsible for the big-time output distortions even without clipping!
+	<li>Fixed BIOS ROM dump (to file) option;
+	<li>Fixed GET_TIMING_CONSTRAINTS and GET_ACCELERANT_DEVICE_INFO accelerant hooks to return valid data; updated modeline checking and modification code (used by ProposeDisplayMode) to adhere to one more timing constraint;
+	<li>Added move_overlay() so overlay (finally) works correctly in virtualscreens.
+</ul>
+<p><h1>nm_driver 0.06 (Rudolf)</h1></p>
+<ul>
+	<li>Updated modelist to include one more suggested mode for 800x600 resolution: Done by Andrew Bachmann;
+	<li>CRTC timing restriction checking updated: Modelists exported adhere to every cards max. CRTC capability now: the oldest cards support upto and including 1024x1000, while the newest cards support upto and including 1280x1024 resolution;
+	<li>Kernel driver now signals abort on not being able to setup the INT routine instead of letting the machine freeze during accelerant initialisation;
+	<li>BWindowScreen R3-style function update for acceleration (once setup) and page flipping/virtualscreens in apps ('Allegro' update): fixed cloning accelerants;
+	<li>Updated acceleration engine management code;
+	<li>Added full 2D acceleration for NM2070, NM2097 and NM2160 cards (the others will be added later);
+	<li>Updated acceleration for massive speedup compared to Be driver (now running at approx 200-2000% depending on use!);
+	<li>Fixed acceleration on rectangle fills and inverts: nolonger executing zero-width commands (which the app_server gives to the driver sometimes!) so no more big-time distortion stripes onscreen! (the Be driver does exhibit this fault BTW);
+	<li>Updated hardware cursor to be placed elsewhere in cardRAM (acc engine requirement); distorted mousepointers could be fixed by this also on some cards outthere;
+	<li>Updated workspace virtualsize restrictions for accelerated modes. Confirmed that the MagicGraph series (pre NM2200) engines can do upto and including 1600x1024 resolution except NM2070 which can do upto and including 1024x1024. Assuming MagicMedia series (NM2200 and later) can do upto and including 1600x2048 for now. Modes above these resolutions are unaccelerated;
+	<li>Removed register area cloning bug in accelerant that prevented it from working with NM2070, NM2090 and NM2093 cards at all!
+	<li>Added various fixes to get Dell Latitude XPi (NM2070) working on it's panel, probably fixes various faults on other cards as well;
+	<li>Updated pixelPLL restrictions for NM2070 so external output refresh is OK;
+	<li>Added fixed sync polarity programming if flatpanel in use: needed to make sure centering actually works;
+	<li>Disabling centering if external only monitor mode is active: fixes some trouble on NM2070 and maybe others;
+	<li>Added panel modeline programming for NM2070 cards: fixes hardcursor trouble on panel;
+	<li>Added pixelprecise panning for virtualscreens in all modes;
+	<li>Added full DPMS support.
+</ul>
+Note:<br>
+Acceleration engine benchmarked and tested for errors with BeRoMeter V1.2.6.
+<p><h1>nm_driver 0.05 (Rudolf)</h1></p>
+<ul> 
+        <li>Prevent system or video freeze on dragging files or so in tracker windows; 
+        <li>BWindowScreen / Sync_to_retrace fix: prevent apps from crashing on endless waiting for retrace. Wait_for_retrace is temporary disabled now until it's actually implemented;
+		<li>Sync polarity setup now actually works (external monitor only mode);
+		<li>Power-up register unlocking narrowed down to overlay engine only. This should fix the screen rubbish trouble most users had with V0.04 which did not exist for them on V0.03. 
+</ul>
+<p><h1>nm_driver 0.04 (Rudolf)</h1></p>
+<ul>
+	<li>included hardware overlay for the B_YCbCr422 (FourCC: YUY2) colorspace;
+	<li>added CRTC registers unlock command on startup.
+</ul>
+<p><h1>nm_driver 0.03 (Rudolf)</h1></p>
+<ul>
+	<li>virtual screens / BWindowScreen support including panning/scrolling;
+	<li>colorspace selection;
+	<li>colorpalette setup;
+	<li>refreshrate selection in external (CRT only) mode;
+	<li>resolution selection;
+	<li>hardcursor support;
+	<li>preliminary LCD panel centering support;
+	<li>you can switch between panel and the external monitor via the special key on the laptop KB. Also the driver respects the output preselected in the BIOS. Note that the NeoMagic BIOS does the output device switch: the driver may not work correctly in all settings yet.
+</ul>
+<p><h1>Still todo:</h1></p>
+<ul>
+	<li>fix for trouble with booting into modes above 800x600 resolution on some cards (please report this behaviour!);
+	<li>setup workarounds for MagicMedia series overlay engine and 2D acceleration engine hardware faults;
+	<li>add sync_to_retrace capability if possible (missing specs).
+</ul>
+</p>
+</body>
+</html>

@@ -1,0 +1,13 @@
+SubDir HAIKU_TOP src add-ons kernel network datalink_protocols ipv6_datagram ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders kernel net ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network protocols ] : true ;
+
+KernelAddon ipv6_datagram :
+	ipv6_datagram.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network/datalink_protocols
+	: ipv6_datagram ;

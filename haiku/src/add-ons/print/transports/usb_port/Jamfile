@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src add-ons print transports usb_port ;
+
+UsePrivateHeaders shared print ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits print ] ;
+
+Addon USB\ Port :
+	USBTransport.cpp
+	PrintTransportAddOn.cpp
+	: shared libdevice.so be [ TargetLibsupc++ ]
+;

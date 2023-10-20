@@ -1,0 +1,66 @@
+Haiku OpenGL kit developers introduction
+
+The Haiku OpenGL kit is made up of the folwing pieces:
+
+* The "OpenGL Kit" aka libGL.so and supporting libraries.
+  This is what the user applications interact with.
+
+* The "OpenGL Add-ons" (which do the real work)
+  These are chosen by the OpenGL kit and utilized
+
+In the traditional BeOS sense, the OpenGL Add-ons are the
+vendor provided OpenGL drivers. This actually doesn't
+mesh well with the current open source OpenGL stack.
+
+Our "OpenGL Add-ons" are really self contained Mesa and
+Gallium renderers. On the old Mesa side of the house,
+swrast is a bunch of wrapper code. On the Gallium side,
+swpipe is a Gallium target.
+
+Mesa drivers are the classical Mesa software rasterizers,
+Gallium drivers are the new-school software and hardware
+drivers.
+
+
+**********
+Mesa versions
+
+The Haiku project uses two different versions of Mesa.
+
+ * Mesa 7.9.2 for gcc2 OpenGL Add-ons
+ * Mesa 10.2.0+ for gcc4 OpenGL Add-ons.
+
+The reasoning behind this is that any version of Mesa
+above 7.9.2 will require a *massive* porting effort to
+make it compile under gcc2.  Given this fact, it makes
+sense to bump the gcc2 version of Mesa as far as it will
+go and set it there statically.  Think of Mesa 7.9.2
+as the "stable" version Haiku R1 will use :)
+
+Hardware 3D rendering and llvm-based software rendering
+will never work for legacy gcc2 applications. Period.
+
+However!  If you're running a gcc2 hybrid version of
+Haiku, llvm or hardware based rendering should be possible
+on gcc4 applications.
+
+It's essential someone from the Haiku project keeps up
+with the upstream Mesa changes pushing build fixes to
+upstream Mesa to keep Haiku relevant.
+
+
+
+**********
+The packages
+
+Haiku has several packages for Mesa:
+
+mesa-x.x.x-x-x86.hpkg        Core Mesa package, provides libGL
+mesa_devel-x.x.x-x-x86.hpkg  Provides development headers and "OpenGL kit"
+mesa_swrast-x.x.x-x-x86.hpkg Mesa "Software Rasterization" renderer
+mesa_swpipe-x.x.x-x-x86.hpkg Gallium "Software pipe" LLVM enhanced renderer
+
+Future :3
+mesa_radeonhd-x.x.x-x-x86.hpkg Gallium "Radeon HD" hardware renderer
+mesa_intel-x.x.x-x-x86.hpkg Gallium "Intel" hardware renderer
+mesa_nvidia-x.x.x-x-x86.hpkg Gallium "nVidia" hardware renderer (unlikely)

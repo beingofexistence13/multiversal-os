@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src apps activitymonitor ;
+
+UsePrivateHeaders interface shared system ;
+
+Application ActivityMonitor :
+	ActivityMonitor.cpp
+	ActivityView.cpp
+	ActivityWindow.cpp
+	DataSource.cpp
+	SettingsWindow.cpp
+	SystemInfo.cpp
+	SystemInfoHandler.cpp
+	: be tracker media libbnetapi.so shared [ TargetLibstdc++ ]
+		$(TARGET_NETWORK_LIBS) localestub
+	: ActivityMonitor.rdef
+;
+
+DoCatalogs ActivityMonitor :
+	x-vnd.Haiku-ActivityMonitor
+	:
+	ActivityMonitor.cpp
+	ActivityView.cpp
+	ActivityWindow.cpp
+	DataSource.cpp
+	SettingsWindow.cpp
+;

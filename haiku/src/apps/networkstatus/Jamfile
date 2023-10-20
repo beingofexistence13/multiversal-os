@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src apps networkstatus ;
+
+UsePrivateHeaders interface net ;
+UseLibraryHeaders agg ;
+
+Application NetworkStatus :
+	NetworkStatusWindow.cpp
+	NetworkStatusView.cpp
+	NetworkStatus.cpp
+	RadioView.cpp
+	WirelessNetworkMenuItem.cpp
+
+	: be shared localestub $(TARGET_NETWORK_LIBS)
+		libbnetapi.so [ TargetLibstdc++ ]
+	: NetworkStatus.rdef NetworkStatusIcons.rdef
+;
+
+DoCatalogs NetworkStatus :
+	x-vnd.Haiku-NetworkStatus
+	:
+	NetworkStatus.cpp
+	NetworkStatusWindow.cpp
+	NetworkStatusView.cpp
+;

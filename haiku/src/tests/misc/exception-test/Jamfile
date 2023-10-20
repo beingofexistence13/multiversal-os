@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src tests misc exception-test ;
+
+SharedLibrary libexceptiontest.so
+	: exceptions.cpp
+	: [ TargetLibsupc++ ]
+;
+
+SimpleTest exception-test
+	: exception-test.cpp
+	: libexceptiontest.so [ TargetLibstdc++ ]
+;

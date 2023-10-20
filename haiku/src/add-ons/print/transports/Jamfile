@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src add-ons print transports ;
+
+# shared must be included first, since its objects are used by the others.
+SubInclude HAIKU_TOP src add-ons print transports shared ;
+SubInclude HAIKU_TOP src add-ons print transports parallel_port ;
+SubInclude HAIKU_TOP src add-ons print transports print_to_file ;
+SubInclude HAIKU_TOP src add-ons print transports serial_port ;
+SubInclude HAIKU_TOP src add-ons print transports usb_port ;
+SubInclude HAIKU_TOP src add-ons print transports hp_jetdirect ;
+SubInclude HAIKU_TOP src add-ons print transports ipp ;
+SubInclude HAIKU_TOP src add-ons print transports lpr ;

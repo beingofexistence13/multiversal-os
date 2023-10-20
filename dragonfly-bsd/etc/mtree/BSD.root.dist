@@ -1,0 +1,92 @@
+# $FreeBSD: src/etc/mtree/BSD.root.dist,v 1.45.2.4 2002/06/10 15:33:27 obrien Exp $
+#
+# Please see the file src/etc/mtree/README before making changes to this file.
+#
+
+/set type=dir uname=root gname=wheel mode=0755
+.
+    bin
+    ..
+    boot
+        defaults
+        ..
+        kernel
+        ..
+        modules.local
+        ..
+    ..
+    build
+    ..
+    dev
+    ..
+    etc
+        X11
+        ..
+        autofs
+        ..
+        bluetooth
+        ..
+        calendar
+        ..
+        defaults
+        ..
+        devd
+        ..
+        dma
+        ..
+        mail
+        ..
+        mtree
+        ..
+        pam.d
+        ..
+        periodic
+            daily
+            ..
+            monthly
+            ..
+            security
+            ..
+            weekly
+            ..
+        ..
+        ppp
+        ..
+        rc.d
+        ..
+        rc.local.d
+        ..
+        skel
+        ..
+        ssh
+        ..
+        ssl
+        ..
+        upgrade
+        ..
+    ..
+    home
+    ..
+    lib
+        priv
+        ..
+    ..
+    libexec
+    ..
+    mnt
+    ..
+    proc            mode=0555
+    ..
+    rescue
+    ..
+    root            mode=0700
+    ..
+    sbin
+    ..
+    tmp             mode=01777
+    ..
+    usr
+    ..
+    var
+    ..
+..

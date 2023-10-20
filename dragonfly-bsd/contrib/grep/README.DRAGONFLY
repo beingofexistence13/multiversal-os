@@ -1,0 +1,18 @@
+GNU GREP
+========
+
+Original source can be downloaded from:
+http://ftp.gnu.org/gnu/grep
+
+file = grep-3.4.tar.xz
+date = 02 January 2020
+size = 1555820
+sha1 = 1a519e783ea0b46a632a0901bda3beaa1a0b267b
+
+A list of files and directories removed is in README.DELETED
+
+Use "git diff vendor/GREP contrib/grep" to see local modifications.
+
+When upgrading, remember to update also re-generated header files
+gnu/usr.bin/grep/libgreputils/*.h on master branch, but keep local adjustments
+in config.h and configmake.h.

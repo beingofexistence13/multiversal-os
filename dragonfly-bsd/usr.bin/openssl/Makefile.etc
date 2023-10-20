@@ -1,0 +1,9 @@
+FILES=		openssl.cnf
+FILESDIR=	/etc/ssl
+FILESOWN=	${BINOWN}
+FILESGRP=	${BINGRP}
+FILESMODE=	644
+
+.include "../../lib/librecrypto/Makefile.inc"
+.PATH: ${LIBRESSL_SRC}/
+.include <bsd.prog.mk>

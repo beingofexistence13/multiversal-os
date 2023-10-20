@@ -1,0 +1,19 @@
+SubDir HAIKU_TOP src add-ons kernel partitioning_systems apple ;
+
+UsePrivateHeaders [ FDirName kernel disk_device_manager ] ;
+UsePrivateHeaders [ FDirName kernel ] ;
+UsePrivateHeaders [ FDirName storage ] ;
+UsePrivateSystemHeaders ;
+
+KernelAddon apple :
+	apple.cpp
+	;
+
+#Addon <partitioning_system>apple :
+#	apple.cpp
+#	;
+#
+#LinkAgainst <partitioning_system>apple :
+#	libkernelland_emu.so
+#	libdisk_device_manager.so
+#	;

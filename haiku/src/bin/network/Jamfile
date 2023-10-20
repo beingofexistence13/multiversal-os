@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src bin network ;
+
+StdBinCommands
+	wakeonlan.cpp
+	: network : $(haiku-utils_rsrc) ;
+
+SubInclude HAIKU_TOP src bin network arp ;
+SubInclude HAIKU_TOP src bin network ftpd ;
+SubInclude HAIKU_TOP src bin network ifconfig ;
+SubInclude HAIKU_TOP src bin network mount_nfs ;
+SubInclude HAIKU_TOP src bin network netstat ;
+SubInclude HAIKU_TOP src bin network pppconfig ;
+SubInclude HAIKU_TOP src bin network ppp_up ;
+SubInclude HAIKU_TOP src bin network ping ;
+SubInclude HAIKU_TOP src bin network ping6 ;
+SubInclude HAIKU_TOP src bin network route ;
+SubInclude HAIKU_TOP src bin network telnet ;
+SubInclude HAIKU_TOP src bin network telnetd ;
+SubInclude HAIKU_TOP src bin network traceroute ;
+SubInclude HAIKU_TOP src bin network tunconfig ;

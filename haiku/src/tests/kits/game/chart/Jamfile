@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src tests kits game chart ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+Application Chart :
+	Chart.cpp
+	ChartRender.cpp
+	ChartView.cpp
+	ChartWindow.cpp
+	: be game localestub [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+	: Chart.rdef
+	;
+
+DoCatalogs Chart :
+    x-vnd.Haiku-ChartDemo
+    :
+	Chart.cpp
+	ChartWindow.cpp
+;
+
+if $(TARGET_PLATFORM) = libbe_test {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : Chart
+		: tests!apps ;
+}

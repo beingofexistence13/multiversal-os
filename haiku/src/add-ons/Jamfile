@@ -1,0 +1,18 @@
+SubDir HAIKU_TOP src add-ons ;
+
+SubInclude HAIKU_TOP src add-ons accelerants ;
+SubInclude HAIKU_TOP src add-ons control_look ;
+SubInclude HAIKU_TOP src add-ons decorators ;
+SubInclude HAIKU_TOP src add-ons disk_systems ;
+SubInclude HAIKU_TOP src add-ons index_server ;
+SubInclude HAIKU_TOP src add-ons input_server ;
+SubInclude HAIKU_TOP src add-ons kernel ;
+SubInclude HAIKU_TOP src add-ons locale ;
+SubInclude HAIKU_TOP src add-ons mail_daemon ;
+SubInclude HAIKU_TOP src add-ons media ;
+SubInclude HAIKU_TOP src add-ons network_settings ;
+SubInclude HAIKU_TOP src add-ons print ;
+SubInclude HAIKU_TOP src add-ons screen_savers ;
+SubInclude HAIKU_TOP src add-ons translators ;
+SubInclude HAIKU_TOP src add-ons tracker ;
+

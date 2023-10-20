@@ -1,0 +1,47 @@
+1	ukrainian	x-vnd.Haiku-Shortcuts	3834857117
+*MouseUp	ShortcutsWindow		*MouseUp
+Application	ShortcutsWindow		Програма
+Option	ShortcutsSpec	Name for modifier on keyboard	Option
+Save changes before closing?	ShortcutsWindow		Зберегти зміни перед закриттям?
+Revert to saved	ShortcutsWindow		Відкат до збереженого
+Don't save	ShortcutsWindow		Не зберігати
+*MouseDown	ShortcutsWindow		*MouseDown
+*Beep	ShortcutsWindow		*Beep
+Shortcuts wasn't able to save your keyset.	ShortcutsWindow		Не вдалося зберегти список клавіатурних скорочень.
+Save	ShortcutsWindow		Зберегти
+Either	ShortcutsSpec		Будь-який
+Oh no	ShortcutsWindow		О ні
+Key	ShortcutsWindow		Клавіша
+*SendMessage application/x-vnd.Be-TRAK 'Tfnd'	ShortcutsWindow		*SendMessage application/x-vnd.Be-TRAK 'Tfnd'
+Select	ShortcutsWindow		Вибрати
+Shortcuts	System name		Shortcuts
+Quit	ShortcutsWindow		Вийти
+(Choose application with file requester)	ShortcutsWindow		(Виберіть програму з запитом файла)
+Cancel	ShortcutsWindow		Скасувати
+*MoveMouse +20 +0	ShortcutsWindow		*MoveMouse +20 +0
+Control	ShortcutsSpec	Name for modifier on keyboard	Control
+Left	ShortcutsSpec		Лівий
+Shortcuts was unable to parse your KeySet file!	ShortcutsWindow		Не вдалося розібрати Ваш файл зі списком клавіатурних скорочень!
+Shortcuts was unable to save your KeySet file!	ShortcutsWindow		Не вдалося зберегти Ваш файл зі списком клавіатурних скорочень!
+*InsertString \"Your Text Here\"	ShortcutsWindow		*InsertString \"Ваш текст тут\"
+Remove selected shortcut	ShortcutsWindow		Вилучити вибране скорочення
+Error, NULL state description?	ShortcutsSpec		Помилка, опис стану NULL?
+Alt	ShortcutsSpec	Name for modifier on keyboard	Alt
+Shortcuts was couldn't open your KeySet file!	ShortcutsWindow		Не вдалося відкрити список клавіатурних скорочень!
+Save & apply	ShortcutsWindow		Зберегти & Використати
+Open	ShortcutsWindow		Відкрити
+Append	ShortcutsWindow		Приєднати
+Both	ShortcutsSpec		Обидва
+Save KeySet as…	ShortcutsWindow		Зберегти список KeySet як…
+Append KeySet…	ShortcutsWindow		Додати список KeySet…
+*MouseButton 1	ShortcutsWindow		*MouseButton 1
+*Multi \"*MoveMouseTo 100% 0\" \"*MouseButton 1\"	ShortcutsWindow		*Multi \"*MoveMouseTo 100% 0\" \"*MouseButton 1\"
+Right	ShortcutsSpec		Правий
+OK	ShortcutsWindow		ОК
+Add new shortcut	ShortcutsWindow		Додати нове скорочення
+(None)	ShortcutsSpec		(Пусто)
+Shift	ShortcutsSpec	Name for modifier on keyboard	Shift
+Open KeySet…	ShortcutsWindow		Відкрити список KeySet…
+File	ShortcutsWindow		Файл
+*LaunchHandler text/html	ShortcutsWindow		*LaunchHandler text/html
+*MoveMouseTo 50% 50%	ShortcutsWindow		*MoveMouseTo 50% 50%

@@ -1,0 +1,76 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio echo 24 ;
+
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo ;
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo generic ;
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo generic DSP ;
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo generic ASIC ;
+
+UsePrivateSystemHeaders ;
+UsePrivateHeaders kernel 			# For kernel_cpp.cpp
+	audio ;
+
+# set some additional defines
+SubDirCcFlags -DECHO_BEOS -DECHO24_FAMILY ;
+SubDirC++Flags -DECHO_BEOS -DECHO24_FAMILY -fno-rtti -DAUTO_DUCK_ALLOCATE ;
+
+local echo_files =
+	CChannelMask.cpp
+	CDaffyDuck.cpp
+	CDspCommObject.cpp
+	CDspCommObjectVmixer.cpp
+	CEchoGals.cpp
+	CEchoGals_info.cpp
+	CEchoGals_midi.cpp
+	CEchoGals_mixer.cpp
+	CEchoGals_power.cpp
+	CEchoGals_transport.cpp
+	CEchoGalsMTC.cpp
+	CEchoGalsVmixer.cpp
+	CGina24.cpp
+	CGina24DspCommObject.cpp
+	CGMLDspCommObject.cpp
+	CLayla24.cpp
+	CLayla24DspCommObject.cpp
+	CLineLevel.cpp
+	CMia.cpp
+	CMiaDspCommObject.cpp
+	CMidiInQ.cpp
+	CMona.cpp
+	CMonaDspCommObject.cpp
+	CMonitorCtrl.cpp
+	CMtcSync.cpp
+	CPipeOutCtrl.cpp
+	;
+
+KernelAddon echo24 :
+	kernel_cpp.cpp
+	debug.c
+	echo.cpp
+	midi.cpp
+	multi.cpp
+	util.c
+	$(echo_files)
+	OsSupportBeOS.cpp
+;
+
+# suppress warnings on some files including the echo headers which provoke ugly warnings
+ObjectC++Flags $(echo_files) : -w ;
+ObjectC++Flags echo.cpp : -w ;
+
+SEARCH on [ FGristFiles
+	$(echo_files)
+	OsSupportBeOS.cpp
+	] = [ FDirName $(HAIKU_TOP) src add-ons kernel drivers audio echo generic ] ;
+
+SEARCH on [ FGristFiles
+		kernel_cpp.cpp
+	] = [ FDirName $(HAIKU_TOP) src system kernel util ] ;
+
+SEARCH on [ FGristFiles
+		debug.c
+		echo.cpp
+		midi.cpp
+		multi.cpp
+		util.c
+	] = [ FDirName $(HAIKU_TOP) src add-ons kernel drivers audio echo ] ;
+

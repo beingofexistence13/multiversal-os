@@ -1,0 +1,31 @@
+SubDir HAIKU_TOP src add-ons print drivers gutenprint ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers libs print libprint ] ;
+
+AddResources Gutenprint : Gutenprint.rdef ;
+UsePublicHeaders kernel ;
+UseBuildFeatureHeaders gutenprint ;
+Includes [ FGristFiles GPBinding.cpp GPCapabilities.cpp 
+	GPCapabilityExtractor.cpp GPDriver.cpp GPJob.cpp
+	GPParameterVisitor.cpp GPPrinterDriver.cpp 
+	SelectPrinterDialog.cpp ]
+	: [ BuildFeatureAttribute gutenprint : headers ] ;
+
+Addon Gutenprint :
+	GPBand.cpp
+	GPBinding.cpp
+	GPCapabilities.cpp
+	GPCapabilityExtractor.cpp
+	GPData.cpp
+	GPDriver.cpp
+	GPJob.cpp
+	GPJobConfiguration.cpp
+	GPParameterVisitor.cpp
+	GPPrinterDriver.cpp
+	SelectPrinterDialog.cpp
+	: 
+	be 
+	[ BuildFeatureAttribute gutenprint : library ]
+	libprint.a 
+	[ TargetLibstdc++ ]
+;

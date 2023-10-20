@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src add-ons print transports lpr ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers libs print libprint ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src add-ons print transports shared ] ;
+
+SubDirC++Flags -Wno-format-overflow ;
+
+Addon LPR :
+	Lpr.cpp
+	LprSetupDlg.cpp
+	LprTransport.cpp
+	LpsClient.cpp
+
+	Socket.o
+	SocketStream.o
+	DbgMsg.o
+	:
+	be
+	libprint.a
+	$(TARGET_NETWORK_LIBS)
+	[ TargetLibstdc++ ]
+;
+
+ObjectReferences
+	<src!add-ons!print!transports!shared>Socket.o
+	<src!add-ons!print!transports!shared>SocketStream.o
+	<src!add-ons!print!transports!shared>DbgMsg.o
+;

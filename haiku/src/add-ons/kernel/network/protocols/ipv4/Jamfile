@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols ipv4 ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon ipv4 :
+	ipv4.cpp
+	ipv4_address.cpp
+	multicast.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/network/protocols
+	: ipv4 ;
+

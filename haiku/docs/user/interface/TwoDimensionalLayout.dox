@@ -1,0 +1,378 @@
+/*
+ * Copyright 2010 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Alex Wilson, yourpalal2@gmail.com
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/TwoDimensionalLayout.h	rev 45833
+ *		src/kits/interface/TwoDimensionalLayout.cpp	rev 49507
+ */
+
+
+/*!
+	\file TwoDimensionalLayout.h
+	\ingroup layout
+	\ingroup libbe
+	\brief Defines the BTwoDimensionalLayout class.
+*/
+
+
+/*!
+	\class BTwoDimensionalLayout
+	\ingroup layout
+	\ingroup libbe
+	\brief Abstract BLayout subclass arranging items within rows and columns.
+
+	This class manages all the tricky work of actually positioning/resizing
+	items, as well as calculating size constraints and providing extra features,
+	such as spacing/insets and alignment of multiple
+	BTwoDimensionalLayout&apos;s. Derived classes need only implement a few hook
+	methods to get a working layout.
+
+	\warning This class is not yet finalized, if you use it in your software
+	assume that it will break some time in the future.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\struct BTwoDimensionalLayout::ColumnRowConstraints
+	\brief Used by BTwoDimensionalLayout derived classes to communicate the
+	       size constraints for a given column or row to the
+	       BTwoDimensionalLayout class.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::ColumnRowConstraints::weight
+	\brief The weight of the given column or row.
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::ColumnRowConstraints::min
+	\brief The minimum size of the given column or row.
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::ColumnRowConstraints::max
+	\brief The maximum size of the given column or row.
+*/
+
+
+/*!
+	\struct BTwoDimensionalLayout::Dimensions
+	\brief Used by BTwoDimensionalLayout derived classes to communicate the
+	       positioning and size of a BLayoutItem, in terms of columns and rows
+	       to the BTwoDimensionalLayout class.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::Dimensions::x
+	\brief The column of the layout item.
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::Dimensions::y
+	\brief The row of the layout item.
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::Dimensions::width
+	\brief The number of columns the layout item spans.
+*/
+
+
+/*!
+	\var BTwoDimensionalLayout::Dimensions::height
+	\brief The number of rows the layout item spans.
+*/
+
+
+/*!
+	\fn BTwoDimensionalLayout::BTwoDimensionalLayout()
+	\brief Create an empty layout.
+*/
+
+
+/*!
+	\fn BTwoDimensionalLayout::BTwoDimensionalLayout(BMessage* from)
+	\brief Unarchive constructor.
+*/
+
+
+/*!
+	\fn virtual BTwoDimensionalLayout::~BTwoDimensionalLayout()
+	\brief Destructor.
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::AlignLayoutWith(
+		BTwoDimensionalLayout* other, orientation orientation)
+	\brief Align the BLayoutItem&apos;s in the specified \a orientation within
+	       two or more BTwoDimensionalLayout&apos;s.
+
+	When two (or more) BTwoDimensionalLayout&apos;s are aligned within a
+	certain \a orientation, then the BLayoutItem&apos;s within those
+	BTwoDimensionalLayout&apos;s will have identical widths or heights
+	(depending on how the BTwoDimensionalLayout&apos;s are aligned.)
+
+	If you align two BGroupLayout&apos;s horizontally for example, then the
+	BLayoutItem at index 0 in both BGroupLayout&apos;s will be given the same
+	horizontal area. The same is true for the BLayoutItem at index 1,
+	2, etc. Not all BTwoDimensionalLayout&apos;s have to have an item at each
+	index for the alignment to proceed.
+
+	\param other The BTwoDimensionalLayout to be aligned with.
+	\param orientation The \a orientation on which to be aligned.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::SetInsets(float left, float top,
+		float right, float bottom)
+	\brief Set the insets for this layout.
+
+	Set the spacing around the edges of this layout. If you pass
+	\c B_USE_DEFAULT_SPACING for a certain parameter, that parameter will
+	be replaced with the value returned by BControlLook::DefaultItemSpacing().
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::SetInsets(float horizontal, float vertical)
+	\brief Set the insets for this layout.
+
+	This is a convenience method to easily set similar insets.
+
+	\param horizontal The insets to the \em left and \em right of the layout.
+	\param vertical The insets at the \em top and \em bottom of the layout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::SetInsets(float insets)
+	\brief Set the insets for this layout.
+
+	This is a convenience method that to easily set all the insets of the
+	layout to the same value.
+
+	\param insets The inset to be applied to \em left, \em top, \em right and
+		\em bottom of this layout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::GetInsets(float* left, float* top,
+		float* right, float* bottom) const
+	\brief Get the insets for the BTwoDimensionalLayout (in pixels).
+
+	Passing \c NULL for any parameter is not an error, those parameters will
+	be ignored.
+
+	\see BTwoDimensionalLayout::SetInsets();
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\name Hook Methods
+
+	These methods are called automatically as needed during layout, and
+	provide the BTwoDimensionalLayout class with the necessary information
+	to properly layout the BLayoutItem in this BTwoDimensionalLayout.
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BTwoDimensionalLayout::PrepareItems(orientation orientation)
+	\brief Prepare the BLayoutItem in this BTwoDimensionalLayout subclass
+	       for layout within a certain \a orientation.
+
+	This is a good place to update cache information that will be used in
+	other hook methods, for example.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BTwoDimensionalLayout::HasMultiColumnItems()
+	\brief Tests whether or not this BTwoDimensionalLayout contains any
+	       BLayoutItem&apos;s spanning more than one column.
+
+	The BTwoDimensionalLayout implementation returns false.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BTwoDimensionalLayout::HasMultiRowItems()
+	\brief Tests whether or not this BTwoDimensionalLayout contains any
+	       BLayoutItem&apos;s spanning more than one row.
+
+	The BTwoDimensionalLayout implementation returns false.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int32 BTwoDimensionalLayout::InternalCountColumns()
+	\brief Get the number of columns in the BTwoDimensionalLayout.
+
+	\returns The number of columns in the BTwoDimensionalLayout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int32 BTwoDimensionalLayout::InternalCountRows()
+	\brief Get the number of rows in the BTwoDimensionalLayout.
+
+	\returns The number of rows in the BTwoDimensionalLayout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::GetColumnRowConstraints(
+		orientation orientation, int32 index, ColumnRowConstraints* constraints)
+	\brief Fill in the ColumnRowConstraints for a certain column or row in
+	       the BTwoDimensionalLayout.
+
+	This method is used to communicate the size constraints and weight for
+	a given row/column in the BTwoDimensionalLayout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::GetItemDimensions(BLayoutItem* item,
+		Dimensions* dimensions)
+	\brief Tell the base class what column and row a BLayoutItem is in as
+	       well as how many columns and rows it covers.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Protected helper methods for inset calculation.
+*/
+
+
+//! @{
+
+/*!
+	\fn BSize BTwoDimensionalLayout::AddInsets(BSize size)
+	\brief Add the \a size to all the insets for this layout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTwoDimensionalLayout::AddInsets(float* minHeight,
+		float* maxHeight, float* preferredHeight)
+	\brief Add to the insets, and store the modified values.
+
+	\param[out] minHeight The value to add to the minimum height for this
+		layout. The new minimum height is stored at the variable of this
+		pointer.
+	\param[out] maxHeight The value to add to the maximum height for this
+		layout. The new maximum height is stored at the variable of this
+		pointer.
+	\param[out] preferredHeight the value to add to the preferred height for
+		this layout. The new preferred heifght is stored at the variable of
+		this pointer.
+
+	\since Haiku R1
+*/
+
+/*!
+	\fn BSize BTwoDimensionalLayout::SubtractInsets(BSize size)
+	\brief Substract the \a size from all the insets for this layout.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+/*!
+	\name Current settings for spacing
+*/
+
+
+//! @{
+
+
+/*!
+	\var float BTwoDimensionalLayout::fLeftInset
+	\brief The current left inset for this layout.
+*/
+
+
+/*!
+	\var float BTwoDimensionalLayout::fRightInset
+	\brief The current right inset for this layout.
+*/
+
+
+/*!
+	\var float BTwoDimensionalLayout::fTopInset
+	\brief The current top inset for this layout.
+*/
+
+
+/*!
+	\var float BTwoDimensionalLayout::fBottomInset
+	\brief The current bottom inset for this layout.
+*/
+
+
+/*!
+	\var float BTwoDimensionalLayout::fHSpacing
+	\brief the current horizontal spacing between columns for this layout.
+*/
+
+
+/*!
+	\var float BTwoDimensionalLayout::fVSpacing
+	\brief The current vertical spacing between rows for this layout.
+*/
+
+//! @}

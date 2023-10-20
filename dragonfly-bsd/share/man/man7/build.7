@@ -1,0 +1,388 @@
+.\" Copyright (c) 2000
+.\"	Mike W. Meyer
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FreeBSD: src/share/man/man7/build.7,v 1.19.2.1 2002/03/18 08:33:02 murray Exp $
+.\"
+.Dd June 24, 2021
+.Dt BUILD 7
+.Os
+.Sh NAME
+.Nm build
+.Nd information on how to build the system
+.Sh DESCRIPTION
+The source for the
+.Dx
+system and applications is located in
+.Pa /usr/src .
+This directory contains the
+.Dq base system
+sources, which is loosely defined as the things required to rebuild
+the system to a useful state.
+It also contains the source for the system documentation, including
+manual pages.
+Refer to
+.Xr development 7
+for more information on how to obtain the
+.Dx
+sources.
+.Pp
+Third party applications have to be built using the
+.Xr dports 7
+system.
+The file
+.Pa /usr/Makefile
+has targets for obtaining the dports tree.
+Typing
+.Cm make
+in
+.Pa /usr
+gives specifics on how to obtain the tree for building packages.
+.Pp
+The
+.Xr make 1
+command is used in
+.Pa /usr/src
+to build and install the things in that directory.
+Issuing the
+.Xr make 1
+command in any directory or
+subdirectory of those directories has the same effect as issuing the
+same command in all subdirectories of that directory.
+With no target specified, the things in that directory are just built.
+The following list provides the names and actions for other targets:
+.Bl -tag -width ".Cm install"
+.It Cm clean
+Removes any files created during the build process.
+.It Cm install
+Installs the results of the build for this directory.
+.El
+.Pp
+The other
+.Pa /usr/src
+make targets are:
+.Bl -tag -width ".Cm installworld-force"
+.It Cm buildworld
+Rebuild everything but the kernel.
+.It Cm quickworld
+Same as
+.Cm buildworld ,
+but skip bootstrap, build and cross-build tool steps.
+This target can be used for incremental upgrades once a full build of the
+world has been done with
+.Cm buildworld .
+.It Cm realquickworld
+Same as
+.Cm quickworld ,
+but also skip the depend step.
+.It Cm crossworld
+Just do the bootstrap, build and cross-build steps.
+.It Cm installworld
+Install everything built by
+.Cm buildworld ,
+as well as the rescue tools and the initial ramdisk if they do not exist
+yet.
+.It Cm installworld-force
+Force an
+.Cm installworld .
+This will install to a temporary directory, then copy the main binaries
+and libraries with a static
+.Xr cpdup 1
+to
+.Ev DESTDIR
+and finally will issue a normal
+.Cm installworld
+and
+.Cm upgrade .
+It is a special case to be used on older systems as a last resort when
+the normal
+.Cm installworld
+doesn't work.
+.It Cm world
+.Cm buildworld +
+.Cm installworld
+.It Cm buildkernel
+Rebuild the kernel and the kernel-modules.
+.It Cm nativekernel
+Rebuild the kernel and the kernel-modules using native tools.
+.It Cm quickkernel
+Same as
+.Cm buildkernel ,
+but do not clean out the obj modules.
+This target can be used for incremental upgrades once a full
+build of the kernel has been done with
+.Cm buildkernel .
+.It Cm realquickkernel
+Same as
+.Cm quickkernel ,
+but also skip the depend step.
+.It Cm installkernel
+Install the kernel and the kernel-modules.
+.It Cm reinstallkernel
+Reinstall the kernel and the kernel-modules.
+.It Cm kernel
+.Cm buildkernel +
+.Cm installkernel
+.It Cm build-all
+.Cm buildworld +
+.Cm buildkernel
+.Pp
+The option -j hw.ncpu is added automatically to optimally utilize the system.
+.It Cm install-all
+.Cm installkernel +
+.Cm installworld +
+.Cm upgrade
+.It Cm preinstall
+Perform certain operations that have to be done before
+.Cm installworld ,
+such as adding new users and groups.
+This target will be automatically executed by
+.Cm installworld .
+.It Cm upgrade
+Upgrade the files in /etc and also setup the rest of the system for
+the version of
+.Dx
+just installed.
+Also, check for existence of objects being deprecated with the new installation.
+.Pp
+Note that deprecated system libraries may still be linked from packages
+installed under
+.Pa /usr/local/
+or other 3rd party objects placed elsewhere.
+The check tries to detect these dependencies, by default searching
+.Pa /usr/local/ .
+Other places to search may be specified in
+.Ev CHECK_DEPRECATED_DIRS
+variable.
+If defined, these directories will be searched in addition to default.
+.It Cm initrd
+Install the statically linked rescue tools and the initial ramdisk built by
+.Cm buildworld .
+.It Cm backupworld
+Manually archive binaries from installed world to location specified by
+.Ev WORLD_BACKUP .
+.It Cm backup-clean
+Delete archive created by
+.Cm backupworld .
+.It Cm backup-auto-clean
+Delete archive created automatically during
+.Cm installworld .
+.It Cm restoreworld
+Restore binaries from archive created by
+.Cm backupworld .
+.It Cm restoreworld-auto
+Restore binaries from archive created automatically during
+.Cm installworld .
+The archive location is specified by
+.Ev AUTO_BACKUP .
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width ".Ev MAKEOBJDIRPREFIX"
+.It Ev TARGET_ARCH , TARGET_PLATFORM
+The target machine processor architecture and hardware platform.
+These have to be set for cross-building.
+.Ev TARGET_ARCH
+is analogous to the
+.Dq Nm uname Fl p
+output.
+For the 64 bit
+.Tn AMD
+architecture known as AMD64, x86-64 or Intel 64, use:
+.Bd -literal -offset indent
+TARGET_ARCH=x86_64
+TARGET_PLATFORM=pc64
+.Ed
+.It Ev DESTDIR
+An existing directory to be the root of
+the hierarchy where the resulting binaries will be
+installed (the default is
+.Pa / ) .
+.It Ev MAKEOBJDIRPREFIX
+The directory hierarchy where the object files will be built (the default is
+.Pa /usr/obj ) .
+.It Ev __MAKE_CONF
+Used to override the path of
+.Xr make.conf 5
+(the default is
+.Pa /etc/make.conf ) .
+.It Ev KERNCONF
+The name of one or more kernel configurations from which kernels should
+be built (the default is
+.Li X86_64_GENERIC ) .
+.It Ev KERNCONFDIR
+The directory where the kernel configuration files are kept (the default is
+.Pa /usr/src/sys/config ) .
+.It Ev DESTLABEL
+Common suffix added to kernel and modules directory names, prefixed by
+a single dot.  For example,
+.Bd -literal -offset indent
+make DESTLABEL=test installkernel
+.Ed
+.Pp
+installs them as
+.Pa /boot/kernel.test/kernel
+and
+.Pa /boot/kernel.test ,
+respectively.
+.It Ev DESTKERNDIR
+Where to install the kernel and the modules (the default is
+.Pa /boot ) ,
+in the directory hierarchy specified by the environment variable
+.Ev DESTDIR .
+.It Ev DESTKERNNAME
+The name of the installed kernel file (the default is
+.Pa kernel ) ,
+under the directory specified by
+.Ev DESTKERNDIR .
+This overrides the effect of
+.Ev DESTLABEL .
+.It Ev DESTMODULESNAME
+The name of the directory to install the kernel modules (the default is
+.Pa modules ) ,
+under the directory specified by
+.Ev DESTKERNDIR .
+This overrides the effect of
+.Ev DESTLABEL .
+.It Ev WORLD_BACKUP
+Directory for manual backup of binaries of installed world (default:
+.Pa /var/backups/world_backup ) .
+.It Ev AUTO_BACKUP
+Directory for automatic backup of binaries of installed world (default:
+.Ev MAKEOBJDIRPREFIX Ns /world_binaries/ Ns Ev DESTDIR ) .
+.It Ev NO_BACKUP
+When defined, the automatic backup feature of
+.Cm installworld
+is inhibited.
+.It Ev COPTFLAGS
+Overrides the default optimization flags for kernel and module compiles.
+.It Ev KCFLAGS
+Allows you to add additional compiler flags for kernel and module compiles.
+But use
+.Ev COPTFLAGS
+to specify any optimization overrides, as some modules may have to override
+it to enforce a lower optimization level.
+.It Ev CHECK_DEPRECATED_DIRS
+Directories to search for objects being still linked to deprecated system
+libraries.
+This space separated list will be used by
+.Cm upgrade
+target in addition to default
+.Pa /usr/local/ .
+.It Ev REMOVE_DEPRECATED
+Remove system objects marked as deprecated.
+Used by
+.Cm upgrade
+target.
+.El
+.Sh OTHER
+There are two other mechanisms that users should be aware of.  First,
+when you issue a
+.Cm installkernel
+.Dx
+will make a backup of the current kernel in
+.Pa /boot/kernel.old .
+Because people often do multiple installkernel operations, this backup
+kernel can also get lost in the noise.
+It is usually prudent to make a backup of the old kernel manually
+every once in a while when you know that it is a good kernel.  you can
+do this after issuing the
+.Cm installkernel
+by running the command:
+.Bd -literal -offset indent
+cpdup /boot/kernel.old /boot/kernel.bak
+.Ed
+.Pp
+The advantage of this is that no installation mechanism will overwrite
+your
+.Pa /boot/kernel.bak ,
+and in addition to that the loader's boot menu will check for its
+existence and present a menu option 'b' to allow you to boot from it.
+.Pp
+The second mechanism is related to the two-stage root mount.
+When using an encrypted root, the system will actually boot from a
+small initial ramdisk (a.k.a. initrd) image stored as
+.Pa /boot/kernel/initrd.img.gz .
+This image will handle the encrypted configuration, mount, and chroot
+to the real root.
+This image is also used as the rescue ramdisk boot menu option.
+This image is NOT updated automatically by
+.Cm installworld
+or
+.Cm installkernel .
+Instead, updating this image has to be done by running the manual command:
+.Bd -literal -offset indent
+make initrd
+.Ed
+.Pp
+It is usually a good idea to run this command after rebooting into the new
+world that you installed (so you know the world you installed is good).
+This command will update the initrd image in
+.Pa /boot/kernel
+and the rescue tools in
+.Pa /rescue .
+.Sh FILES
+.Bl -tag -width ".Pa /usr/src/Makefile_upgrade.inc" -compact
+.It Pa /etc/make.conf
+.It Pa /etc/defaults/make.conf
+.It Pa /usr/src/Makefile
+.It Pa /usr/src/Makefile.inc1
+.It Pa /usr/src/Makefile_upgrade.inc
+.El
+.Sh EXAMPLES
+The
+.Dq approved
+method of updating your system from the latest sources is:
+.Bd -literal -offset indent
+make buildworld
+make buildkernel KERNCONF=FOO
+make installkernel KERNCONF=FOO
+make installworld
+make upgrade
+reboot
+make initrd
+.Ed
+.Pp
+The above mentioned build and install order enforces that the new kernel
+is installed before the new world.
+Sometimes it might be necessary to reboot the system between those two
+steps.
+In this case
+.Dq Nm make Cm installworld
+will tell you to do so.
+.Sh SEE ALSO
+.Xr cc 1 ,
+.Xr install 1 ,
+.Xr make 1 ,
+.Xr wmake 1 ,
+.Xr make.conf 5 ,
+.Xr development 7 ,
+.Xr dports 7 ,
+.Xr release 7 ,
+.Xr config 8 ,
+.Xr reboot 8 ,
+.Xr shutdown 8
+.Sh AUTHORS
+.An -nosplit
+.An Mike W. Meyer Aq Mt mwm@mired.org
+and
+.An Sascha Wildner Aq Mt swildner@gmail.com .

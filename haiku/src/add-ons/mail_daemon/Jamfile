@@ -1,0 +1,6 @@
+SubDir HAIKU_TOP src add-ons mail_daemon ;
+
+SubInclude HAIKU_TOP src add-ons mail_daemon inbound_protocols ;
+SubInclude HAIKU_TOP src add-ons mail_daemon inbound_filters ;
+SubInclude HAIKU_TOP src add-ons mail_daemon outbound_protocols ;
+SubInclude HAIKU_TOP src add-ons mail_daemon outbound_filters ;

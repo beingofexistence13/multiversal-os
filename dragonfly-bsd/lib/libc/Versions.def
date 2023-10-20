@@ -1,0 +1,75 @@
+#
+# Note: Whenever bumping the DF version, always make
+#       DFprivate_1.0 depend on the new DF version.
+#       This will keep it at the end of the dependency chain.
+#
+
+# This is our first version; it depends on no other.
+# This version was first added to DragonFly 3.5 
+DF306.0 {
+};
+
+# Second version for DragonFly 3.5 on per library basis
+DF306.1 {
+} DF306.0;
+
+# version for DragonFly 4.1
+DF402.0 {
+} DF306.1;
+
+# version for DragonFly 4.3
+DF404.0 {
+} DF402.0;
+
+# version for DragonFly 4.5
+DF406.0 {
+} DF404.0;
+
+# version for DragonFly 4.7
+DF408.0 {
+} DF406.0;
+
+# version for DragonFly 4.9
+DF410.0 {
+} DF408.0;
+
+# version for DragonFly 5.1
+DF502.0 {
+} DF410.0;
+
+# version for DragonFly 5.3
+DF504.0 {
+} DF502.0;
+
+# version for DragonFly 5.5
+DF506.0 {
+} DF504.0;
+
+# version for DragonFly 5.7
+DF508.0 {
+} DF506.0;
+
+# version for DragonFly 5.9
+DF510.0 {
+} DF508.0;
+
+# version for DragonFly 6.1
+DF602.0 {
+} DF510.0;
+
+# version for DragonFly 6.3
+DF604.0 {
+} DF602.0;
+
+# version for DragonFly 6.5
+DF606.0 {
+} DF604.0;
+
+# This is our private namespace.  Any global interfaces that are
+# strictly for use only by other DragonFly applications and libraries
+# are listed here.  We use a separate namespace so we can write
+# simple ABI-checking tools.
+#
+# Please do NOT increment the version of this namespace.
+DFprivate_1.0 {
+} DF606.0;

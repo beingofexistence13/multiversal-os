@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src add-ons screen_savers ifs ;
+
+AddResources IFS : IFS.rdef ;
+
+ScreenSaver IFS :
+	IFS.cpp
+	IFSSaver.cpp
+
+	: be libscreensaver.so localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs IFS :
+	x-vnd.Haiku-IFSScreensaver
+	:
+	IFSSaver.cpp	
+;

@@ -1,0 +1,460 @@
+.\"***************************************************************************
+.\" Copyright (c) 1998-2006,2010 Free Software Foundation, Inc.              *
+.\"                                                                          *
+.\" Permission is hereby granted, free of charge, to any person obtaining a  *
+.\" copy of this software and associated documentation files (the            *
+.\" "Software"), to deal in the Software without restriction, including      *
+.\" without limitation the rights to use, copy, modify, merge, publish,      *
+.\" distribute, distribute with modifications, sublicense, and/or sell       *
+.\" copies of the Software, and to permit persons to whom the Software is    *
+.\" furnished to do so, subject to the following conditions:                 *
+.\"                                                                          *
+.\" The above copyright notice and this permission notice shall be included  *
+.\" in all copies or substantial portions of the Software.                   *
+.\"                                                                          *
+.\" THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS  *
+.\" OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF               *
+.\" MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.   *
+.\" IN NO EVENT SHALL THE ABOVE COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,   *
+.\" DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR    *
+.\" OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR    *
+.\" THE USE OR OTHER DEALINGS IN THE SOFTWARE.                               *
+.\"                                                                          *
+.\" Except as contained in this notice, the name(s) of the above copyright   *
+.\" holders shall not be used in advertising or otherwise to promote the     *
+.\" sale, use or other dealings in this Software without prior written       *
+.\" authorization.                                                           *
+.\"***************************************************************************
+.\"
+.\" $Id: tic.1m,v 1.47 2010/12/04 18:38:55 tom Exp $
+.Dd March 11, 2016
+.Dt TIC 1
+.Os
+.Sh NAME
+.Nm tic
+.Nd the terminfo entry-description compiler
+.Sh SYNOPSIS
+.Nm
+.Op Fl 1CGILNTUVacfgrstx
+.Op Fl e Ar names
+.Op Fl o Ar dir
+.Op Fl R Ar subset
+.Op Fl v Ns Op Ar n
+.Op Fl w Ns Op Ar n
+.Ar file
+.Sh DESCRIPTION
+The command
+.Nm
+translates a
+.Xr terminfo 5
+file from source format into compiled format.
+The compiled format is necessary for use with the library routines in
+.Xr ncurses 3 .
+.Pp
+The results are normally placed in the system terminfo directory
+.Pa /usr/share/terminfo .
+There are two ways to change this behavior.
+.Pp
+First, you may override the system default by setting the variable
+.Ev TERMINFO
+in your shell environment to a valid (existing) directory name.
+.Pp
+Secondly, if
+.Nm
+cannot get access to
+.Pa /usr/share/terminfo
+or your
+.Ev TERMINFO
+directory, it looks for the directory
+.Pa $HOME/.terminfo ;
+if that directory exists, the entry is placed there.
+.Pp
+Libraries that read terminfo entries are expected to check for a
+.Ev TERMINFO
+directory first, look at
+.Pa $HOME/.terminfo
+if
+.Ev TERMINFO
+is not set, and finally look in
+.Pa /usr/share/terminfo .
+.Bl -tag -width ".Fl R subset"
+.It Fl 0
+restricts the output to a single line
+.It Fl 1
+restricts the output to a single column
+.It Fl a
+tells
+.Nm
+to retain commented-out capabilities rather than discarding them.
+Capabilities are commented by prefixing them with a period.
+This sets the
+.Fl x
+option, because it treats the commented-out entries as user-defined names.
+If the source is termcap, accept the 2-character names required by version 6.
+Otherwise these are ignored.
+.It Fl C
+Force source translation to termcap format.
+Capabilities that are not translatable are left in the entry under
+their terminfo names but commented out with two preceding dots.
+The actual format used incorporates some improvements for escaped characters
+from terminfo format.
+For a stricter BSD-compatible translation, add the
+.Fl K
+option.
+.Pp
+If this is combined with
+.Fl c ,
+.Nm
+makes additional checks to report cases
+where the terminfo values do not have an exact equivalent in termcap form.
+For example:
+.Bl -bullet
+.It
+sgr usually will not convert, because termcap lacks the ability to work
+with more than two parameters, and because termcap lacks many of the
+arithmetic/logical operators used in terminfo.
+.It
+capabilities with more than one delay or with delays before the end of
+the string will not convert completely.
+.El
+.It Fl c
+tells
+.Nm
+to only check
+.Ar file
+for errors, including syntax problems and bad use links.
+If you specify
+.Fl C
+.Pq Fl I
+with this option, the code will print warnings about entries which,
+after use resolution, are more than 1023 (4096) bytes long.
+Due to a fixed buffer length in older termcap libraries
+(and a documented limit in terminfo),
+these entries may cause core dumps with other implementations.
+.Pp
+.Nm
+checks string capabilities to ensure that those with parameters will be
+valid expressions.
+It does this check only for the predefined string
+capabilities; those which are defined with the
+.Fl x
+option are ignored.
+.It Fl D
+tells
+.Nm
+to print the database locations that it knows about, and exit.
+The first location shown is the one to which it would write compiled
+terminal descriptions.
+If
+.Nm
+is not able to find a writable database location according to the rules
+summarized above, it will print a diagnostic and exit with an
+error rather than printing a list of database locations.
+.It Fl e Ar names
+Limit writes and translations to the following comma-separated list of
+terminals.
+If any name or alias of a terminal matches one of the names in
+the list, the entry will be written or translated as normal.
+Otherwise no output will be generated for it.
+The option value is interpreted as a file containing the list if it
+contains a
+.Sq / .
+Note: depending on how
+.Nm
+was compiled, this option may require
+.Fl I
+or
+.Fl C .
+.It Fl f
+Display complex terminfo strings which contain if/then/else/endif expressions
+indented for readability.
+.It Fl G
+Display constant literals in decimal form
+rather than their character equivalents.
+.It Fl g
+Display constant character literals in quoted form
+rather than their decimal equivalents.
+.It Fl I
+Force source translation to terminfo format.
+.It Fl K
+Suppress some longstanding ncurses extensions to termcap format,
+e.g.,
+.Do
+\\s
+.Dc
+for space.
+.It Fl L
+Force source translation to terminfo format
+using the long C variable names listed in
+.In term.h
+.It Fl N
+Disable smart defaults.
+Normally, when translating from termcap to terminfo, the compiler makes
+a number of assumptions about the defaults of string capabilities
+.Cm reset1_string ,
+.Cm carriage_return ,
+.Cm cursor_left ,
+.Cm cursor_down ,
+.Cm scroll_forward ,
+.Cm tab ,
+.Cm newline ,
+.Cm key_backspace ,
+.Cm key_left ,
+and
+.Cm key_down ,
+then attempts to use obsolete termcap capabilities to deduce correct values.
+It also normally suppresses output of obsolete termcap capabilities such as
+.Cm bs .
+This option forces a more literal translation that also preserves the
+obsolete capabilities.
+.It Fl o Ar dir
+Write compiled entries to given directory.
+Overrides the
+.Ev TERMINFO
+environment variable.
+.It Fl R Ar subset
+Restrict output to a given subset.
+This option is for use with archaic versions of terminfo like those on
+SVr1, Ultrix, or HP/UX that do not support the full set of
+SVR4/XSI Curses terminfo;
+and outright broken ports like AIX 3.x
+that have their own extensions incompatible with SVr4/XSI.
+Available subsets are
+.Dq SVr1 ,
+.Dq Ultrix ,
+.Dq HP ,
+.Dq BSD
+and
+.Dq AIX ;
+see
+.Xr terminfo 5
+for details.
+.It Fl r
+Force entry resolution (so there are no remaining tc capabilities) even
+when doing translation to termcap format.
+This may be needed if you are
+preparing a termcap file for a termcap library (such as GNU termcap through
+version 1.3 or BSD termcap through
+.Bx 4.3 )
+that does not handle multiple tc capabilities per entry.
+.It Fl s
+Summarize the compile by showing the directory into which entries
+are written, and the number of entries which are compiled.
+.It Fl T
+eliminates size-restrictions on the generated text.
+This is mainly useful for testing and analysis, since the compiled
+descriptions are limited (e.g.\& 1023 for termcap, 4096 for terminfo).
+.It Fl t
+tells
+.Nm
+to discard commented-out capabilities.
+Normally when translating from terminfo to termcap,
+untranslatable capabilities are commented-out.
+.It Fl U
+tells
+.Nm
+to not post-process the data after parsing the source file.
+Normally, it infers data which is commonly missing in older terminfo data,
+or in termcaps.
+.It Fl V
+reports the version of
+.Xr ncurses 3
+which was used in this program, and exits.
+.It Fl v Ns Op Ar n
+specifies that (verbose) output be written to standard error trace
+information showing
+.Nm Ns 's
+progress.
+The optional parameter
+.Ar n
+is a number from 1 to 10, inclusive,
+indicating the desired level of detail of information.
+If
+.Ar n
+is omitted, the default level is 1.
+If
+.Ar n
+is specified and greater than 1, the level of
+detail is increased.
+.Pp
+The debug flag levels are as follows:
+.Bl -tag -width "1xxx" -compact
+.It 1
+Names of files created and linked
+.It 2
+Information related to the
+.Dq use
+facility
+.It 3
+Statistics from the hashing algorithm
+.It 5
+String-table memory allocations
+.It 7
+Entries into the string-table
+.It 8
+List of tokens encountered by scanner
+.It 9
+All values computed in construction of the hash table
+.El
+.Pp
+If the debug level
+.Ar n
+is not given, it is taken to be one.
+.It Fl w Ns Op Ar n
+specifies the width of the output.
+The parameter is optional.
+If it is omitted, it defaults to 60.
+.It Fl x
+Treat unknown capabilities as user-defined.
+That is, if you supply a capability name which
+.Nm
+does not recognize, it will infer its type (boolean, number or string)
+from the syntax and make an extended table entry for that.
+User-defined capability strings
+whose name begins with
+.Sq k
+are treated as function keys.
+.El
+.Sh PARAMETERS
+.Bl -tag -width "file"
+.It Ar file
+contains one or more
+.Xr terminfo 5
+terminal descriptions in source format.
+Each description in the file
+describes the capabilities of a particular terminal.
+.Pp
+If file is "-", then the data is read from the standard input.
+The file parameter may also be the path of a character-device.
+.El
+.Sh PROCESSING
+All but one of the capabilities recognized by
+.Nm
+are documented in
+.Xr terminfo 5 .
+The exception is the
+.Cm use
+capability.
+.Pp
+When a
+.Cm use Ns Li = Ns Ar entry-name
+field is discovered in a terminal entry currently being compiled,
+.Nm
+reads in the binary from
+.Pa /usr/share/terminfo
+to complete the entry.
+(Entries created from
+.Ar file
+will be used first.
+If the environment variable
+.Ev TERMINFO
+is set, that directory is searched instead of
+.Pa /usr/share/terminfo . )
+.Nm
+duplicates the capabilities in
+.Ar entry-name
+for the current entry, with the exception of
+those capabilities that explicitly are defined in the current entry.
+.Pp
+When an entry, e.g.\&
+.Li entry_name_1 ,
+contains a
+.Cm use Ns Li = Ns Li entry_name_2
+field, any canceled capabilities in
+.Li entry_name_2
+must also appear in
+.Li entry_name_1
+before
+.Cm use Ns Li =
+for these capabilities to be canceled in
+.Li entry_name_1 .
+.Pp
+If the environment variable
+.Ev TERMINFO
+is set, the compiled results are placed there instead of
+.Pa /usr/share/terminfo .
+.Pp
+Total compiled entries cannot exceed 4096 bytes.
+The name field cannot exceed 512 bytes.
+Terminal names exceeding the maximum alias length
+(32 characters on systems with long filenames, 14 characters otherwise)
+will be truncated to the maximum alias length and a warning message
+will be printed.
+.Ss COMPATIBILITY
+There is some evidence that historic
+.Nm
+implementations treated description fields with no whitespace
+in them as additional aliases or short names.
+This
+.Nm
+does not do that, but it does warn when description fields may be
+treated that way and check them for dangerous characters.
+.Ss EXTENSIONS
+Unlike the stock SVr4
+.Nm
+command, this implementation can actually compile termcap sources.
+In fact, entries in terminfo and termcap syntax can
+be mixed in a single source file.
+See
+.Xr terminfo 5
+for the list of termcap names taken to be equivalent to terminfo names.
+.Pp
+The SVr4 manual pages are not clear on the resolution rules for
+.Cm use
+capabilities.
+This implementation of
+.Nm
+will find
+.Cm use
+targets anywhere in the source file,
+or anywhere in the file tree rooted at
+.Ev TERMINFO
+(if it is defined), or in the user's
+.Pa $HOME/.terminfo
+directory (if it exists), or (finally) anywhere in the system's
+file tree of compiled entries.
+.Pp
+The error messages from this
+.Nm
+have the same format as GNU C error messages,
+and can be parsed by GNU Emacs's compile facility.
+.Pp
+The
+.Fl C ,
+.Fl G ,
+.Fl I ,
+.Fl N ,
+.Fl R ,
+.Fl T ,
+.Fl V ,
+.Fl a ,
+.Fl e ,
+.Fl f ,
+.Fl g ,
+.Fl o ,
+.Fl r ,
+.Fl s ,
+.Fl t
+and
+.Fl x
+options are not supported under SVr4.
+The SVr4
+.Fl c
+mode does not report bad use links.
+.Pp
+System V does not compile entries to or read entries from your
+.Pa $HOME/.terminfo
+directory unless
+.Ev TERMINFO
+is explicitly set to it.
+.Sh FILES
+.Bl -tag -width "Pa /usr/share/terminfo/?/*"
+.It Pa /usr/share/terminfo/?/*
+Compiled terminal description database.
+.El
+.Sh SEE ALSO
+.Xr ncurses 3 ,
+.Xr terminfo 5
+.Sh AUTHORS
+.An Eric S. Raymond Aq Mt esr@snark.thyrsus.com
+.An Thomas E. Dickey Aq Mt dickey@invisible-island.net

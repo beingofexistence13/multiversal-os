@@ -1,0 +1,19 @@
+1	belarusian	x-vnd.Haiku-mixer.media_addon	3463574286
+Input mapping	AudioMixer		Перапрызначенне ўваходаў
+To output	AudioMixer		Выводзіць
+Gain	AudioMixer		Узмацненне
+To master	AudioMixer		Да асноўнага
+not connected	AudioMixer		ня злучана
+Master output	AudioMixer		Асноўны выхад
+dB	AudioMixer		дБ
+Gain controls	AudioMixer		Рэгулятары ўзмацнення
+Output channel sources	AudioMixer		Крыніцы выхаднога каналу
+Allow input channel remapping	AudioMixer		Дазволiць перапрызначэнне ўваходнага канала
+Display balance control for stereo connections	AudioMixer		Паказаць рэгулятар балансу для стэрэа злучэнняў
+Setup	AudioMixer		Наладкі
+Physical input channels	AudioMixer		Фiзiчныя ўваходныя каналы
+Input channel destinations	AudioMixer		Назначэнне ўваходных каналаў
+Mute	AudioMixer		Сцішыць
+Output mapping	AudioMixer		Мапа вывадаў
+Virtual output channels	AudioMixer		Вiртуальныя выхадныя каналы
+Allow output channel remapping	AudioMixer		Дазволiць перапрызначэнне выхаднога каналу

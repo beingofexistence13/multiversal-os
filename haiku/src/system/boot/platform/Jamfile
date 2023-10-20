@@ -1,0 +1,8 @@
+SubDir HAIKU_TOP src system boot platform ;
+
+if $(HAIKU_BOOT_TARGETS) {
+	SubInclude HAIKU_TOP src system boot platform generic ;
+	for platform in $(HAIKU_BOOT_TARGETS) {
+			SubInclude HAIKU_TOP src system boot platform $(platform) ;
+	}
+}

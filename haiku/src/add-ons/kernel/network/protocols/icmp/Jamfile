@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols icmp ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network protocols ipv4 ] ;
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon icmp :
+	icmp.cpp
+;

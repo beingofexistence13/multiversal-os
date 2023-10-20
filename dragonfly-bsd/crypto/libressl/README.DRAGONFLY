@@ -1,0 +1,26 @@
+LIBRESSL
+========
+
+Original source can be downloaded from:
+https://ftp.openbsd.org/pub/OpenBSD/LibreSSL/
+
+file = libressl-3.6.1.tar.gz
+date = 25 October 2022
+size = 4240343
+sha1 = 60ac9dc4abe32d139b4ca461f3c80e1b4d0ed938
+
+The file README.DELETED contains a list of deleted files and directories.
+
+Use "git diff vendor/LIBRESSL crypto/libressl" to see local modifications.
+
+These sources are used in:
+	lib/librecrypto
+	lib/libressl
+	usr.bin/openssl
+	usr.bin/nc
+
+Configured with:
+
+  --enable-nc ac_cv_header_dlfcn_h=no ac_cv_lib_dl_dlopen=no
+
+NOTE: The configure script misdetects HOST_ABI=elf and disables ASM versions.

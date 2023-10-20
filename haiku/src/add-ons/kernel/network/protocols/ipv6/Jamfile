@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols ipv6 ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon ipv6 :
+	ipv6.cpp
+	ipv6_address.cpp
+	ipv6_utils.cpp
+	multicast.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/network/protocols
+	: ipv6 ;
+

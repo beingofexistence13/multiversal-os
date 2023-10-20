@@ -1,0 +1,37 @@
+SubDir HAIKU_TOP src add-ons kernel network ppp ipcp ;
+
+SubDirC++Flags -fno-rtti ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+UsePrivateHeaders libroot net ;
+UsePrivateHeaders [ FDirName kernel ] ;
+UsePrivateHeaders [ FDirName kernel util ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared
+	libkernelppp headers ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp pppoe
+	] : true ;
+
+KernelAddon ipcp :
+	kernel_cpp.cpp
+
+	# imported from kernel util
+	inet_addr.c
+
+	ipcp.cpp
+	Protocol.cpp
+;
+
+
+SEARCH on [ FGristFiles inet_addr.c ]
+	= [ FDirName $(HAIKU_TOP) src system kernel util ] ;
+
+SEARCH on [ FGristFiles kernel_cpp.cpp ]
+        = [ FDirName $(HAIKU_TOP) src system kernel util ] ;
+
+LinkAgainst ipcp : libkernelppp.a ;
+
+HaikuInstall install-ppp
+	: /boot/home/config/non-packaged/add-ons/kernel/network/ppp
+	: ipcp ;

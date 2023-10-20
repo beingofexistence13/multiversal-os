@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src add-ons kernel network ppp pap ;
+
+SubDirC++Flags -fno-rtti ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+UsePrivateHeaders [ FDirName kernel ] ;
+UsePrivateHeaders [ FDirName kernel util ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared
+	libkernelppp headers ] : true ;
+
+KernelAddon pap :
+	pap.cpp
+	Protocol.cpp
+;
+
+LinkAgainst pap : libkernelppp.a ;
+
+# Installation
+HaikuInstall install-ppp
+	: /boot/home/config/non-packaged/add-ons/kernel/network/ppp
+	: pap ;

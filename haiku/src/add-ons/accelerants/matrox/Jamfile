@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src add-ons accelerants matrox ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics matrox ] ;
+UseHeaders [ FDirName $(SUBDIR) engine ] ;
+
+Addon matrox.accelerant :
+	Cursor.c
+	EngineManagment.c
+	GetAccelerantHook.c
+	GetDeviceInfo.c
+	GetModeInfo.c
+	GetTimingConstraints.c
+	InitAccelerant.c
+	Overlay.c
+	ProposeDisplayMode.c
+	SetDisplayMode.c
+	: libmatrox_engine.a
+;
+
+Depends matrox.accelerant : matrox ;
+
+SubInclude HAIKU_TOP src add-ons accelerants matrox engine ;

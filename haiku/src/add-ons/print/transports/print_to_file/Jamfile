@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons print transports print_to_file ;
+
+# In case of changing the name of this transport add-on
+# the method NeedsLocking() in src/servers/print/ResourceManager.cpp
+# has to be updated as well.
+Addon Print\ To\ File : 
+	print_transport.cpp
+	FileSelector.cpp
+	: be tracker [ TargetLibsupc++ ]
+;

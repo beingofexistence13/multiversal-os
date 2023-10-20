@@ -1,0 +1,19 @@
+SubDir HAIKU_TOP src preferences deskbar ;
+
+SubDirSysHdrs $(HAIKU_TOP) src apps deskbar ;
+
+Preference <preference>Deskbar
+	:
+	DeskbarPreferences.cpp
+	:
+	be localestub
+	:
+	DeskbarPreferences.rdef
+;
+
+DoCatalogs <preference>Deskbar
+	:
+	x-vnd.Haiku-DeskbarPreferences
+	:
+	DeskbarPreferences.cpp
+;

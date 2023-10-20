@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src apps debuganalyzer gui ;
+
+UsePrivateHeaders debug interface kernel shared ;
+UsePrivateSystemHeaders ;
+
+UseHeaders $(HAIKU_DEBUG_ANALYZER_HEADERS) ;
+
+MergeObject DebugAnalyzer_gui.o
+	:
+	AbstractGeneralPage.cpp
+	ColorCheckBox.cpp
+	HeaderView.cpp
+	ListSelectionModel.cpp
+	SubWindow.cpp
+	SubWindowManager.cpp
+	:
+	DebugAnalyzer_gui_chart.o
+	DebugAnalyzer_gui_main_window.o
+	DebugAnalyzer_gui_table.o
+	DebugAnalyzer_gui_thread_window.o
+;
+
+
+HaikuSubInclude chart ;
+HaikuSubInclude main_window ;
+#HaikuSubInclude model ;
+HaikuSubInclude table ;
+HaikuSubInclude thread_window ;

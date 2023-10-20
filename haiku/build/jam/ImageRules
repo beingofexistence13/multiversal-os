@@ -1,0 +1,1727 @@
+rule FSameTargetWithPrependedGrist
+{
+	# SameTargetWithPrependedGrist <target> : <grist to prepend> ;
+	#
+	local target = $(1) ;
+	local gristToPrepend = $(2) ;
+	local grist = $(target:G) ;
+
+	if $(grist) {
+		grist = $(gristToPrepend)!$(grist) ;
+	} else {
+		grist = $(gristToPrepend) ;
+	}
+
+	return $(target:G=$(grist)) ;
+}
+
+rule InitScript
+{
+	# Note: The script must have been LOCATEd before.
+	local script = $(1) ;
+	local initScript
+		= [ FSameTargetWithPrependedGrist $(script) : init-script ] ;
+
+	if ! [ on $(script) return $(__is_initialized) ] {
+		__is_initialized on $(script) = true ;
+
+		MakeLocate $(initScript) : [ on $(script) return $(LOCATE) ] ;
+		Always $(initScript) ;
+		Depends $(script) : $(initScript) ;
+
+		InitScript1 $(initScript) ;
+	}
+
+	return $(initScript) ;
+}
+
+actions InitScript1
+{
+	$(RM) $(1)
+	touch $(1)
+}
+
+rule AddVariableToScript script : variable : value
+{
+	# AddVariableToScript <script> : <variable> : <value> ;
+
+	# interpret an empty variable value as empty string
+	if ! $(value) {
+		value = "" ;
+	}
+
+	InitScript $(script) ;
+
+	VARIABLE_DEFS on $(script) += "echo $(variable)=\\\"$(value[1])\\\" >> " ;
+
+	# if the value is an array, add the other array elements
+	value = $(value[2-]) ;
+	while $(value) {
+		VARIABLE_DEFS on $(script)
+			+= "echo $(variable)=\\\" \\\$$(variable) $(value[1])\\\" >> " ;
+		value = $(value[2-]) ;
+	}
+
+	AddVariableToScript1 $(script) ;
+}
+
+actions together AddVariableToScript1
+{
+	$(VARIABLE_DEFS)$(1);
+}
+
+
+rule AddTargetVariableToScript script : targets : variable
+{
+	# AddTargetVariableToScript <script> : <targets> [ : <variable> ] ;
+	#
+	# If <targets> contains multiple targets, their paths must not contain
+	# whitespaces or other characters that need to be escaped in the shell.
+	#
+	variable ?= $(3:E=$(targets[1]:BS)) ;
+
+	local initScript = [ InitScript $(script) ] ;
+
+	serialization = [ on $(script) return $(HAIKU_SERIALIZATION) ] ;
+
+	local variableTarget = [ NewUniqueTarget ] ;
+	NotFile $(variableTarget) ;
+	Depends $(variableTarget) : $(initScript) $(targets) $(serialization) ;
+	Depends $(script) : $(variableTarget) ;
+
+	HAIKU_SERIALIZATION on $(script) = $(variableTarget) ;
+
+	HAIKU_VARIABLE_NAME on $(variableTarget) = $(variable) ;
+	AddTargetVariableToScript1 $(variableTarget) : $(initScript) $(targets) ;
+}
+
+
+actions AddTargetVariableToScript1
+{
+	script="$(2[1])"
+	echo "$(HAIKU_VARIABLE_NAME)=" >> "$script"
+
+	firstSeen=
+	for value in "$(2[2-])" ; do
+		if [ -z "$firstSeen" ]; then
+			echo "$(HAIKU_VARIABLE_NAME)=\"$value\"" >> "$script"
+			firstSeen=1
+		else
+			echo "$(HAIKU_VARIABLE_NAME)=\"\$$(HAIKU_VARIABLE_NAME) $value\"" \
+				>> "$script"
+		fi
+	done
+}
+
+
+#pragma mark -
+
+rule AddDirectoryToContainer container : directoryTokens : attributeFiles
+{
+	# AddDirectoryToContainer <container> : <directoryTokens> : <attributeFiles>
+
+	local containerGrist = [ on $(container) return $(HAIKU_CONTAINER_GRIST) ] ;
+	local directory = [ FDirName $(directoryTokens) ] ;
+	directory = $(directory:G=$(containerGrist)) ;
+
+	if ! [ on $(directory) return $(__is_on_image) ] {
+		HAIKU_INSTALL_DIRECTORIES on $(container) += $(directory) ;
+		__is_on_image on $(directory) = true ;
+		DIRECTORY_TOKENS on $(directory) = $(directoryTokens) ;
+		NotFile $(directory) ;
+
+		# mark the parent dir as not to be created
+		local parent = [ FReverse $(directoryTokens) ] ;
+		parent = [ FReverse $(parent[2-]) ] ;
+		if $(parent) {
+			parent = [ FDirName $(parent) ] ;
+			parent = $(parent:G=$(containerGrist)) ;
+			DONT_CREATE on $(parent) = true ;
+		}
+	}
+
+	if $(attributeFiles) {
+		SEARCH on $(attributeFiles)
+			+= [ FDirName $(HAIKU_TOP) src data directory_attrs ] ;
+		ATTRIBUTE_FILES on $(directory) += $(attributeFiles) ;
+	}
+
+	return $(directory) ;
+}
+
+rule FilterContainerUpdateTargets targets : filterVariable
+{
+	# FilterContainerUpdateTargets targets : filterVariable
+
+	local filteredTargets ;
+	local target ;
+	for target in $(targets) {
+		if [ on $(target) return $($(filterVariable)) ] {
+			filteredTargets += $(target) ;
+		}
+	}
+	return $(filteredTargets) ;
+}
+
+
+rule IncludeAllTargetsInContainer container
+{
+	local filterVar
+		= [ on $(container) return $(HAIKU_INCLUDE_IN_CONTAINER_VAR) ] ;
+	if $(filterVar) {
+		return $($(filterVar)) ;
+	}
+
+	return ;
+}
+
+
+rule PropagateContainerUpdateTargetFlags toTarget : fromTarget
+{
+	if [ on $(fromTarget) return $(HAIKU_INCLUDE_IN_IMAGE) ] {
+		HAIKU_INCLUDE_IN_IMAGE on $(toTarget) = 1 ;
+	}
+
+	if [ on $(fromTarget) return $(HAIKU_INCLUDE_IN_PACKAGES) ] {
+		HAIKU_INCLUDE_IN_PACKAGES on $(toTarget) = 1 ;
+	}
+}
+
+
+rule AddFilesToContainer container : directoryTokens : targets : destName
+	: flags
+{
+	# AddFilesToContainer <container> : <directoryTokens> : <targets>
+	#	: [ <destName> ] : [ <flags> ]
+	#
+	# Supported flags:
+	#	computeName - <destName> is the name of a shell command/function that
+	#		computes the destination name.
+	#	alwaysUpdate - When only updating the container, always also update the
+	#		given targets.
+
+	local containerGrist = [ on $(container) return $(HAIKU_CONTAINER_GRIST) ] ;
+	local systemDirTokens
+		= [ on $(container) return $(HAIKU_CONTAINER_SYSTEM_DIR_TOKENS) ] ;
+
+	targets = [ FFilterByBuildFeatures $(targets) ] ;
+
+	# If the image shall only be updated, we filter out all targets not marked
+	# accordingly.
+	if [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+		&& ! [ IncludeAllTargetsInContainer $(container) ]
+		&& ! alwaysUpdate in $(flags) {
+		local filterVar
+			= [ on $(container) return $(HAIKU_INCLUDE_IN_CONTAINER_VAR) ] ;
+		if $(filterVar) {
+			targets = [ FilterContainerUpdateTargets $(targets)
+				: $(filterVar) ] ;
+
+			# If there are any targets, mark the container as to be included in
+			# an update, too, if it has set the update inheritance variable.
+			# This makes updating a target that lives in a package on an image
+			# work.
+			if $(targets) {
+				local updateVariable = [ on $(container) return
+					$(HAIKU_CONTAINER_INHERIT_UPDATE_VARIABLE) ] ;
+				if $(updateVariable) {
+					$(updateVariable) on $(container) = 1 ;
+				}
+			}
+		}
+	}
+
+	if ! $(targets) {
+		return ;
+	}
+
+	local directory = [ AddDirectoryToContainer $(container)
+		: $(directoryTokens) ] ;
+
+	# We create a unique dummy target per target to install.
+	local installTargetsVar
+		= [ on $(container) return $(HAIKU_INSTALL_TARGETS_VAR) ] ;
+	local stripExecutables
+		= [ on $(container) return $(HAIKU_CONTAINER_STRIP_EXECUTABLES) ] ;
+	local target ;
+	for target in $(targets) {
+		local name ;
+		local nameFunction ;
+		if $(destName) {
+			if computeName in $(flags) {
+				nameFunction = $(destName) ;
+				name = $(destName)/$(target:BSM) ;
+			} else {
+				name = $(destName) ;
+			}
+		} else {
+			name = $(target:BSM) ;
+		}
+
+		local installTarget = $(target) ;
+		if $(stripExecutables)
+			&& [ on $(target) return $(HAIKU_TARGET_IS_EXECUTABLE) ] {
+			installTarget = [ StripFiles $(target) ] ;
+		}
+
+		local destTarget = $(name:G=$(containerGrist)__$(directory:G=)) ;
+		TARGET on $(destTarget) = $(installTarget) ;
+		INSTALL_DIR on $(destTarget) = $(directory) ;
+		NAME_FUNCTION on $(destTarget) = $(nameFunction) ;
+		$(installTargetsVar) on $(target) += $(destTarget) ;
+		TARGETS_TO_INSTALL on $(directory) += $(destTarget) ;
+
+		# If the target and its static libraries are associated with catalog
+		# files, add those, too.
+		local catalogTargets = $(target) + [ on $(target) return $(NEEDLIBS) ] ;
+		for catalogTarget in $(catalogTargets) {
+			local catalogs
+				= [ on $(catalogTarget) return $(HAIKU_CATALOG_FILES) ] ;
+			if $(catalogs) {
+				local signature
+					= [ on $(catalogTarget)
+						return $(HAIKU_CATALOG_SIGNATURE) ] ;
+				AddFilesToContainer $(container)
+					: $(systemDirTokens) data locale catalogs $(signature)
+					: $(catalogs) ;
+			}
+		}
+
+		# If the target is associated with MIME DB entries, add those, too.
+		local mimeDBEntries = [ on $(target) return $(HAIKU_MIME_DB_ENTRIES) ] ;
+		if $(mimeDBEntries) {
+			# Make sure we add the entries only once by tracking the containers
+			# we have already added it to.
+			local containers = [ on $(mimeDBEntries)
+				return $(HAIKU_MIME_DB_ENTRIES_IN_CONTAINERS) ] ;
+			if ! $(container) in $(containers) {
+				HAIKU_MIME_DB_ENTRIES_IN_CONTAINERS on $(mimeDBEntries)
+					= $(containers) $(container) ;
+	 			CopyDirectoryToContainer $(container) : data
+ 					: $(mimeDBEntries) : mime_db : : alwaysUpdate isTarget ;
+ 			}
+		}
+	}
+}
+
+rule FFilesInContainerDirectory container : directoryTokens
+{
+	local containerGrist = [ on $(container) return $(HAIKU_CONTAINER_GRIST) ] ;
+	local directory = [ FDirName $(directoryTokens) ] ;
+	directory = $(directory:G=$(containerGrist)) ;
+
+	if [ on $(directory) return $(__is_on_image) ] {
+		on $(directory) return $(TARGETS_TO_INSTALL) ;
+	}
+
+	return ;
+}
+
+rule AddSymlinkToContainer container : directoryTokens : linkTarget : linkName
+{
+	# AddSymlinkToContainer <container> : <directory> : <link target>
+	#	[ : <link name> ] ;
+	#
+
+	# If the image shall only be updated, we don't add any symlinks.
+	if [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+		&& ! [ IncludeAllTargetsInContainer $(container) ] {
+		return ;
+	}
+
+	local directory = [ AddDirectoryToContainer $(container)
+		: $(directoryTokens) ] ;
+
+	if ! $(linkName) {
+		local path = [ FReverse [ FSplitPath $(linkTarget) ] ] ;
+		linkName = $(path[1]) ;
+	}
+
+	local link = $(directory)/$(linkName) ;
+	SYMLINK_TARGET on $(link) = $(linkTarget) ;
+	SYMLINKS_TO_INSTALL on $(directory) += $(link) ;
+}
+
+rule FSymlinksInContainerDirectory container : directoryTokens
+{
+	local containerGrist = [ on $(container) return $(HAIKU_CONTAINER_GRIST) ] ;
+	local directory = [ FDirName $(directoryTokens) ] ;
+	directory = $(directory:G=$(containerGrist)) ;
+
+	if [ on $(directory) return $(__is_on_image) ] {
+		on $(directory) return $(SYMLINKS_TO_INSTALL) ;
+	}
+
+	return ;
+}
+
+rule CopyDirectoryToContainer container : directoryTokens : sourceDirectory
+	: targetDirectoryName : excludePatterns : flags
+{
+	# CopyDirectoryToContainer <container> : <directoryTokens>
+	#	: <sourceDirectory> : <targetDirectoryName> : <excludePatterns>
+	#	[ : <flags> ] ;
+	#
+	# Supported flags: alwaysUpdate, isTarget
+	# isTarget: <sourceDirectory> is a target, not a path
+
+	# If the image shall only be updated, we don't copy any directories
+	if [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+			&& ! [ IncludeAllTargetsInContainer $(container) ]
+			&& ! alwaysUpdate in $(flags) {
+		return ;
+	}
+
+	if ! $(targetDirectoryName) {
+		targetDirectoryName = $(sourceDirectory[1]:BSM) ;
+	}
+
+	# If sourceDirectory is a path, not a target, make it a target, so we can
+	# treat both the same way.
+	if ! isTarget in $(flags) {
+		sourceDirectory = $(sourceDirectory:G=copy-directory-to-container) ;
+		SEARCH on $(sourceDirectory) = ;
+		TARGET on $(sourceDirectory) = ;
+	}
+
+	local directory = [ AddDirectoryToContainer $(container)
+		: $(directoryTokens) $(targetDirectoryName) ] ;
+
+	local targetDir = $(directory)/-/$(sourceDirectory) ;
+	Depends $(targetDir) : $(sourceDirectory) ;
+	EXCLUDE_PATTERNS on $(targetDir) = $(excludePatterns) ;
+	SOURCE_DIRECTORY on $(targetDir) = $(sourceDirectory) ;
+	TARGET_DIRECTORY on $(targetDir) = $(directory) ;
+	DIRECTORIES_TO_INSTALL on $(directory) += $(targetDir) ;
+}
+
+
+rule AddHeaderDirectoryToContainer container : dirTokens : dirName
+	: flags
+{
+	# AddHeaderDirectoryToContainer <container> : <dirTokens> : [ <dirName> ]
+	#	[ : <flags> ] ;
+	#
+	# Supported flags: alwaysUpdate
+
+	local systemDirTokens
+		= [ on $(container) return $(HAIKU_CONTAINER_SYSTEM_DIR_TOKENS) ] ;
+
+	CopyDirectoryToContainer $(container) : $(systemDirTokens) develop headers
+		: [ FDirName $(HAIKU_TOP) headers $(dirTokens) ]
+		: $(dirName) : -x *~ : $(flags) ;
+}
+
+
+rule AddWifiFirmwareToContainer container : driver : package : archive : extract
+{
+	# AddWifiFirmwareToContainer <container> : <driver> : <package> : <archive>
+	#	: <extract>
+
+	# complete location to wifi firmware archive
+	local firmwareArchive = [ FDirName
+		$(HAIKU_TOP) data system data firmware $(driver) $(archive) ] ;
+
+	local systemDirTokens
+		= [ on $(container) return $(HAIKU_CONTAINER_SYSTEM_DIR_TOKENS) ] ;
+
+	local dirTokens = $(systemDirTokens) data firmware $(driver) ;
+	if $(extract) = true || $(extract) = 1 {
+		ExtractArchiveToContainer $(container) : $(dirTokens)
+			: $(firmwareArchive) : : $(package) ;
+	} else {
+		AddFilesToContainer $(container) : $(dirTokens) : $(firmwareArchive) ;
+	}
+}
+
+
+rule ExtractArchiveToContainer container : directoryTokens : archiveFile
+	: flags : extractedSubDir
+{
+	# ExtractArchiveToContainer <container> : <directory> : <archiveFile>
+	#	: [ <flags> ] : <extractedSubDir> ;
+	#
+	# Supported flags: alwaysUpdate
+
+	# If the container shall only be updated, we extract only, if explicitely
+	# requested.
+	if [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+		&& ! alwaysUpdate in $(flags) {
+		return ;
+	}
+
+	local directory = [ AddDirectoryToContainer $(container)
+		: $(directoryTokens) ] ;
+
+	ARCHIVE_FILES_TO_INSTALL on $(directory) += $(archiveFile) ;
+	ARCHIVE_SUBDIR_TO_INSTALL_FROM on $(archiveFile) = $(extractedSubDir) ;
+}
+
+rule AddDriversToContainer container : relativeDirectoryTokens : targets
+{
+	# AddDriversToContainer <container> : <relative directory> : <targets> ;
+	#
+	local systemDirTokens
+		= [ on $(container) return $(HAIKU_CONTAINER_SYSTEM_DIR_TOKENS) ] ;
+	local directoryTokens = $(systemDirTokens) add-ons kernel drivers dev
+		$(relativeDirectoryTokens) ;
+
+	targets = [ FFilterByBuildFeatures $(targets) ] ;
+
+	# A driver can be in multiple categories. Avoid adding it to the bin/
+	# directory more than once.
+	local binTargets ;
+	local target ;
+	for target in $(targets) {
+		local containers
+			= [ on $(target) return $(HAIKU_DRIVER_IN_CONTAINERS) ] ;
+		if ! $(container) in $(containers) {
+			HAIKU_DRIVER_IN_CONTAINERS on $(target)
+				= $(containers) $(container) ;
+			binTargets += $(target) ;
+		}
+	}
+
+	AddFilesToContainer $(container)
+		: $(systemDirTokens) add-ons kernel drivers bin
+		: $(binTargets) ;
+
+	# If the image shall only be updated, we don't add any symlinks.
+	if [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+		&& ! [ IncludeAllTargetsInContainer $(container) ] {
+		return ;
+	}
+
+	# get the relative symlink path prefix
+	local linkPrefix = ;
+	local i ;
+	for i in $(relativeDirectoryTokens) {
+		linkPrefix += .. ;
+	}
+	linkPrefix += .. bin ;
+
+	# add the symlinks
+	local name ;
+	for name in $(targets:BSM) {
+		AddSymlinkToContainer $(container) : $(directoryTokens)
+			: [ FDirName $(linkPrefix) $(name) ] : $(name) ;
+	}
+}
+
+rule AddNewDriversToContainer container : relativeDirectoryTokens
+	: targets : flags
+{
+	# AddNewDriversToContainer <container> : <directory> : <targets> : <flags> ;
+	#
+	# Supported flags:
+	#	alwaysUpdate - When only updating the container, always also update the
+	#		given targets.
+
+	local systemDirTokens
+		= [ on $(container) return $(HAIKU_CONTAINER_SYSTEM_DIR_TOKENS) ] ;
+	local directoryTokens = $(systemDirTokens) add-ons kernel drivers
+		$(relativeDirectoryTokens) ;
+
+	targets = [ FFilterByBuildFeatures $(targets) ] ;
+
+	AddFilesToContainer $(container) : $(directoryTokens)
+		: $(targets) : : $(flags) ;
+}
+
+rule AddBootModuleSymlinksToContainer container : targets
+{
+	# AddBootModuleSymlinksToContainer <container> : <targets> ;
+	#
+
+	# If the container shall only be updated, we don't add any symlinks.
+
+	if [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+		&& ! [ IncludeAllTargetsInContainer $(container) ] {
+		return ;
+	}
+
+	local systemDirTokens
+		= [ on $(container) return $(HAIKU_CONTAINER_SYSTEM_DIR_TOKENS) ] ;
+	targets = [ FFilterByBuildFeatures $(targets) ] ;
+
+	# add the symlinks
+	local installTargetsVar
+		= [ on $(container) return $(HAIKU_INSTALL_TARGETS_VAR) ] ;
+	local target ;
+	for target in $(targets) {
+		# Symlink to the first place where the target has been installed.
+		local destTarget = [ on $(target) return $($(installTargetsVar)[1]) ] ;
+		local installDir = [ on $(destTarget) return $(INSTALL_DIR) ] ;
+
+		if ! $(installDir) {
+			Echo "ERROR: AddBootModuleSymlinksToContainer: Can't create a "
+				"symlink to target" \"$(target)"\"." ;
+			Exit "ERROR: Add*ToContainer has not been invoked for it yet." ;
+		}
+
+		# chop off the system dir prefix from installDir
+		installDir = [ on $(installDir) return $(DIRECTORY_TOKENS) ] ;
+		local dummy ;
+		for dummy in $(systemDirTokens) {
+			installDir = $(installDir[2-]) ;
+		}
+
+		local name = $(target:BSM) ;
+		local linkTarget = [ FDirName ../../.. $(installDir) $(name) ] ;
+
+		AddSymlinkToContainer $(container)
+			: $(systemDirTokens) add-ons kernel boot
+			: $(linkTarget) : $(name) ;
+	}
+}
+
+
+rule AddLibrariesToContainer container : directory : libs
+{
+	# AddLibrariesToContainer <container> : <directory> : <libs>
+	#
+	# Installs libraries with the appropriate links into the container.
+	#
+
+	local lib ;
+	for lib in $(libs) {
+		local abiVersion = [ on $(lib) return $(HAIKU_LIB_ABI_VERSION) ] ;
+		if $(abiVersion) {
+			local abiVersionedLib = $(lib:G=).$(abiVersion) ;
+			AddFilesToContainer $(container) : $(directory) : $(lib)
+				: $(abiVersionedLib) ;
+			AddSymlinkToContainer $(container) : $(directory)
+				: $(abiVersionedLib) : $(lib:G=) ;
+		} else {
+			AddFilesToContainer $(container) : $(directory) : $(lib) ;
+		}
+	}
+}
+
+
+rule CreateContainerMakeDirectoriesScript container : script
+{
+	MakeLocate $(script) : $(HAIKU_OUTPUT_DIR) ;
+	Always $(script) ;
+
+	local initScript = [ InitScript $(script) ] ;
+
+	local scriptBody
+		= [ FSameTargetWithPrependedGrist $(script) : script-body ] ;
+	LOCATE on $(scriptBody) = [ on $(script) return $(LOCATE) ] ;
+	Depends $(scriptBody) : $(initScript) ;
+	Depends $(script) : $(scriptBody) ;
+
+	# collect the directories to create
+	local dirsToCreate ;
+	local directories
+		= [ on $(container) return $(HAIKU_INSTALL_DIRECTORIES) ] ;
+	local dir ;
+	for dir in $(directories) {
+		if ! [ on $(dir) return $(DONT_CREATE) ] {
+			dirsToCreate += $(dir) ;
+		}
+	}
+
+	# If the image shall only be updated, we don't create directories.
+	if $(dirsToCreate)
+		&& ( ! [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ]
+			|| [ IncludeAllTargetsInContainer $(container) ]
+			|| [ on $(container) return
+				$(HAIKU_CONTAINER_ALWAYS_CREATE_DIRECTORIES) ] ) {
+		Depends $(scriptBody) : $(dirsToCreate) ;
+		CreateContainerMakeDirectoriesScript1 $(scriptBody) : $(dirsToCreate) ;
+
+		local serializationDependency = $(scriptBody) ;
+			# Used to create a dependency chain between the dummy targets.
+			# This forces jam to build them one after the other, thus preventing
+			# concurrent writes to the script file when building with multiple
+			# jobs.
+
+		# For directories with attributes, we convert those the specified
+		# resource files to files with attributes and add commands to the script
+		# adding the attributes to the directories.
+		for dir in $(directories) {
+			local resourceFiles = [ on $(dir) return $(ATTRIBUTE_FILES) ] ;
+			if $(resourceFiles) {
+				local dirTokens = [ on $(dir) return $(DIRECTORY_TOKENS) ] ;
+
+				# translate resources file to file with attributes
+				local attributeFile = $(script)-attributes-$(dirTokens:J=-) ;
+				ResAttr $(attributeFile) : $(resourceFiles) ;
+
+				# use a unique dummy target for this file, on which we
+				# can define the TARGET_DIR variable
+				local dummyTarget = $(script)-attributes-dummy-$(dir:G=) ;
+				NotFile $(dummyTarget) ;
+				TARGET_DIR on $(dummyTarget) = $(dir:G=) ;
+
+				Depends $(dummyTarget) : $(initScript) $(attributeFile)
+					$(serializationDependency) ;
+				Depends $(script) : $(dummyTarget) ;
+				serializationDependency = $(dummyTarget) ;
+
+				AppendToContainerMakeDirectoriesScriptAttributes $(dummyTarget)
+					: $(initScript) $(attributeFile) ;
+			}
+		}
+	}
+}
+
+actions piecemeal CreateContainerMakeDirectoriesScript1
+{
+	echo \$mkdir -p "\"\${tPrefix}$(2:G=)\"" >> $(1)
+}
+
+actions AppendToContainerMakeDirectoriesScriptAttributes
+{
+	echo \$copyAttrs "\"\${sPrefix}$(2[2])\"" \
+		"\"\${tPrefix}$(TARGET_DIR)\"" >> $(2[1])
+}
+
+rule CreateContainerCopyFilesScript container : script
+{
+	MakeLocate $(script) : $(HAIKU_OUTPUT_DIR) ;
+	Always $(script) ;
+
+	local initScript = [ InitScript $(script) ] ;
+
+	local scriptBody
+		= [ FSameTargetWithPrependedGrist $(script) : script-body ] ;
+	LOCATE on $(scriptBody) = [ on $(script) return $(LOCATE) ] ;
+	Depends $(scriptBody) : $(initScript) ;
+	Depends $(script) : $(scriptBody) ;
+
+	local serializationDependency = $(scriptBody) ;
+		# Used to create a dependency chain between the dummy targets.
+		# This forces jam to build them one after the other, thus preventing
+		# concurrent writes to the script file when building with multiple
+		# jobs.
+
+	local dir ;
+	for dir in [ on $(container) return $(HAIKU_INSTALL_DIRECTORIES) ] {
+		# filter the targets that shall be renamed; they have to be copied
+		# individually
+		local destTargets = [ on $(dir) return $(TARGETS_TO_INSTALL) ] ;
+		local remainingTargets ;
+		local destTarget ;
+		for destTarget in $(destTargets) {
+			local target = [ on $(destTarget) return $(TARGET) ] ;
+			local name = $(destTarget:G=) ;
+			if $(name) != $(target:BSM) {
+				# use a unique dummy target for this file, on which we
+				# can define the TARGET_DIR variable
+				local dummyTarget = $(script)-dummy-$(dir:G=)-$(target) ;
+				NotFile $(dummyTarget) ;
+				TARGET_DIR on $(dummyTarget) = $(dir:G=) ;
+
+				local nameFunction
+					= [ on $(destTarget) return $(NAME_FUNCTION) ] ;
+				if $(nameFunction) {
+					INSTALL_TARGET_NAME on $(dummyTarget) = "\\${name}" ;
+				} else {
+					INSTALL_TARGET_NAME on $(dummyTarget) = $(name) ;
+				}
+				NAME_FUNCTION on $(dummyTarget) = $(nameFunction) ;
+
+				Depends $(dummyTarget) : $(initScript) $(target)
+					$(serializationDependency) ;
+				Depends $(script) : $(dummyTarget) ;
+				serializationDependency = $(dummyTarget) ;
+
+				AppendToContainerCopyFilesScriptSingleFile $(dummyTarget)
+					: $(initScript) $(target) ;
+			} else {
+				remainingTargets += $(target) ;
+			}
+		}
+		targets = $(remainingTargets) ;
+
+		if $(targets) {
+			# use a unique dummy target for this directory, on which we
+			# can define the TARGET_DIR variable
+			local dummyTarget = $(script)-dummy-$(dir:G=) ;
+			NotFile $(dummyTarget) ;
+			TARGET_DIR on $(dummyTarget) = $(dir:G=) ;
+
+			Depends $(dummyTarget) : $(initScript) $(targets)
+				$(serializationDependency) ;
+			Depends $(script) : $(dummyTarget) ;
+			serializationDependency = $(dummyTarget) ;
+
+			OUTPUT_SCRIPT on $(dummyTarget) = $(initScript) ;
+			AppendToContainerCopyFilesScript $(dummyTarget) : $(targets) ;
+		}
+
+		local symlinks = [ on $(dir) return $(SYMLINKS_TO_INSTALL) ] ;
+		local symlink ;
+		for symlink in $(symlinks) {
+			NotFile $(symlink) ;
+
+			Depends $(script) : $(symlink) ;
+			Depends $(symlink) : $(initScript) $(serializationDependency) ;
+			serializationDependency = $(symlink) ;
+
+			AddSymlinkToContainerCopyFilesScript $(symlink) : $(initScript) ;
+		}
+
+		local targetDirs = [ on $(dir) return $(DIRECTORIES_TO_INSTALL) ] ;
+		local targetDir ;
+		for targetDir in $(targetDirs) {
+			NotFile $(targetDir) ;
+
+			Depends $(script) : $(targetDir) ;
+			Depends $(targetDir) : $(initScript) $(serializationDependency) ;
+			serializationDependency = $(targetDir) ;
+
+			AddDirectoryToContainerCopyFilesScript $(targetDir)
+				: $(initScript) ;
+		}
+	}
+}
+
+
+actions piecemeal AppendToContainerCopyFilesScript bind OUTPUT_SCRIPT
+{
+	echo \$cp "\"\${sPrefix}$(2)\"" "\"\${tPrefix}$(TARGET_DIR)\"" \
+		>> $(OUTPUT_SCRIPT)
+}
+
+
+actions AppendToContainerCopyFilesScriptSingleFile
+{
+	if [ -n "$(NAME_FUNCTION:E)" ]; then
+		echo "name=\`$(NAME_FUNCTION:E) \"$(2[2])\" 2> /dev/null \` || exit 1" \
+			>> $(2[1])
+	fi
+
+	echo \$cp "\"\${sPrefix}$(2[2])\"" \
+		"\"\${tPrefix}$(TARGET_DIR)/$(INSTALL_TARGET_NAME)\"" >> $(2[1])
+}
+
+
+actions AddSymlinkToContainerCopyFilesScript
+{
+	echo \$ln -sfn "\"$(SYMLINK_TARGET)\"" "\"\${tPrefix}$(1:G=)\"" >> $(2[1])
+}
+
+
+actions AddDirectoryToContainerCopyFilesScript bind SOURCE_DIRECTORY
+{
+	echo \$cp -r $(EXCLUDE_PATTERNS) "\"\${sPrefix}$(SOURCE_DIRECTORY)/.\"" \
+		"\"\${tPrefix}$(TARGET_DIRECTORY:G=)\"" >> $(2[1])
+}
+
+
+rule CreateContainerExtractFilesScript container : script
+{
+	MakeLocate $(script) : $(HAIKU_OUTPUT_DIR) ;
+	Always $(script) ;
+
+	local initScript = [ InitScript $(script) ] ;
+
+	local scriptBody
+		= [ FSameTargetWithPrependedGrist $(script) : script-body ] ;
+	LOCATE on $(scriptBody) = [ on $(script) return $(LOCATE) ] ;
+	Depends $(scriptBody) : $(initScript) ;
+	Depends $(script) : $(scriptBody) ;
+
+	local serializationDependency = $(scriptBody) ;
+		# Used to create a dependency chain between the dummy targets.
+		# This forces jam to build them one after the other, thus preventing
+		# concurrent writes to the script file when building with multiple
+		# jobs.
+
+	local dir ;
+	for dir in [ on $(container) return $(HAIKU_INSTALL_DIRECTORIES) ] {
+		local archiveFiles = [ on $(dir) return $(ARCHIVE_FILES_TO_INSTALL) ] ;
+		local archiveFile ;
+		for archiveFile in $(archiveFiles) {
+			# use a unique dummy target for this file, on which we
+			# can define the TARGET_DIR variable
+			local dummyTarget = $(script)-dummy-$(dir:G=)-$(archiveFile) ;
+			NotFile $(dummyTarget) ;
+			TARGET_DIR on $(dummyTarget) = $(dir:G=) ;
+
+			local extractedSubDir = [ on $(archiveFile)
+				return $(ARCHIVE_SUBDIR_TO_INSTALL_FROM) ] ;
+			ARCHIVE_SUBDIR_TO_INSTALL_FROM on $(dummyTarget) =
+				$(extractedSubDir:E=.) ;
+
+			Depends $(dummyTarget) : $(initScript) $(archiveFile)
+				$(serializationDependency) ;
+			Depends $(script) : $(dummyTarget) ;
+			serializationDependency = $(dummyTarget) ;
+
+			AddExtractFileToContainerExtractFilesScript $(dummyTarget)
+				: $(initScript) $(archiveFile) ;
+		}
+	}
+}
+
+
+actions AddExtractFileToContainerExtractFilesScript
+{
+	echo extractFile "\"$(2[2])\"" "\"$(TARGET_DIR)\"" \
+		"\"$(ARCHIVE_SUBDIR_TO_INSTALL_FROM)\"" >> $(2[1])
+}
+
+
+rule AddPackagesAndRepositoryVariablesToContainerScript script : container
+{
+	AddVariableToScript $(script) : downloadDir : $(HAIKU_DOWNLOAD_DIR) ;
+	AddTargetVariableToScript $(script) : <build>package ;
+	AddTargetVariableToScript $(script) : <build>get_package_dependencies
+		: getPackageDependencies ;
+
+	# Add a variable to indicate whether packages dependencies shall be
+	# resolved. We always want to do that in non-update mode, but also in update
+	# mode when all packages are updated.
+	local updateOnly
+		= [ on $(container) return $(HAIKU_CONTAINER_UPDATE_ONLY) ] ;
+	local resolvePackageDependencies ;
+	if ( ! $(updateOnly) || $(HAIKU_UPDATE_ALL_PACKAGES) )
+		&& $(HAIKU_BUILD_TYPE) != bootstrap {
+		resolvePackageDependencies = 1 ;
+	}
+	AddVariableToScript $(script) : resolvePackageDependencies
+		: $(resolvePackageDependencies) ;
+
+	AddVariableToScript $(script) : noDownloads : $(HAIKU_NO_DOWNLOADS) ;
+
+	AddVariableToScript $(script) : updateAllPackages
+		: $(HAIKU_UPDATE_ALL_PACKAGES) ;
+
+	# Add variable "systemPackages" with the packages copied/updated.
+	local systemPackages = [ on $(container) return $(HAIKU_SYSTEM_PACKAGES_IN_IMAGE) ] ;
+	if $(updateOnly) && ! [ IncludeAllTargetsInContainer $(container) ] {
+		systemPackages = [ FilterContainerUpdateTargets $(systemPackages)
+			: [ on $(container) return $(HAIKU_INCLUDE_IN_CONTAINER_VAR) ] ] ;
+	}
+	AddTargetVariableToScript $(script) : $(systemPackages) : systemPackages ;
+
+	# Add variable "otherPackages" with the packages copied/updated.
+	local otherPackages = [ on $(container) return $(HAIKU_OTHER_PACKAGES_IN_IMAGE) ] ;
+	if $(updateOnly) && ! [ IncludeAllTargetsInContainer $(container) ] {
+		otherPackages = [ FilterContainerUpdateTargets $(otherPackages)
+			: [ on $(container) return $(HAIKU_INCLUDE_IN_CONTAINER_VAR) ] ] ;
+	}
+	AddTargetVariableToScript $(script) : $(otherPackages) : otherPackages ;
+
+	# Generate the repository package lists and add variables for the
+	# repositories.
+	local repository ;
+	local repositoryFiles ;
+	for repository in $(HAIKU_REPOSITORIES) {
+		repositoryFiles
+			+= [ on $(repository) return $(HAIKU_REPOSITORY_CACHE_FILE) ] ;
+	}
+
+	AddTargetVariableToScript $(script) : $(repositoryFiles) : repositories ;
+}
+
+
+#pragma mark - Haiku Image rules
+
+rule SetUpdateHaikuImageOnly flag
+{
+	HAIKU_CONTAINER_UPDATE_ONLY on $(HAIKU_IMAGE_CONTAINER_NAME) = $(flag) ;
+}
+
+rule IsUpdateHaikuImageOnly
+{
+	on $(HAIKU_IMAGE_CONTAINER_NAME) return $(HAIKU_CONTAINER_UPDATE_ONLY) ;
+}
+
+rule AddDirectoryToHaikuImage directoryTokens : attributeFiles
+{
+	# AddDirectoryToHaikuImage <directoryTokens> : <attributeFiles>
+
+	return [ AddDirectoryToContainer $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(directoryTokens) : $(attributeFiles) ] ;
+}
+
+rule AddFilesToHaikuImage directory : targets : destName : flags
+{
+	# AddFilesToHaikuImage <directory> : <targets> : [ <destName> ]
+	#	: [ <flags> ]
+
+	AddFilesToContainer $(HAIKU_IMAGE_CONTAINER_NAME) : $(directory)
+		: $(targets) : $(destName) : $(flags) ;
+}
+
+rule FFilesInHaikuImageDirectory directoryTokens
+{
+	return [ FFilesInContainerDirectory $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(directoryTokens) ] ;
+}
+
+rule AddSymlinkToHaikuImage directoryTokens : linkTarget : linkName
+{
+	# AddSymlinkToHaikuImage <directory> : <link target> [ : <link name> ] ;
+
+	linkTarget = $(linkTarget:J=/) ;
+
+	AddSymlinkToContainer $(HAIKU_IMAGE_CONTAINER_NAME) : $(directoryTokens)
+		: $(linkTarget) : $(linkName) ;
+}
+
+rule FSymlinksInHaikuImageDirectory directoryTokens
+{
+	return [ FSymlinksInContainerDirectory $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(directoryTokens) ] ;
+}
+
+rule CopyDirectoryToHaikuImage directoryTokens : sourceDirectory
+	: targetDirectoryName : excludePatterns : flags
+{
+	CopyDirectoryToContainer $(HAIKU_IMAGE_CONTAINER_NAME) : $(directoryTokens)
+		: $(sourceDirectory) : $(targetDirectoryName) : $(excludePatterns)
+		: $(flags) ;
+}
+
+rule AddSourceDirectoryToHaikuImage dirTokens : flags
+{
+	# AddSourceDirectoryToHaikuImage <dirTokens> : <flags> ;
+
+	CopyDirectoryToHaikuImage home HaikuSources
+		: [ FDirName $(HAIKU_TOP) $(dirTokens) ]
+		: : : $(flags) ;
+}
+
+rule AddHeaderDirectoryToHaikuImage dirTokens : dirName : flags
+{
+	# AddHeaderDirectoryToHaikuImage <dirTokens> : [ <dirName> ]
+	#	: <flags> ;
+
+	AddHeaderDirectoryToContainer $(HAIKU_IMAGE_CONTAINER_NAME) : $(dirTokens)
+		: $(dirName) : $(flags) ;
+}
+
+rule AddWifiFirmwareToHaikuImage driver : package : archive : extract
+{
+	# AddWifiFirmwareToHaikuImage <driver> : <package> : <archive> : <extract>
+
+	AddWifiFirmwareToHaikuImage $(HAIKU_IMAGE_CONTAINER_NAME) : $(driver)
+		: $(package) : $(archive) : $(extract) ;
+}
+
+rule ExtractArchiveToHaikuImage dirTokens : archiveFile : flags
+	: extractedSubDir
+{
+	# ExtractArchiveToHaikuImage <dirTokens> : <archiveFile> : <flags>
+	#	: <extractedSubDir> ;
+
+	ExtractArchiveToContainer $(HAIKU_IMAGE_CONTAINER_NAME) : $(dirTokens)
+		: $(archiveFile) : $(flags) : $(extractedSubDir) ;
+}
+
+rule AddDriversToHaikuImage relativeDirectoryTokens : targets
+{
+	# AddDriversToHaikuImage <relative directory> : <targets> ;
+
+	AddDriversToContainer $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(targets) ;
+}
+
+rule AddNewDriversToHaikuImage relativeDirectoryTokens : targets : flags
+{
+	# AddNewDriversToHaikuImage <relative directory> : <targets> : <flags> ;
+
+	AddNewDriversToContainer $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(targets) : $(flags) ;
+}
+
+rule AddBootModuleSymlinksToHaikuImage targets
+{
+	# AddBootModuleSymlinksToHaikuImage <targets> ;
+
+	AddBootModuleSymlinksToContainer $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(targets) ;
+}
+
+rule AddPackageFilesToHaikuImage location : packages : flags
+{
+	# AddPackageFilesToHaikuImage <location> : <packages> : <flags>
+	#
+	# Supported flags:
+	#	nameFromMetaInfo - determine the target file name from the package meta
+	#		info
+
+	packages = [ FFilterByBuildFeatures $(packages) ] ;
+
+	if $(location[1]) = system && $(location[2]) = packages && ! $(location[3]) {
+		HAIKU_SYSTEM_PACKAGES_IN_IMAGE on $(HAIKU_IMAGE_CONTAINER_NAME)
+			= [ on $(HAIKU_IMAGE_CONTAINER_NAME) return $(HAIKU_SYSTEM_PACKAGES_IN_IMAGE) ]
+				$(packages) ;
+	} else {
+		HAIKU_OTHER_PACKAGES_IN_IMAGE on $(HAIKU_IMAGE_CONTAINER_NAME)
+			= [ on $(HAIKU_IMAGE_CONTAINER_NAME) return $(HAIKU_OTHER_PACKAGES_IN_IMAGE) ]
+				$(packages) ;
+	}
+
+	if nameFromMetaInfo in $(flags) {
+		AddFilesToHaikuImage $(location) : $(packages)
+			: packageFileName : computeName ;
+	} else {
+		AddFilesToHaikuImage $(location) : $(packages) ;
+	}
+}
+
+rule AddOptionalHaikuImagePackages packages
+{
+	local package ;
+	for package in $(packages) {
+		if ! [ on $(package) return $(HAIKU_OPTIONAL_PACKAGE_ADDED) ] {
+			HAIKU_OPTIONAL_PACKAGE_ADDED on $(package) = 1 ;
+			HAIKU_ADDED_OPTIONAL_PACKAGES += $(package) ;
+		}
+		local dependencies = [ on $(package)
+			return $(HAIKU_OPTIONAL_PACKAGE_DEPENDENCIES) ] ;
+		AddOptionalHaikuImagePackages $(dependencies) ;
+	}
+}
+
+rule SuppressOptionalHaikuImagePackages packages
+{
+	local package ;
+	for package in $(packages) {
+		if ! [ on $(package) return $(HAIKU_OPTIONAL_PACKAGE_SUPPRESSED) ] {
+			HAIKU_OPTIONAL_PACKAGE_SUPPRESSED on $(package) = 1 ;
+		}
+	}
+}
+
+rule IsOptionalHaikuImagePackageAdded package
+{
+	if ! [ on $(package) return $(HAIKU_OPTIONAL_PACKAGE_EXISTS) ] {
+		HAIKU_OPTIONAL_PACKAGE_EXISTS on $(package) = 1 ;
+		HAIKU_EXISTING_OPTIONAL_PACKAGES += $(package) ;
+	}
+
+	if [ on $(package) return $(HAIKU_OPTIONAL_PACKAGE_ADDED) ] &&
+			! [ on $(package) return $(HAIKU_OPTIONAL_PACKAGE_SUPPRESSED) ] {
+		return 1 ;
+	}
+
+	return ;
+}
+
+rule OptionalPackageDependencies package : dependencies
+{
+	HAIKU_OPTIONAL_PACKAGE_DEPENDENCIES on $(package) = $(dependencies) ;
+	if [ on $(package) return $(HAIKU_OPTIONAL_PACKAGE_ADDED) ] {
+		AddOptionalHaikuImagePackages $(dependencies) ;
+	}
+}
+
+
+rule AddHaikuImagePackages packages : directory
+{
+	# AddHaikuImagePackages <packages> : <directory> ;
+	# Adds the given packages <packages> to the image in the given directory.
+
+	packages = [ FFilterByBuildFeatures $(packages) ] ;
+
+	local package ;
+	for package in $(packages) {
+		local resolvedPackage = [ IsPackageAvailable $(package) ] ;
+		if ! $(resolvedPackage) {
+			Echo "AddHaikuImagePackages: package" $(package)
+				"not available!" ;
+			continue ;
+		}
+
+		if ! [ on $(resolvedPackage) return $(HAIKU_PACKAGE_ADDED) ] {
+			HAIKU_PACKAGE_ADDED on $(resolvedPackage) = 1 ;
+			HAIKU_ADDED_PACKAGES += $(resolvedPackage) ;
+
+			# download the package file and add it to the image
+			local file = [ FetchPackage $(package) ] ;
+
+			if $(HAIKU_UPDATE_ALL_PACKAGES) {
+				HAIKU_INCLUDE_IN_IMAGE on $(file) = 1 ;
+			}
+
+			AddPackageFilesToHaikuImage $(directory) : $(file) ;
+		}
+	}
+}
+
+rule AddHaikuImageSourcePackages packages
+{
+	# AddHaikuImageSourcePackages <packages> ;
+	# Adds the given source packages for <packages> to the image.
+
+	if $(HAIKU_INCLUDE_SOURCES) = 1 {
+		AddHaikuImagePackages $(packages)_source : _sources_ ;
+	}
+}
+
+rule AddHaikuImageSystemPackages packages
+{
+	# AddHaikuImageSystemPackages <packages> ;
+	# Adds the given packages for <packages> to the image, in the system
+	# directory, so they will be activated on first boot.
+
+	AddHaikuImagePackages $(packages) : system packages ;
+}
+
+rule AddHaikuImageDisabledPackages packages
+{
+	# AddHaikuImageDisabledPackages <packages> ;
+	# Adds the given packages for <packages> to the image, in the _packages_
+	# directory, so they can be later enabled in Installer.
+
+	AddHaikuImagePackages $(packages) : _packages_ ;
+}
+
+rule IsHaikuImagePackageAdded package
+{
+	local resolvedPackage = [ IsPackageAvailable $(package) ] ;
+	if $(resolvedPackage)
+		&& [ on $(resolvedPackage) return $(HAIKU_PACKAGE_ADDED) ] {
+		return 1 ;
+	}
+
+	return ;
+}
+
+
+rule BuildHaikuImagePackageList target
+{
+	if ! $(target) {
+		return ;
+	}
+
+	# get the file names of all added packages
+	local packageFiles ;
+	local package ;
+	for package in $(HAIKU_ADDED_PACKAGES) {
+		packageFiles += [ FetchPackage $(package) : nameResolved ] ;
+	}
+
+	# extract the versioned package names (without revision)
+	packageFiles = [ Match "^([^-]*)" : $(packageFiles:B) ] ;
+
+	HAIKU_IMAGE_PACKAGES on $(target) = $(packageFiles) ;
+}
+
+
+actions BuildHaikuImagePackageList
+{
+	echo $(HAIKU_IMAGE_PACKAGES) | xargs -n 1 echo | LC_ALL=C sort -u > $(1)
+}
+
+
+rule AddEntryToHaikuImageUserGroupFile file : entry
+{
+	local allEntries = [ on $(file) return $(HAIKU_IMAGE_USER_GROUP_ENTRIES) ] ;
+
+	if $(allEntries) {
+		allEntries = $(allEntries)|$(entry) ;
+	} else {
+		allEntries = $(entry) ;
+
+		Always $(file) ;
+		MakeLocate $(file) : $(HAIKU_COMMON_PLATFORM_OBJECT_DIR) ;
+		BuildHaikuImageUserGroupFile $(file) ;
+		AddFilesToHaikuImage system settings etc : $(file) ;
+	}
+
+	HAIKU_IMAGE_USER_GROUP_ENTRIES on $(file) = $(allEntries) ;
+}
+
+actions BuildHaikuImageUserGroupFile
+{
+	echo "$(HAIKU_IMAGE_USER_GROUP_ENTRIES)" | tr '|' '\n' > $(1)
+}
+
+rule AddUserToHaikuImage user : uid : gid : home : shell : realName
+{
+	if ! $(user) || ! $(uid) || ! $(gid) || ! $(home) {
+		Exit "Invalid haiku user specification passed to AddUserToHaikuImage." ;
+	}
+
+	local entry
+		= $(user):x:$(uid):$(gid):$(realName:E=$(user)):$(home):$(shell:E="") ;
+
+	AddEntryToHaikuImageUserGroupFile <haiku-image>passwd : $(entry) ;
+}
+
+rule AddGroupToHaikuImage group : gid : members
+{
+	if ! $(group) || ! $(gid) {
+		Exit "Invalid haiku group specification passed to"
+			"AddGroupToHaikuImage." ;
+	}
+
+	local entry = $(group):x:$(gid):$(members:J=,:E) ;
+
+	AddEntryToHaikuImageUserGroupFile <haiku-image>group : $(entry) ;
+}
+
+
+rule AddLibrariesToHaikuImage directory : libs
+{
+	# AddLibraryToHaikuImage <directory> : <libs>
+	#
+	# Installs libraries with the appropriate links onto the image.
+	#
+
+	AddLibrariesToContainer $(HAIKU_IMAGE_CONTAINER_NAME) : $(directory)
+		: $(libs) ;
+}
+
+
+rule CreateHaikuImageMakeDirectoriesScript script
+{
+	CreateContainerMakeDirectoriesScript $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(script) ;
+}
+
+rule CreateHaikuImageCopyFilesScript script
+{
+	CreateContainerCopyFilesScript $(HAIKU_IMAGE_CONTAINER_NAME) : $(script) ;
+}
+
+rule CreateHaikuImageExtractFilesScript script
+{
+	CreateContainerExtractFilesScript $(HAIKU_IMAGE_CONTAINER_NAME)
+		: $(script) ;
+}
+
+rule BuildHaikuImage haikuImage : scripts : isImage : isVMwareImage
+{
+	# BuildHaikuImage <haiku image> : <scripts> : <is image> : <isVMwareImage> ;
+
+	if $(isImage) = 1 || $(isImage) = true {
+		IS_IMAGE on $(haikuImage) = 1 ;
+	} else {
+		IS_IMAGE on $(haikuImage) = "" ;
+	}
+
+	if $(isVMwareImage) = 1 || $(isVMwareImage) = true {
+		IS_VMWARE_IMAGE on $(haikuImage) = 1 ;
+	} else {
+		IS_VMWARE_IMAGE on $(haikuImage) = "" ;
+	}
+
+	local mainScript = build_haiku_image ;
+	SEARCH on $(mainScript) = [ FDirName $(HAIKU_TOP) build scripts ] ;
+
+	Depends $(haikuImage) : $(mainScript) $(scripts) ;
+	BuildHaikuImage1 $(haikuImage) : $(mainScript)
+		$(scripts:R=$(HAIKU_ABSOLUTE_OUTPUT_DIR)) ;
+}
+
+actions BuildHaikuImage1
+{
+	export imagePath="$(1)"
+	export isImage="$(IS_IMAGE)"
+	export isVMwareImage="$(IS_VMWARE_IMAGE)"
+	$(2[1]) $(2[2-])
+}
+
+rule BuildVMWareImage vmwareImage : plainImage : imageSize
+{
+	# BuildVMWareImage <vmware image> : <plain image> : <image size in MB>
+
+	IMAGE_SIZE on $(vmwareImage) = $(imageSize) ;
+
+	Depends $(vmwareImage) : <build>vmdkheader $(plainImage) ;
+	BuildVMWareImage1 $(vmwareImage) : <build>vmdkheader $(plainImage) ;
+}
+
+actions BuildVMWareImage1
+{
+	$(RM) $(1)
+	$(2[1]) -h 64k -i$(IMAGE_SIZE)M $(1) &&
+	cat $(2[2]) >> $(1)
+}
+
+
+#pragma mark - Network Boot Archive rules
+
+rule AddDirectoryToNetBootArchive directoryTokens
+{
+	# AddDirectoryToNetBootArchive <directoryTokens>
+
+	return [ AddDirectoryToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(directoryTokens) ] ;
+}
+
+rule AddFilesToNetBootArchive directory : targets : destName
+{
+	# AddFilesToNetBootArchive <directory> : <targets> [ : dest name ]
+
+	AddFilesToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME) : $(directory)
+		: $(targets) : $(destName) ;
+}
+
+rule AddSymlinkToNetBootArchive directoryTokens : linkTarget : linkName
+{
+	# AddSymlinkToNetBootArchive <directory> : <link target> [ : <link name> ] ;
+
+	AddSymlinkToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(directoryTokens) : $(linkTarget) : $(linkName) ;
+}
+
+rule AddDriversToNetBootArchive relativeDirectoryTokens : targets
+{
+	# AddDriversToNetBootArchive <relative directory> : <targets> ;
+
+	AddDriversToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(targets) ;
+}
+
+rule AddNewDriversToNetBootArchive relativeDirectoryTokens : targets
+{
+	# AddNewDriversToNetBootArchive <relative directory> : <targets> ;
+
+	AddNewDriversToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(targets) ;
+}
+
+rule AddDriverRegistrationToNetBootArchive relativeDirectoryTokens : target
+	: links
+{
+	# AddDriverRegistrationToNetBootArchive <directory> : <link target>
+	#	: <link names> ] ;
+
+	AddDriverRegistrationToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(target) : $(links) ;
+}
+
+rule AddBootModuleSymlinksToNetBootArchive targets
+{
+	# AddBootModuleSymlinksToNetBootArchive <targets> ;
+
+	AddBootModuleSymlinksToContainer $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(targets) ;
+}
+
+rule CreateNetBootArchiveMakeDirectoriesScript script
+{
+	CreateContainerMakeDirectoriesScript
+		$(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME) : $(script) ;
+}
+
+rule CreateNetBootArchiveCopyFilesScript script
+{
+	CreateContainerCopyFilesScript $(HAIKU_NET_BOOT_ARCHIVE_CONTAINER_NAME)
+		: $(script) ;
+}
+
+rule BuildNetBootArchive archive : scripts
+{
+	# BuildNetBootArchive <archive> : <scripts> ;
+
+	local mainScript = build_archive ;
+	SEARCH on $(mainScript) = [ FDirName $(HAIKU_TOP) build scripts ] ;
+
+	Depends $(archive) : $(mainScript) $(scripts) ;
+	BuildNetBootArchive1 $(archive) : $(mainScript)
+		$(scripts:R=$(HAIKU_ABSOLUTE_OUTPUT_DIR)) ;
+}
+
+actions BuildNetBootArchive1
+{
+	$(2[1]) $(1) $(2[2-])
+}
+
+
+#pragma mark - Floppy Boot Archive rules
+
+
+rule AddDirectoryToFloppyBootArchive directoryTokens
+{
+	# AddDirectoryToFloppyBootArchive <directoryTokens>
+
+	return [ AddDirectoryToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(directoryTokens) ] ;
+}
+
+rule AddFilesToFloppyBootArchive directory : targets : destName
+{
+	# AddFilesToFloppyBootArchive <directory> : <targets> [ : dest name ]
+
+	AddFilesToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME) : $(directory)
+		: $(targets) : $(destName) ;
+}
+
+rule AddSymlinkToFloppyBootArchive directoryTokens : linkTarget : linkName
+{
+	# AddSymlinkToFloppyBootArchive <directory> : <link target>
+	#	[ : <link name> ] ;
+
+	AddSymlinkToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(directoryTokens) : $(linkTarget) : $(linkName) ;
+}
+
+rule AddDriversToFloppyBootArchive relativeDirectoryTokens : targets
+{
+	# AddDriversToFloppyBootArchive <relative directory> : <targets> ;
+
+	AddDriversToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(targets) ;
+}
+
+rule AddNewDriversToFloppyBootArchive relativeDirectoryTokens : targets
+{
+	# AddNewDriversToFloppyBootArchive <relative directory> : <targets> ;
+
+	AddNewDriversToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(targets) ;
+}
+
+rule AddDriverRegistrationToFloppyBootArchive relativeDirectoryTokens : target
+	: links
+{
+	# AddDriverRegistrationToFloppyBootArchive <directory> : <link target>
+	#	: <link names> ] ;
+
+	AddDriverRegistrationToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(relativeDirectoryTokens) : $(target) : $(links) ;
+}
+
+rule AddBootModuleSymlinksToFloppyBootArchive targets
+{
+	# AddBootModuleSymlinksToFloppyBootArchive <targets> ;
+
+	AddBootModuleSymlinksToContainer $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(targets) ;
+}
+
+rule CreateFloppyBootArchiveMakeDirectoriesScript script
+{
+	CreateContainerMakeDirectoriesScript
+		$(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME) : $(script) ;
+}
+
+rule CreateFloppyBootArchiveCopyFilesScript script
+{
+	CreateContainerCopyFilesScript $(HAIKU_FLOPPY_BOOT_IMAGE_CONTAINER_NAME)
+		: $(script) ;
+}
+
+rule BuildFloppyBootArchive archive : scripts
+{
+	# BuildHFloppyBootArchive <archive> : <scripts> ;
+
+	local mainScript = build_archive ;
+	SEARCH on $(mainScript) = [ FDirName $(HAIKU_TOP) build scripts ] ;
+
+	Depends $(archive) : $(mainScript) $(scripts) ;
+	BuildFloppyBootArchive1 $(archive) : $(mainScript)
+		$(scripts:R=$(HAIKU_ABSOLUTE_OUTPUT_DIR)) ;
+}
+
+actions BuildFloppyBootArchive1
+{
+	$(2[1]) $(1) $(2[2-])
+}
+
+# warning: that is quite x86 dependant...
+
+rule BuildFloppyBootImage image : haikuLoader : archive
+{
+	Depends $(image) : $(haikuLoader) ;
+	Depends $(image) : $(archive) ;
+	#MakeLocateDebug $(image) ;
+	FLOPPY_IMAGE_SIZE on $(image) = $(HAIKU_BOOT_FLOPPY_IMAGE_SIZE) ;
+	ARCHIVE_IMAGE_OFFSET on $(image) = $(HAIKU_BOOT_ARCHIVE_IMAGE_OFFSET) ;
+
+	# FreeBSD's stat command doesn't support -c/--format option
+	# and use %z specifier for file size
+	if $(HOST_PLATFORM) = freebsd || $(HOST_PLATFORM) = darwin
+		|| $(HOST_PLATFORM) = openbsd {
+		STAT_GET_SIZE = "stat -f %z" ;
+	} else {
+		STAT_GET_SIZE = "stat -c %s" ;
+	}
+
+	BuildFloppyBootImage1 $(image) : $(haikuLoader) $(archive) ;
+	if $(HAIKU_KERNEL_PLATFORM) = atari_m68k {
+		Depends $(image) : <build>fixup_tos_boot_checksum ;
+		BuildFloppyBootImageFixupM68K $(image)
+			: <build>fixup_tos_boot_checksum ;
+	}
+	if $(HAIKU_KERNEL_PLATFORM) = amiga_m68k {
+		Depends $(image) : <build>fixup_amiga_boot_checksum ;
+		BuildFloppyBootImageFixupM68K $(image)
+			: <build>fixup_amiga_boot_checksum ;
+	}
+}
+
+actions BuildFloppyBootImage1
+{
+	haiku_loader_size=`$(STAT_GET_SIZE) "$(>[1])"`
+	drivers_tgz_size=`$(STAT_GET_SIZE) "$(>[2])"`
+
+	archive_image_offset=`echo "$(ARCHIVE_IMAGE_OFFSET) * 1024" | bc`
+	floppy_tgz_size=\
+		`echo "($(FLOPPY_IMAGE_SIZE) - $(ARCHIVE_IMAGE_OFFSET)) * 1024" | bc`
+	if [ $haiku_loader_size -gt $archive_image_offset ] ; then
+		echo "Error: $(>[1]) is too big ($haiku_loader_size) to fit "
+		echo "       before the boot archive starting at $archive_image_offset!"
+		exit 1
+	fi
+	if [ $drivers_tgz_size -gt $floppy_tgz_size ] ; then
+		echo "Error: $(>[2]) is too big ($drivers_tgz_size) to fit "
+		echo "       in the boot floppy ($floppy_tgz_size)!"
+		exit 1
+	fi
+	$(RM) $(<)
+	# make an empty image
+	dd if=/dev/zero of=$(<) bs=1024 count=$(FLOPPY_IMAGE_SIZE)
+	# add haiku_loader
+	dd if=$(>[1]) of=$(<) conv=notrunc
+	# add the boot drivers tgz archive
+	dd if=$(>[2]) of=$(<) bs=$(ARCHIVE_IMAGE_OFFSET)k seek=1 conv=notrunc
+}
+
+actions BuildFloppyBootImageFixupM68K
+{
+	# fixup the boot sector checksum
+	$(>[1]) $(<)
+}
+
+#pragma mark - CD Boot Image rules
+
+rule BuildCDBootImageEFI image : bootfloppy : bootefi : extrafiles
+{
+	Depends $(image) : $(bootfloppy) ;
+	Depends $(image) : $(bootefi) ;
+	Depends $(image) : $(extrafiles) ;
+	BOOTIMG on $(image) = $(bootfloppy) ;
+
+	if $(HAIKU_NIGHTLY_BUILD) = 1 {
+		VOLID on $(image) = haiku-nightly-$(TARGET_ARCH) ;
+	} else {
+		VOLID on $(image) = haiku-$(HAIKU_VERSION)-$(TARGET_ARCH) ;
+	}
+
+	BOOTEFI on $(image) = $(bootefi) ;
+	BuildCDBootImageEFI1 $(image) : $(bootfloppy) $(bootefi) $(extrafiles) ;
+}
+
+actions BuildCDBootImageEFI1
+{
+	$(RM) $(<)
+	xorriso -as mkisofs -b $(BOOTIMG) -eltorito-alt-boot -no-emul-boot -e $(BOOTEFI) \
+		-r -J -V $(VOLID) -o $(<) $(>[1]) $(>[2]) $(>[3-])
+}
+
+
+#pragma mark - CD Boot PPC Image rules
+
+rule BuildCDBootPPCImage image : hfsmaps : elfloader : coffloader : chrpscript
+	: extrafiles
+{
+	Depends $(image) : $(elfloader) ;
+	Depends $(image) : $(coffloader) ;
+	Depends $(image) : $(chrpscript) ;
+	Depends $(image) : $(extrafiles) ;
+	Depends $(image) : $(hfsmaps) ;
+	MAPS on $(image) = $(hfsmaps) ;
+
+	if $(HAIKU_NIGHTLY_BUILD) = 1 {
+		VOLID on $(image) = haiku-nightly-$(TARGET_ARCH) ;
+	} else {
+		VOLID on $(image) = haiku-$(HAIKU_VERSION)-$(TARGET_ARCH) ;
+	}
+
+	BuildCDBootPPCImage1 $(image) : $(elfloader) $(coffloader) $(chrpscript)
+		$(extrafiles) ;
+}
+
+actions BuildCDBootPPCImage1 bind MAPS
+{
+	$(RM) $(<)
+
+	mkdir -p $(HAIKU_OUTPUT_DIR)/cd/ppc
+	mkdir -p $(HAIKU_OUTPUT_DIR)/cd/boot
+	# CHRP Boot script
+	cp $(>[3]) $(HAIKU_OUTPUT_DIR)/cd/ppc/bootinfo.txt
+	cp $(>[3]) $(HAIKU_OUTPUT_DIR)/cd/boot/boot.chrp
+	# Haiku Bootloaders
+	cp $(>[2]) $(HAIKU_OUTPUT_DIR)/cd/boot/haikuloader.xcf
+	cp $(>[1]) $(HAIKU_OUTPUT_DIR)/cd/boot/haikuloader.elf
+	# Extras (readme files, etc)
+	cp $(>[4]) $(HAIKU_OUTPUT_DIR)/cd/
+
+	# Xorriso doesn't have map and some other required tools
+	# to make bootable PowerPC images
+	genisoimage -v -hfs -map $(MAPS) \
+		-hfs-bless $(HAIKU_OUTPUT_DIR)/cd/boot -part -no-desktop \
+		-hfs-parms MAX_XTCSIZE=2656248 -hfs-volid Haiku \
+		--prep-boot boot/haikuloader.elf \
+		--chrp-boot -r -J -o $(<) $(HAIKU_OUTPUT_DIR)/cd
+
+	$(RM) -r $(HAIKU_OUTPUT_DIR)/cd
+}
+
+#pragma mark - EFI System Partition rules
+
+rule BuildEfiSystemPartition image : efiLoader
+{
+	local macVolumeIcon = [ FDirName
+		$(HAIKU_TOP) data artwork VolumeIcon.icns ] ;
+	local fatshell = <build>fat_shell ;
+
+	Depends $(image) : $(efiLoader) ;
+	Depends $(image) : $(macVolumeIcon) ;
+	Depends $(image) : $(fatshell) ;
+
+	switch $(TARGET_ARCH) {
+		case x86 :
+			EFINAME on $(image) = "BOOTIA32.EFI" ;
+		case x86_64 :
+			EFINAME on $(image) = "BOOTX64.EFI" ;
+		case arm :
+			EFINAME on $(image) = "BOOTARM.EFI" ;
+		case arm64 :
+			EFINAME on $(image) = "BOOTAA64.EFI" ;
+		case riscv32 :
+			EFINAME on $(image) = "BOOTRISCV32.EFI" ;
+		case riscv64 :
+			EFINAME on $(image) = "BOOTRISCV64.EFI" ;
+		case * :
+			Exit "Error: Unknown EFI architecture!" ;
+	}
+
+	# public efi keys for efi bios trust
+	EFIKEYS on $(image) = [ FDirName $(HAIKU_TOP) data boot efi keys ] ;
+
+	BuildEfiSystemPartition1 $(image) : $(fatshell) $(macVolumeIcon) $(efiLoader) ;
+}
+
+# Usage:
+#  out : fatshell volumeIcon loader
+actions BuildEfiSystemPartition1
+{
+	$(RM) $(<)
+
+	export $(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR)
+
+	dd if=/dev/zero of=$(<) bs=1024 count=2880
+
+	FATFS="$(2[1])"
+	EFIICON="$(2[2])"
+	LOADER="$(2[3])"
+
+	${FATFS} --initialize "$(<)" 'Haiku ESP'
+	echo "mkdir myfs/EFI" | ${FATFS} $(<)
+	echo "mkdir myfs/KEYS" | ${FATFS} $(<)
+	echo "mkdir myfs/EFI/BOOT" | ${FATFS} $(<)
+
+	echo "cp :${LOADER} myfs/EFI/BOOT/$(EFINAME)" | ${FATFS} $(<)
+	echo "cp :${EFIICON} myfs/.VolumeIcon.icns" | ${FATFS} $(<)
+
+	# Copy UEFI signing keys and a README for end users
+	echo "cp :$(EFIKEYS)/README.md myfs/KEYS/README.md" | ${FATFS} $(<)
+	for i in auth cer crt; do
+		echo "cp :$(EFIKEYS)/DB.$i myfs/KEYS/DB.$i" | ${FATFS} $(<)
+	done
+}

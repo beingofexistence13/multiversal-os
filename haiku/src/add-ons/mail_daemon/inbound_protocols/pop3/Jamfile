@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src add-ons mail_daemon inbound_protocols pop3 ;
+
+UsePublicHeaders [ FDirName add-ons mail_daemon ] ;
+UsePrivateHeaders mail shared ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers os add-ons mail_daemon ] ;
+
+AddResources POP3 : POP3.rdef ;
+
+Addon POP3 :
+	ConfigView.cpp
+	MessageIO.cpp
+	POP3.cpp
+	md5c.c
+	: be libbnetapi.so libmail.so localestub
+		[ TargetLibstdc++ ] [ TargetLibsupc++ ]
+		$(TARGET_NETWORK_LIBS)
+;
+
+DoCatalogs POP3 :
+	x-vnd.Haiku-POP3
+	:
+	ConfigView.cpp
+	POP3.cpp
+;

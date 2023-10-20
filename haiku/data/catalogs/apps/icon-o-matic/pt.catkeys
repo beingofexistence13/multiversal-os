@@ -1,0 +1,117 @@
+1	portuguese	x-vnd.haiku-icon_o_matic	1244334028
+None	Icon-O-Matic-Properties		Nenhum
+Add empty	Icon-O-Matic-ShapesList		Adicionar vazia
+Opening the icon failed!	Icon-O-Matic-Main		Falhou a abertura do ícone!
+Add with path	Icon-O-Matic-ShapesList		Adicionar com caminho
+Copy	Icon-O-Matic-Properties		Copiar
+Color	Icon-O-Matic-PropertyNames		Cor
+Format	Icon-O-Matic-SavePanel		Formato
+Color	Icon-O-Matic-StyleTypes		Cor
+Select	Icon-O-Matic-Properties		Selecionar
+Reset transformation	Icon-O-Matic-ShapesList		Repor transformação
+Duplicate	Icon-O-Matic-StylesList		Duplicar
+Rotate	Icon-O-Matic-TransformationBoxStates		Rodar
+Shorten	Icon-O-Matic-PropertyNames		Encurtar
+The text you are trying to import is quite long, are you sure?	Icon-O-Matic-StyledTextImport		O texto que está a importar é bastante longo, quer continuar?
+Paste	Icon-O-Matic-Properties		Colar
+Close	Icon-O-Matic-Menu-File		Fechar
+Add rect	Icon-O-Matic-PathsList		Adicionar rect
+Rotation	Icon-O-Matic-PropertyNames		Rotação
+Transform	Icon-O-Matic-PathManipulator		Transformar
+Add shape with style	Icon-O-Matic-Menu-Shape		Adicionar forma com estilo
+Remove	Icon-O-Matic-StylesList		Remover
+Cancel	Icon-O-Matic-Menu-Settings		Cancelar
+Transformation	Icon-O-Matic-TransformationBoxStates		Transformação
+Closed	Icon-O-Matic-PropertyNames		Fechado
+<nothing to redo>	Icon-O-Matic-Menu-Edit		<nada para refazer>
+Height	Icon-O-Matic-PropertyNames		Altura
+warning	Icon-O-Matic-SVGExport		aviso
+File	Icon-O-Matic-Menus		Ficheiro
+Properties	Icon-O-Matic-Menus		Propriedades
+Path	Icon-O-Matic-PropertyNames		Caminho
+Path	Icon-O-Matic-Menus		Caminho
+Stroke	Transformation		Traço
+Flip	Icon-O-Matic-PathManipulator		Espelhar
+Opacity	Icon-O-Matic-PropertyNames		Opacidade
+OK	Icon-O-Matic-ColorPicker		OK
+Error: 	Icon-O-Matic-Main		Erro: 
+Saving your document failed!	Icon-O-Matic-Exporter		Ocorreu uma falha ao guardar o documento!
+Snap to grid	Icon-O-Matic-Menu-Settings		Ajustar à grelha
+Opening the document failed!	Icon-O-Matic-Main		Falhou a abertura do documento!
+Add with path & style	Icon-O-Matic-ShapesList		Adicionar com caminho & estilo
+Shape	Icon-O-Matic-Menus		Forma
+<unavailable>	Icon-O-Matic-StyleTypes		<não disponível>
+Min LOD	Icon-O-Matic-PropertyNames		LOD mínimo
+Add	Icon-O-Matic-TransformersList		Adicionar
+Settings	Icon-O-Matic-Menus		Definições
+Scale X	Icon-O-Matic-PropertyNames		Escala em X
+Add	Icon-O-Matic-PathsList		Adicionar
+Remove	Icon-O-Matic-PathManipulator		Remover
+Duplicate	Icon-O-Matic-ShapesList		Duplicar
+Contour	Transformation		Contorno
+Rounding	Icon-O-Matic-PropertyNames		Arredondamento
+Joins	Icon-O-Matic-PropertyNames		Junções
+Cancel	Icon-O-Matic-ColorPicker		Cancelar
+Duplicate	Icon-O-Matic-PathsList		Duplicar
+Save	Icon-O-Matic-Menu-Settings		Guardar
+Export as…	Icon-O-Matic-Menu-File		Exportar como…
+Diamond	Icon-O-Matic-StyleTypes		Diamante
+Don't save	Icon-O-Matic-Menu-Settings		Não guardar
+Add shape with path	Icon-O-Matic-Menu-Shape		Adicionar forma com caminho
+Translation X	Icon-O-Matic-PropertyNames		Translação X
+Icon-O-Matic might not have interpreted all data from the SVG when it was loaded. By overwriting the original file, this information would now be lost.	Icon-O-Matic-SVGExport		O Icon-O-Matic poderá não ter interpretado todos os dados do SVG quando este foi carregado. Ao sobrescrever o ficheiro original, essa informação estaria agora perdida.
+Rotate indices backwards	Icon-O-Matic-PathsList		Rodar índices no sentido inverso
+Overwrite	Icon-O-Matic-SVGExport		Sobrescrever
+Cancel	Icon-O-Matic-SVGExport		Cancelar
+Open…	Icon-O-Matic-Menu-File		Abrir…
+Remove	Icon-O-Matic-ShapesList		Remover
+Drop shapes	Icon-O-Matic-ShapesList		Largar formas
+Linear	Icon-O-Matic-StyleTypes		Linear
+Clean up	Icon-O-Matic-PathsList		Limpar
+Split	Icon-O-Matic-PathManipulator		Dividir
+Move	Icon-O-Matic-TransformationBoxStates		Mover
+Conic	Icon-O-Matic-StyleTypes		Cónico
+Name	Icon-O-Matic-PropertyNames		Nome
+Reset transformation	Icon-O-Matic-StylesList		Repor transformação
+Reverse	Icon-O-Matic-PathsList		Inverter
+Remove	Icon-O-Matic-PathsList		Remover
+Style type	Icon-O-Matic-StyleTypes		Tipo de estilo
+Quit	Icon-O-Matic-Menu-File		Sair
+Gradient	Icon-O-Matic-StyleTypes		Gradiente
+Add shape with path & style	Icon-O-Matic-Menu-Shape		Adicionar forma com caminho & estilo
+Radial	Icon-O-Matic-StyleTypes		Radial
+Text too long	Icon-O-Matic-StyledTextImport		Texto demasiado longo
+Caps	Icon-O-Matic-PropertyNames		Pontas
+OK	Icon-O-Matic-SVGImport		OK
+Append…	Icon-O-Matic-Menu-File		Acrescentar…
+Scale Y	Icon-O-Matic-PropertyNames		Escala em Y
+Rotate indices forwards	Icon-O-Matic-PathsList		Rodar índices
+Save	Icon-O-Matic-Menu-File		Guardar
+Add circle	Icon-O-Matic-PathsList		Adicionar círculo
+Freeze transformation	Icon-O-Matic-ShapesList		Congelar transformação
+Untitled	Icon-O-Matic-Main		Sem título
+Max LOD	Icon-O-Matic-PropertyNames		LOD máximo
+Save changes to current icon before closing?	Icon-O-Matic-Menu-Settings		Guardar alterações no ícone atual antes de fechar?
+Failed to open the file '%s' as an SVG document.\n\n	Icon-O-Matic-SVGImport		Não foi possível abrir o ficheiro '%s' como um documento SVG.\n\n
+Save as…	Icon-O-Matic-Menu-File		Guardar como…
+Swatches	Icon-O-Matic-Menus		Amostras
+<modify path>	Icon-O-Matic-PathCmd		<modificar caminho>
+Icon-O-Matic	System name		Icon-O-Matic
+<nothing to undo>	Icon-O-Matic-Menu-Edit		<nada para desfazer>
+Add	Icon-O-Matic-StylesList		Adicionar
+Translation Y	Icon-O-Matic-PropertyNames		Translação Y
+Scale	Icon-O-Matic-TransformationBoxStates		Redimensionar
+All	Icon-O-Matic-Properties		Tudo
+Transformer	Icon-O-Matic-Menus		Transformador
+Invert selection	Icon-O-Matic-Properties		Inverter seleção
+<unkown property>	Icon-O-Matic-PropertyNames		<propriedade desconhecida>
+Pick a color	Icon-O-Matic-ColorPicker		Escolha uma cor
+Settings…	Icon-O-Matic-SavePanel		Definições…
+Add with style	Icon-O-Matic-ShapesList		Adicionar com estilo
+New	Icon-O-Matic-Menu-File		Novo
+Gradient type	Icon-O-Matic-StyleTypes		Tipo de gradiente
+Export	Icon-O-Matic-Menu-File		Exportar
+Width	Icon-O-Matic-PropertyNames		Largura
+Style	Icon-O-Matic-Menus		Estilo
+Off	Icon-O-Matic-Menu-Settings		Desligar
+Edit	Icon-O-Matic-Menus		Editar

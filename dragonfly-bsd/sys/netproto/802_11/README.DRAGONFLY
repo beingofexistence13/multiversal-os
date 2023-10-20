@@ -1,0 +1,150 @@
+
+			    README.DRAGONFLY
+
+		Porting low level drivers from FreeBSD
+
+    * Fixup #include lines.
+
+      <dev/pci/blah.h>  -> <bus/pci/blah.h>
+      <dev/blah/blah.h> -> <dev/netif/blah/blah.h>
+      <net80211/blah.h> -> <netproto/802_11/blah.h>
+
+      remove <machine/bus.h>
+      remove <machine/resource.h>
+      add    <net/ifq_var.h>
+
+    * Simple API changes
+     
+      malloc	   -> kmalloc
+      free	   -> kfree
+      printf	   -> kprintf
+      pci_find_cap -> pci_find_extcap
+
+      In kmalloc calls, M_NOWAIT -> M_INTWAIT
+
+    * mbuf related calls
+
+      m_collapse(m, M_NOWAIT, blah)	->	m_defrag(m, M_NOWAIT)
+
+      bus_dmamap_load_mbuf_sg(dmat, map, m, segs, &nsegs, BUS_DMA_NOWAIT) ->
+	bus_dmamap_load_mbuf_segment(dmat, map, m, segs, maxscatter,
+					&nsegs, BUS_DMA_NOWAIT);
+
+	The maxscatter argument depends on the driver, '1' if you do not
+	know.
+
+    * netif interface
+
+      IFQ_SET_MAXLEN(), ifp->if_snd.ifq_drv_maxlen = blah, IFQ_SET_READY() ->
+	ifq_set_maxlen(&ifp->if_snd, blah)
+
+      if_start() and if_ioctl() have an additional argument.
+
+	  void blah_start(struct ifnet *, struct ifaltq_subque *);
+	  int  blah_ioctl(struct ifnet *, u_long, caddr_t, struct ucred *);
+
+	  In this situation the additional argument can usually be ignored.
+
+      if_inc_counter(ifp, IFCOUNTER_BLAH, 1)	-> IFNET_STAT_INC(ifp, blah, 1)
+      if_inc_counter(ifp, IFCOUNTER_OERRORS, 1) -> IFNET_STAT_INC(ifp, oerrors, 1)
+
+      if_drv_flags used with IFF_DRV_RUNNING   ->
+      if_flags used with IFF_RUNNING
+
+      if_drv_flags used with IFF_DRV_OACTIVE  ->
+      ifq_is_oactive(), ifq_set_oactive(), ifq_clr_oactive() as appropriate.
+
+      Be very careful here, review your patches to make sure you aren't
+      testing the wrong field against the IFF_* macro.  All OACTIVE chanages
+      must use our API calls and not test the flag(s) directly.
+
+    * Change all struct mtx and related locking api calls and macros
+      to use struct lock (lockmgr locks).
+
+      struct mtx	->	struct lock
+
+      lockmgr(lk, LK_EXCUSIVE)
+      lockmgr(lk, LK_RELEASE)
+      lockinit(lk, wmesg, 0, flags)		(typically 0 or LK_CANRECURSE)
+      KKASSERT(lockstatus(lk) == LK_EXCUSIVE)	(asserting held)
+      KKASSERT(lockstatus(lk) != LK_EXCUSIVE)	(asserting not held)
+
+    * msleep() calls typically have to become lksleep() calls.  However,
+      in these situations the wlan_global_serializer might also be held
+      and must be released, so it is best to wrap it in your own blahsleep()
+      function which does this in addition to the lksleep():
+
+	blah_sleep(struct blah_softc *sc, void *wchan,
+		   int flags, const char *wmsg, int timo)
+	{
+		int iws;
+		int error;
+
+		iws = wlan_is_serialized()
+		if (iws)
+			wlan_serialize_exit();
+		error = lksleep(wchan, appropriatelock, flags, wmsg, timo);
+		if (iws)
+			wlan_serialize_enter();
+		return error;
+	}
+
+    * Firmware loading and/or the general network init function may have
+      to release wlan_global_serializer similarly to how the blah_sleep()
+      releases it for the duration of the init function and firmware load.
+
+    * You may need a modevent infrastructure for module loading.  See the
+      original driver for code or one of the drivers already ported, like
+      netif/ath or netif/iwn
+
+    * SYSCTL macros in FreeBSD may have a CTLFLAG_RWTUN which for us is
+      just CTLFLAG_RW plus an additional TUNABLE* macro (see netif/ath
+      for examples).
+
+    * taskq_start_threads() API is slightly different.
+
+      taskqueue_start_threads(tq, 1, 0, name) ->
+      taskqueue_start_threads(tq, 1, TDPRI_KERN_DAEMON, -1, name)
+
+    * bus_setup_intr() is different.
+
+      bus_setup_intr(dev, irq, INTR_TYPE_NET | INTR_MPSAFE,
+			NULL, intrfunc, sc, &handle)		->
+      bus_setup_intr(dev, irq, INTR_MPSAFE,
+			intrfunc, sc, &handle, &wlan_global_serializer)
+
+    * callout API.  callout_init_mtx() is already macrod to
+      callout_init_lk(). 
+
+      callout_stop()	-> callout_cancel()
+      callout_sched()	-> must be converted to the proper callout_reset(...)
+			   call (function must be re-provided).
+
+    * bus_dma_tag_create() API is dfferent.
+
+      bus_dma_tag_create(tag, alignment,
+			 0,
+			 BUS_SPACE_MAXADDR_32BIT,
+			 BUS_SPACE_MAXADDR,
+			 NULL, NULL,
+			 size, 1, size,
+			 BUS_DMA_NOWAIT,
+			 NULL, NULL,
+			 &dma->tag)			-> to
+
+      bus_dma_tag_create(tag, alignment,
+			 0,
+			 BUS_SPACE_MAXADDR_32BIT,
+			 BUS_SPACE_MAXADDR,
+			 NULL, NULL,
+			 size, 1, size,
+			 BUS_DMA_NOWAIT, &dma->tag);
+
+    * device_printf() may be used with "%6D".  This is a FreeBSD specific
+      conversion specifier that was removed from DragonFly.  There is a
+      generic kether_ntoa() helper function that can be used for printing
+      MAC addresses. ath(4) also has an ath_hal_ether_sprintf() for this
+      purpose and the wlan stack has an ether_sprintf(). Simply removing
+      the __printflike() to silence the warning is wrong since that will
+      still not print the MAC address correctly (due to removed support
+      in the kprintf() functions).

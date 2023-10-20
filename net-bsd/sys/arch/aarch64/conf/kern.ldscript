@@ -1,0 +1,92 @@
+#include "assym.h"
+
+/* Default linker script, for normal executables */
+OUTPUT_FORMAT("elf64-littleaarch64", "elf64-bigaarch64",
+	      "elf64-littleaarch64")
+OUTPUT_ARCH(aarch64)
+ENTRY(_start)
+
+SECTIONS
+{
+	.text :
+	{
+		PROVIDE(__kernel_text = .);
+		PROVIDE(kernel_text = .);
+		*(.text)
+		*(.text.*)
+		*(.stub)
+	} =0
+
+	/* Move .rodata to the next L2 block to set unexecutable */
+	. = ALIGN(L2_SIZE);
+
+	PROVIDE(__rodata_start = .);
+	.rodata :
+	{
+		*(.rodata)
+		*(.rodata.*)
+		. = ALIGN(64);
+		__CTOR_LIST__ = .;
+		*(.ctors)
+		*(.init_array)
+		__CTOR_END__ = .;
+	}
+
+	PROVIDE(_etext = .);
+	PROVIDE(etext = .);
+
+	/*
+	 * Adjust the address for the data segment. Move .data to the next
+	 * L2 block, and .text and .rodata will be set readonly if needed.
+	 */
+	PROVIDE(_erodata = .);
+	. = ALIGN(L2_SIZE);
+
+	.data :
+	{
+		PROVIDE(__data_start = .);
+		*(.data)
+	}
+
+	. = ALIGN(COHERENCY_UNIT);
+	.data.cacheline_aligned :
+	{
+		*(.data.cacheline_aligned)
+	}
+	. = ALIGN(COHERENCY_UNIT);
+	.data.read_mostly :
+	{
+		*(.data.read_mostly)
+	}
+	. = ALIGN(COHERENCY_UNIT);
+
+	_edata = .;
+	PROVIDE (edata = .);
+
+	__bss_start = .;
+	__bss_start__ = .;
+	.bss :
+	{
+		*(.bss)
+		*(.bss.*)
+		*(COMMON)
+
+		/*
+		 * Align here to ensure that the .bss section occupies space
+		 * up to _end. Align after .bss to ensure correct alignment
+		 * even if the .bss section disappears because there are no
+		 * input sections.
+		 *
+		 * FIXME: Why do we need it? When there is no .bss section,
+		 * we don't pad the .data section.
+		 */
+		. = ALIGN(. != 0 ? 32 / 8 : 1);
+	}
+	_bss_end__ = . ;
+	__bss_end__ = . ;
+	. = ALIGN(32 / 8);
+
+	__end__ = . ;
+	_end = .;
+	PROVIDE(end = .);
+}

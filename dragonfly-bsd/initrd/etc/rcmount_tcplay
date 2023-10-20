@@ -1,0 +1,9 @@
+#!/bin/sh
+
+FSTYPE=$2
+MOUNTFROM="/dev/${3#/dev/}"
+VOLUME=$4
+OPTIONS=$5
+
+tcplay -m $VOLUME -d $MOUNTFROM $OPTIONS || return 2
+mount -o ro -t $FSTYPE /dev/mapper/$VOLUME $NEW_ROOT || return 3

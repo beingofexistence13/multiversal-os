@@ -1,0 +1,23 @@
+1	german	x-vnd.Haiku-GLTeapot	3920238746
+Right	TeapotWindow		Rechts
+Backface culling	TeapotWindow		Backface Culling
+Add a teapot	TeapotWindow		Eine Teekanne hinzufügen
+Yellow	TeapotWindow		Gelb
+Perspective	TeapotWindow		Perspektive
+Off	TeapotWindow		Aus
+Quit	TeapotWindow		Beenden
+Green	TeapotWindow		Grün
+Blue	TeapotWindow		Blau
+White	TeapotWindow		Weiß
+Upper center	TeapotWindow		Mitte oben
+Filled polygons	TeapotWindow		Gefüllte Polygone
+Lower left	TeapotWindow		Links unten
+Fog	TeapotWindow		Nebel
+FPS display	TeapotWindow		FPS-Anzeige
+Limit FPS to refresh rate	TeapotWindow		FPS auf Bildwiederholrate begrenzen
+Settings	TeapotWindow		Einstellungen
+Gouraud shading	TeapotWindow		Gouraud Shading
+Lighting	TeapotWindow		Beleuchtung
+Z-buffered	TeapotWindow		Z-Buffering
+Red	TeapotWindow		Rot
+Lights	TeapotWindow		Lichtquellen

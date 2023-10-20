@@ -1,0 +1,48 @@
+1	finnish	x-vnd.Haiku-PowerStatus	1085070685
+Run in window	PowerStatus		Suorita ikkunassa
+Extended battery info	PowerStatus		Laajennetut akkutiedot
+Show status icon	PowerStatus		Näytä tilakuvake
+Battery charging	PowerStatus		Akkulataus
+Design capacity low warning: 	PowerStatus		Suunnittelukapasiteetti alhainen -varoitus: 
+The battery level is critical, please plug in the device immediately.	PowerStatus		Akkutaso on kriittinen, kytke laite heti sähköverkkoon.
+non-rechargeable	PowerStatus		ei-uudelleenladattava
+Last full charge: 	PowerStatus		Viimeinen täysi lataus:
+ mV	PowerStatus		 mV
+Current rate: 	PowerStatus		Virtamäärä: 
+Show text label	PowerStatus		Näytä tekstinimiö
+Quit	PowerStatus		Lopeta
+Battery low	PowerStatus		Akku lähes tyhjä
+Model number: 	PowerStatus		Mallinumero: 
+Battery unused	PowerStatus		Akku käyttämätön
+Type: 	PowerStatus		Tyyppi: 
+Damaged battery	PowerStatus		Vaurioitunut akku
+You can run PowerStatus in a window or install it in the Deskbar.	PowerStatus		Voit suorittaa Virtatilan ikkunassa tai asentaa sen Työpöytäpalkkiin.
+ mAh	PowerStatus		 mAh
+Battery discharging	PowerStatus		Akkulatauksen purkaminen
+Design voltage: 	PowerStatus		Suunnittelujännite: 
+discharging	PowerStatus		puretaan latausta
+rechargeable	PowerStatus		uudelleenladattava
+Battery info…	PowerStatus		Akkutiedot...
+Show time	PowerStatus		Näytä aika
+ mA	PowerStatus		 mA
+About…	PowerStatus		Ohjelmasta...
+Serial number: 	PowerStatus		Sarjanumero: 
+Battery critical	PowerStatus		Akku kriittisellä tasolla
+Capacity: 	PowerStatus		Kapasiteetti: 
+ mW	PowerStatus		 mW
+No supported battery detected. PowerStatus cannot be used on your system.	PowerStatus		Tuettua akkua ei havaittu. Virtatila-sovelmaa ei voida käyttää järjestelmässäsi.
+Show percent	PowerStatus		Näytä prosenttiluku
+Capacity granularity 1: 	PowerStatus		Kapasiteettirakeisuus 1: 
+The battery level is getting low, please plug in the device.	PowerStatus		Akkutaso on alhainen, kytke laite sähköverkkoon.
+Design capacity warning: 	PowerStatus		Suunnittelukapasiteettivaroitus: 
+Capacity granularity 2: 	PowerStatus		Kapasiteettirakeisuus 2: 
+Too bad!	PowerStatus		Liian huono!
+Technology: 	PowerStatus		Teknologia: 
+ mWh	PowerStatus		mWh
+PowerStatus	System name		Virtatila
+Design capacity: 	PowerStatus		Suunnittelukapasiteetti:
+OEM info: 	PowerStatus		OEM-tiedot: 
+no battery	PowerStatus		ei akkua
+Empty battery slot	PowerStatus		Tyhjä akkulokero
+Install in Deskbar	PowerStatus		Asenna Työpöytäpalkkiin
+charging	PowerStatus		ladataan

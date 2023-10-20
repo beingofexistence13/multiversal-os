@@ -1,0 +1,32 @@
+SubDir HAIKU_TOP src preferences keymap ;
+
+UseHeaders [ FDirName $(HAIKU_COMMON_PLATFORM_OBJECT_DIR) data keymaps ] ;
+UseHeaders [ FDirName $(HAIKU_COMMON_PLATFORM_OBJECT_DIR) data
+	keyboard_layouts ] ;
+
+UsePrivateHeaders interface shared ;
+
+Includes [ FGristFiles KeymapWindow.cpp ] : <keymap-locale>KeymapNames.h ;
+Includes [ FGristFiles KeymapWindow.cpp ]
+	: <keyboard-layout-locale>KeyboardLayoutNames.h ;
+
+Preference Keymap :
+	KeyboardLayout.cpp
+	KeyboardLayoutView.cpp
+	Keymap.cpp
+	KeymapApplication.cpp
+	KeymapListItem.cpp
+	KeymapWindow.cpp
+	ModifierKeysWindow.cpp
+
+	: be tracker localestub shared [ TargetLibstdc++ ]
+	: Keymap.rdef
+;
+
+DoCatalogs Keymap :
+	x-vnd.Haiku-Keymap
+	:
+	KeyboardLayoutView.cpp
+	KeymapWindow.cpp
+	ModifierKeysWindow.cpp
+;

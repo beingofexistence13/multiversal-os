@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src add-ons kernel busses pci x86 ;
+
+SubDirC++Flags -fno-rtti -DECAM_PCI_CONTROLLER_NO_INIT ;
+
+UsePrivateKernelHeaders ;
+SubDirHdrs $(HAIKU_TOP) src system kernel arch generic ;
+
+KernelAddon <pci>x86 :
+	X86PCIController.cpp
+	ECAMPCIController.cpp
+	ECAMPCIControllerACPI.cpp
+
+	kernel_interface.cpp
+;
+
+SEARCH on [ FGristFiles ECAMPCIController.cpp ECAMPCIControllerACPI.cpp ]
+    = [ FDirName $(HAIKU_TOP) src add-ons kernel busses pci ecam ] ;

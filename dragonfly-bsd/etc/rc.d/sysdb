@@ -1,0 +1,23 @@
+#!/bin/sh
+#
+# $NetBSD: sysdb,v 1.9 2002/03/22 04:34:00 thorpej Exp $
+# $FreeBSD: src/etc/rc.d/sysdb,v 1.2 2002/06/13 22:14:36 gordon Exp $
+
+# PROVIDE: sysdb
+# REQUIRE: mountcritremote
+# BEFORE:  DAEMON
+
+. /etc/rc.subr
+
+name="sysdb"
+start_cmd="sysdb_start"
+stop_cmd=":"
+
+sysdb_start()
+{
+	echo "Building databases..."
+	install -c -m 644 -g wheel /dev/null /var/run/utmpx
+}
+
+load_rc_config $name
+run_rc_command "$1"

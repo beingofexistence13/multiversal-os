@@ -1,0 +1,34 @@
+SubDir HAIKU_TOP src bin network telnet ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) headers compatibility bsd ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src libs ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src libs libtelnet ] : false ;
+
+UseBuildFeatureHeaders ncurses ;
+
+local defines = [ FDefines USE_TERMIO=1 OLD_ENVIRON=1 ENV_HACK=1 ] ;
+
+SubDirCcFlags $(defines) ;
+SubDirC++Flags $(defines) ;
+
+local sources =
+	authenc.c
+	commands.c
+	main.c
+	network.c
+	ring.c
+	sys_bsd.c
+	telnet.c
+	terminal.c
+	utilities.c
+;
+
+Includes [ FGristFiles $(sources) ]
+	: [ BuildFeatureAttribute ncurses : headers ] ;
+
+
+BinCommand telnet :
+	$(sources)
+	: [ BuildFeatureAttribute ncurses : library ] libtelnet.a libutil.a
+	libbsd.so $(TARGET_NETWORK_LIBS)
+;

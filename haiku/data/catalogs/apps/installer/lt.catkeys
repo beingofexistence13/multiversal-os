@@ -1,0 +1,56 @@
+1	lithuanian	x-vnd.Haiku-Installer	3125198243
+Performing installation.	InstallProgress		Diegiama.
+Please close the DriveSetup window before closing the Installer window.	InstallerWindow		Prieš užverdami įdiegimo programos langą, užverkite Diskų ženklintuvo langą.
+No optional packages available.	PackagesView		Papildomų paketų nėra.
+The mount point could not be retrieved.	InstallProgress		Prijungimo taško nustatyti nepavyko.
+<none>	InstallerWindow	No partition available	<nieko>
+Please choose target	InstallerWindow		Pasirinkite paskirties vietą
+Cancel	InstallProgress		Atsisakyti
+Are you sure you want to to stop the installation?	InstallerWindow		Ar tikrai norite nutraukti diegimą?
+Installer	System name		Įdiegimo programa
+Unknown Type	InstallProgress	Partition content type	tipas nežinomas
+README	InstallerApp		Lydimoji instrukcija
+Quit	InstallerWindow		Baigti darbą
+Write boot sector to '%s'	InstallerWindow		Įrašyti paleidimo sektorių į „%s“
+Boot sector not written because of an internal error.	InstallProgress		Paleidimo sektoriaus nepavyko įrašyti dėl vidinės klaidos.
+Welcome to the Haiku Installer!\n\n	InstallerApp		Sveiki! Tai – „Haiku“ įdiegimo programa!\n\n
+?? of ??	InstallerWindow	Unknown progress	?? iš ??
+DriveSetup, the application to configure disk partitions, could not be launched.	InstallerWindow		Diskų ženklintuvo – priemonės skaidiniams tvarkyti – paleisti nepavyko.
+Quit DriveSetup	InstallerWindow		Užbaikite Diskų ženklintuvo darbą
+Write boot sector	InstallerWindow		Įrašyti paleidimo sektorių
+%1ld of %2ld	InstallerWindow	number of files copied	%1ld iš %2ld
+Install from:	InstallerWindow		Diegti iš:
+Additional disk space required: 0.0 KiB	InstallerWindow		Papildomai reikės disko vietos: 0,0 KiB
+???	InstallerWindow	Unknown currently copied item	???
+Hide optional packages	InstallerWindow		Nerodyti papildomų paketų
+???	InstallerWindow	Unknown partition name	???
+Quit	InstallerApp		Baigti darbą
+OK	InstallerWindow		Gerai
+Try installing anyway	InstallProgress		Vis tiek bandyti įdiegti
+IMPORTANT INFORMATION BEFORE INSTALLING HAIKU\n\n	InstallerApp		SVARBI INFORMACIJA PRIEŠ ĮDIEGIANT „HAIKU“\n\n
+Additional disk space required: %s	InstallerWindow		Papildomai reikės disko vietos: %s
+Stop	InstallerWindow	In alert after pressing Stop	Nutraukti
+Boot sector successfully written.	InstallProgress		Paleidimo sektorius sėkmingai įrašytas.
+An error was encountered and the installation was not completed:\n\nError:  %s	InstallerWindow		Įvyko klaida ir diegimas nebuvo užbaigtas:\n\nKlaida:  %s
+Restart	InstallerWindow		Paleisti iš naujo
+The disk can't be mounted. Please choose a different disk.	InstallProgress		Šio disko prijungti negalima. Pasirinkite kitą diską.
+Begin	InstallerWindow		Pradėti
+Collecting copy information.	InstallProgress		Renkami duomenys kopijavimui.
+Show optional packages	InstallerWindow		Rodyti papildomus paketus
+The destination disk may not have enough space. Try choosing a different disk or choose to not install optional items.	InstallProgress		Paskirties diske nepakanka vietos. Išsirinkite kitą diską arba pašalinkite žymėjimą nuo papildomų paketų, kad šie nebūtų diegiami.
+Installation canceled.	InstallProgress		Diegimo atsisakyta.
+Stop	InstallerWindow		Nutraukti
+Cancel	InstallerWindow		Atsisakyti
+Continue	InstallerWindow	In alert after pressing Stop	Tęsti
+Scanning for disks…	InstallerWindow		Apžvelgiami kaupikliai…
+Running DriveSetup…\n\nClose DriveSetup to continue with the installation.	InstallerWindow		Vykdomas Diskų ženklintuvas…\n\nUžvėrę Diskų ženklintuvą, galėsite tęsti diegimą.
+The partition can't be mounted. Please choose a different partition.	InstallProgress		Šio skaidinio prijungti negalima. Pasirinkite kitą skaidinį.
+Set up partitions…	InstallerWindow		Tvarkyti skaidinius…
+Install progress:  	InstallerWindow		Įdiegiama: 
+You can't install the contents of a disk onto itself. Please choose a different disk.	InstallProgress		Skaidinio turinio diegti į jį patį negalima. Pasirinkite kitą skaidinį.
+OK	InstallProgress		Gerai
+Are you sure you want to install onto the current boot disk? The Installer will have to reboot your machine if you proceed.	InstallProgress		Ar tikrai norite įdiegti į dabartinį paleidimo diską? Jeigu tęsite, įdiegimo programa turės paleisti kompiuterį iš naujo.
+Onto:	InstallerWindow		Į:
+Tools	InstallerWindow		Priemonės
+scanning…	InstallerWindow		žvalgoma…
+Continue	InstallerApp		Tęsti

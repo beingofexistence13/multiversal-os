@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src bin listdev ;
+
+UsePrivateHeaders shared ;
+UsePrivateSystemHeaders ;
+
+BinCommand listdev :
+	dm_wrapper.c
+	listdev.cpp
+;
+
+ObjectHdrs [ FGristFiles listdev$(SUFOBJ) ]
+	: [ FDirName $(TARGET_COMMON_DEBUG_OBJECT_DIR_$(TARGET_PACKAGING_ARCH))
+		apps devices ] ;
+Includes [ FGristFiles listdev.cpp ] :
+	<src!apps!devices>pcihdr.h
+	<src!apps!devices>usbhdr.h
+;

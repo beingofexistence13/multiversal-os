@@ -1,0 +1,30 @@
+SubDir HAIKU_TOP src add-ons translators pcx ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources PCXTranslator : PCXTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles PCXTranslator ] :
+			# PCXTranslator classes
+			main.cpp
+			PCXTranslator.cpp
+			ConfigView.cpp
+			PCX.cpp
+			: be translation
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs PCXTranslator :
+	x-vnd.Haiku-PCXTranslator
+	:
+	main.cpp
+	ConfigView.cpp
+	PCXTranslator.cpp
+;

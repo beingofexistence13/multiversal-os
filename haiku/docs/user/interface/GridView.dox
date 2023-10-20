@@ -1,0 +1,128 @@
+/*
+ * Copyright 2020 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/GridView.h	hrev43514
+ *		src/kits/interface/GridView.cpp	hrev49777
+ */
+
+
+/*!
+	\file GridView.h
+	\ingroup layout
+	\brief Provides the BGridView class.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\class BGridView
+	\ingroup layout
+	\ingroup libbe
+	\brief Container view for a collection of views organized in a grid.
+
+	This class is a convencience class, that creates a BView with a BGridView
+	set up by default.
+
+	You place views in the grid in a table-like structure, that consists of
+	rows and columns. It is not required to put views in every cell in the
+	table. By default, the view has the default system grey background.
+
+	\see BGridLayout for more information on how and when to use this
+		type of container.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGridView::BGridView(float horizontal, float vertical)
+	\brief Creates a new grid view.
+
+
+	\param horizontal The horizontal padding between the columns that contain
+		views.
+	\param vertical The vertical padding between the rows that contain views.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGridView::BGridView(const char *name, float horizontal,
+		float vertical)
+	\brief Creates a new grid view with a \a name.
+
+	\param name The name for the view.
+	\param horizontal The horizontal padding between the columns that contain
+		views.
+	\param vertical The vertical padding between the rows that contain views.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGridView::BGridView(BMessage *from)
+	\brief Constructs a BGridView \a from an archive message.
+
+	This method is usually not called directly, if you want to build a
+	grid view from an archived message you should call Instantiate() instead
+	because it can handle errors properly.
+
+	\param from The \ref BMessage that contains the grid view.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual BGridView::~BGridView()
+	\brief Destructor.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual void BGridView::SetLayout(BLayout *layout)
+	\brief Adopt a given grid \a layout.
+
+	\param layout The layout to set to. This must be a BGridLayout, or a
+		derivative. Any other layout types will be ignored.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGridLayout* BGridView::GridLayout() const
+	\brief Get a pointer to the underlying BGridLayout.
+
+	\return A pointer to the underlying grid layout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual status_t BGridView::Perform(perform_code d, void *arg)
+	\brief Perform some action. (Internal Method)
+
+	Reimplemented from BView::Perform()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static BArchivable* BGridView::Instantiate(BMessage *from)
+	\brief Instantiate the view from the message \a from.
+
+	\since Haiku R1
+*/

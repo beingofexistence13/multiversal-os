@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src tests servers app benchmark ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UseHeaders [ FDirName os app ] ;
+UseHeaders [ FDirName os interface ] ;
+
+Application Benchmark :
+	Benchmark.cpp
+	DrawingModeToString.cpp
+	HorizontalLineTest.cpp
+	RandomLineTest.cpp
+	StringTest.cpp
+	Test.cpp
+	TestWindow.cpp
+	VerticalLineTest.cpp
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+;
+
+if ( $(TARGET_PLATFORM) = libbe_test ) {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : Benchmark
+		: tests!apps ;
+}
+

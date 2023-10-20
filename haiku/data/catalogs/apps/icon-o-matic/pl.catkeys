@@ -1,0 +1,117 @@
+1	polish	x-vnd.haiku-icon_o_matic	1244334028
+None	Icon-O-Matic-Properties		Nic
+Add empty	Icon-O-Matic-ShapesList		Dodaj pusty
+Opening the icon failed!	Icon-O-Matic-Main		Otwieranie ikony nie powiodło się!
+Add with path	Icon-O-Matic-ShapesList		Dodaj ze ścieżką
+Copy	Icon-O-Matic-Properties		Kopiuj
+Color	Icon-O-Matic-PropertyNames		Kolor
+Format	Icon-O-Matic-SavePanel		Format
+Color	Icon-O-Matic-StyleTypes		Kolor
+Select	Icon-O-Matic-Properties		Zaznacz
+Reset transformation	Icon-O-Matic-ShapesList		Resetuj transformację
+Duplicate	Icon-O-Matic-StylesList		Duplikuj
+Rotate	Icon-O-Matic-TransformationBoxStates		Obracanie
+Shorten	Icon-O-Matic-PropertyNames		Skróć
+The text you are trying to import is quite long, are you sure?	Icon-O-Matic-StyledTextImport		Tekst, który zamierzasz zaimportować, jest dość długi. Kontynuować?
+Paste	Icon-O-Matic-Properties		Wklej
+Close	Icon-O-Matic-Menu-File		Zamknij
+Add rect	Icon-O-Matic-PathsList		Dodaj prostokąt
+Rotation	Icon-O-Matic-PropertyNames		Obrót
+Transform	Icon-O-Matic-PathManipulator		Przekształć
+Add shape with style	Icon-O-Matic-Menu-Shape		Dodaj kształt ze stylem
+Remove	Icon-O-Matic-StylesList		Usuń
+Cancel	Icon-O-Matic-Menu-Settings		Anuluj
+Transformation	Icon-O-Matic-TransformationBoxStates		Transformacja
+Closed	Icon-O-Matic-PropertyNames		Zamknij
+<nothing to redo>	Icon-O-Matic-Menu-Edit		<nie ma czego powtórzyć>
+Height	Icon-O-Matic-PropertyNames		Wysokość
+warning	Icon-O-Matic-SVGExport		ostrzeżenie
+File	Icon-O-Matic-Menus		Plik
+Properties	Icon-O-Matic-Menus		Właściwości
+Path	Icon-O-Matic-PropertyNames		Ścieżka
+Path	Icon-O-Matic-Menus		Ścieżka
+Stroke	Transformation		Kreska
+Flip	Icon-O-Matic-PathManipulator		Odwróć
+Opacity	Icon-O-Matic-PropertyNames		Przezroczystość
+OK	Icon-O-Matic-ColorPicker		OK
+Error: 	Icon-O-Matic-Main		Błąd: 
+Saving your document failed!	Icon-O-Matic-Exporter		Zapisywanie dokumentu nie powiodło się!
+Snap to grid	Icon-O-Matic-Menu-Settings		Przyciąganie do siatki
+Opening the document failed!	Icon-O-Matic-Main		Otwieranie dokumentu nie powiodło się!
+Add with path & style	Icon-O-Matic-ShapesList		Dodaj ze ścieżką i stylem
+Shape	Icon-O-Matic-Menus		Kształt
+<unavailable>	Icon-O-Matic-StyleTypes		<niedostępny>
+Min LOD	Icon-O-Matic-PropertyNames		Min. LOD
+Add	Icon-O-Matic-TransformersList		Dodaj
+Settings	Icon-O-Matic-Menus		Ustawienia
+Scale X	Icon-O-Matic-PropertyNames		Skala X
+Add	Icon-O-Matic-PathsList		Dodaj
+Remove	Icon-O-Matic-PathManipulator		Usuń
+Duplicate	Icon-O-Matic-ShapesList		Duplikuj
+Contour	Transformation		Kontur
+Rounding	Icon-O-Matic-PropertyNames		Zaokrąglenie
+Joins	Icon-O-Matic-PropertyNames		Połączenie
+Cancel	Icon-O-Matic-ColorPicker		Anuluj
+Duplicate	Icon-O-Matic-PathsList		Duplikuj
+Save	Icon-O-Matic-Menu-Settings		Zapisz
+Export as…	Icon-O-Matic-Menu-File		Eksportuj jako…
+Diamond	Icon-O-Matic-StyleTypes		Diament
+Don't save	Icon-O-Matic-Menu-Settings		Nie zapisuj
+Add shape with path	Icon-O-Matic-Menu-Shape		Dodaj kształt ze ścieżką
+Translation X	Icon-O-Matic-PropertyNames		Translacja X
+Icon-O-Matic might not have interpreted all data from the SVG when it was loaded. By overwriting the original file, this information would now be lost.	Icon-O-Matic-SVGExport		Gdy Icon-O-Matic otwierał plik SVG, nie mógł przetworzyć wszystkich danych. Po nadpisaniu oryginalnego pliku, te informacje zostaną utracone.
+Rotate indices backwards	Icon-O-Matic-PathsList		Obróć indeksy do tyłu
+Overwrite	Icon-O-Matic-SVGExport		Nadpisz
+Cancel	Icon-O-Matic-SVGExport		Anuluj
+Open…	Icon-O-Matic-Menu-File		Otwórz…
+Remove	Icon-O-Matic-ShapesList		Usuń
+Drop shapes	Icon-O-Matic-ShapesList		Upuść kształty
+Linear	Icon-O-Matic-StyleTypes		Liniowy
+Clean up	Icon-O-Matic-PathsList		Wyczyść
+Split	Icon-O-Matic-PathManipulator		Podziel
+Move	Icon-O-Matic-TransformationBoxStates		Przesunięcie
+Conic	Icon-O-Matic-StyleTypes		Stożkowy
+Name	Icon-O-Matic-PropertyNames		Nazwa
+Reset transformation	Icon-O-Matic-StylesList		Resetuj transformację
+Reverse	Icon-O-Matic-PathsList		Odwróć
+Remove	Icon-O-Matic-PathsList		Usuń
+Style type	Icon-O-Matic-StyleTypes		Typ stylu
+Quit	Icon-O-Matic-Menu-File		Zakończ
+Gradient	Icon-O-Matic-StyleTypes		Gradient
+Add shape with path & style	Icon-O-Matic-Menu-Shape		Dodaj kształt ze ścieżką i stylem
+Radial	Icon-O-Matic-StyleTypes		Promienisty
+Text too long	Icon-O-Matic-StyledTextImport		Tekst jest za długi
+Caps	Icon-O-Matic-PropertyNames		Nasadka
+OK	Icon-O-Matic-SVGImport		OK
+Append…	Icon-O-Matic-Menu-File		Dołącz…
+Scale Y	Icon-O-Matic-PropertyNames		Skala Y
+Rotate indices forwards	Icon-O-Matic-PathsList		Obróć indeksy do przodu
+Save	Icon-O-Matic-Menu-File		Zapisz
+Add circle	Icon-O-Matic-PathsList		Dodaj okrąg
+Freeze transformation	Icon-O-Matic-ShapesList		Zamroź transformację
+Untitled	Icon-O-Matic-Main		Bez nazwy
+Max LOD	Icon-O-Matic-PropertyNames		Maks. LOD
+Save changes to current icon before closing?	Icon-O-Matic-Menu-Settings		Czy zapisać bieżącą ikonę przez zamknięciem?
+Failed to open the file '%s' as an SVG document.\n\n	Icon-O-Matic-SVGImport		Otwarcie pliku „%s” jako dokumentu SVG nie powiodło się.\n\n
+Save as…	Icon-O-Matic-Menu-File		Zapisz jako…
+Swatches	Icon-O-Matic-Menus		Próbki
+<modify path>	Icon-O-Matic-PathCmd		<modyfikacja ścieżki>
+Icon-O-Matic	System name		Icon-O-Matic
+<nothing to undo>	Icon-O-Matic-Menu-Edit		<nie ma czego cofnąć>
+Add	Icon-O-Matic-StylesList		Dodaj
+Translation Y	Icon-O-Matic-PropertyNames		Translacja Y
+Scale	Icon-O-Matic-TransformationBoxStates		Skalowanie
+All	Icon-O-Matic-Properties		Wszystkie
+Transformer	Icon-O-Matic-Menus		Transformator
+Invert selection	Icon-O-Matic-Properties		Odwróć zaznaczenie
+<unkown property>	Icon-O-Matic-PropertyNames		<nieznana właściwość>
+Pick a color	Icon-O-Matic-ColorPicker		Wybierz kolor
+Settings…	Icon-O-Matic-SavePanel		Ustawienia…
+Add with style	Icon-O-Matic-ShapesList		Dodaj ze stylem
+New	Icon-O-Matic-Menu-File		Nowy
+Gradient type	Icon-O-Matic-StyleTypes		Rodzaj gradientu
+Export	Icon-O-Matic-Menu-File		Eksportuj
+Width	Icon-O-Matic-PropertyNames		Szerokość
+Style	Icon-O-Matic-Menus		Styl
+Off	Icon-O-Matic-Menu-Settings		Wyłącz
+Edit	Icon-O-Matic-Menus		Edycja

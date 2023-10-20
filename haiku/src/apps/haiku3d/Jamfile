@@ -1,0 +1,45 @@
+SubDir HAIKU_TOP src apps haiku3d ;
+UseBuildFeatureHeaders mesa ;
+UseBuildFeatureHeaders glu ;
+
+SEARCH_SOURCE += [ FDirName $(SUBDIR) mesh ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) texture ] ;
+
+# For GCC2
+if $(TARGET_CC_IS_LEGACY_GCC_$(TARGET_PACKAGING_ARCH)) = 1 {
+	SubDirC++Flags --no-warnings ;
+}
+
+UsePrivateHeaders shared ;
+
+local sources =
+	App.cpp
+	Camera.cpp
+	MainWindow.cpp
+	MathUtils.cpp
+	Mesh.cpp
+	MeshInstance.cpp
+	RenderView.cpp
+	Texture.cpp
+
+	# mesh
+	StaticMesh.cpp
+
+	# texture
+	BitmapTexture.cpp
+	VideoFileTexture.cpp
+;
+
+Includes [ FGristFiles $(sources) ] :
+	[ BuildFeatureAttribute glu : headers ]
+	[ BuildFeatureAttribute mesa : headers ]
+	;
+
+Application Haiku3d :
+	$(sources)
+	:
+	be game media translation [ TargetLibstdc++ ]
+	[ BuildFeatureAttribute glu : library ]
+	[ BuildFeatureAttribute mesa : library ]
+	: Haiku3d.rdef
+;

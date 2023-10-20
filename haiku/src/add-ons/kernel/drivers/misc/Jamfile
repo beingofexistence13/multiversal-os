@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src add-ons kernel drivers misc ;
+
+UsePrivateHeaders drivers ;
+UsePrivateKernelHeaders ;
+
+KernelAddon <driver>mem :
+	mem.c
+	;
+
+KernelAddon <driver>poke :
+	poke.cpp
+	;
+
+KernelAddon <driver>kdl :
+	kdl.c
+	;
+
+KernelAddon <driver>test :
+	test.c
+	;

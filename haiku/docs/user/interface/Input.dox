@@ -1,0 +1,337 @@
+/*
+ * Copyright 2019 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Name, email@email.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/Input.h	hrev32748
+ *		src/kits/interface/Input.cpp	hrev46376
+ */
+
+
+///// TO THEY WHO DOCUMENT /////
+// The BeBook puts this class and its functions under the category 'Input Server'
+// grouped together with BInputServerDevice, BInputServerFilter and BInputServerMethod
+// Not sure if we should follow that choice.
+
+/*!
+	\file Input.h
+	\ingroup interface
+	\brief Undocumented file.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\class BInputDevice
+	\ingroup interface
+	\ingroup libbe
+	\brief Undocumented class.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BInputDevice::~BInputDevice()
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn const char* BInputDevice::Name() const
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn input_device_type BInputDevice::Type() const
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BInputDevice::IsRunning() const
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BInputDevice::Start()
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BInputDevice::Stop()
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BInputDevice::Control(uint32 code, BMessage *message)
+	\brief Undocumented public method
+
+	\param code Undocumented
+	\param message Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static static status_t BInputDevice::Start(input_device_type type)
+	\brief Undocumented public method
+
+	\param type Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static static status_t BInputDevice::Stop(input_device_type type)
+	\brief Undocumented public method
+
+	\param type Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static static status_t BInputDevice::Control(input_device_type type, uint32 code, BMessage *message)
+	\brief Undocumented public method
+
+	\param type Undocumented
+	\param code Undocumented
+	\param message Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\enum input_method_op
+	\ingroup <kit name>
+	\brief Undocumented enum.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_method_op B_INPUT_METHOD_STARTED
+	\brief Undocumented enum value.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_method_op B_INPUT_METHOD_STOPPED
+	\brief Undocumented enum value.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_method_op B_INPUT_METHOD_CHANGED
+	\brief Undocumented enum value.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_method_op B_INPUT_METHOD_LOCATION_REQUEST
+	\brief Undocumented enum value.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\enum input_device_type
+	\ingroup interface
+	\brief Device types that the Input Server can recognize.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_type B_POINTING_DEVICE
+	\brief Pointing devices like mice, drawing tablets, touch screens, etc.
+
+	These devices generate \c B_MOUSE_MOVED, \c B_MOUSE_UP, and \c B_MOUSE_DOWN
+	messages.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_type B_KEYBOARD_DEVICE
+	\brief Key-based input devices like a keyboard, number pad, etc.
+
+	These devices generate \c B_KEY_DOWN, \c B_UNMAPPED_KEY_DOWN, \c B_KEY_UP,
+	\c B_UNMAPPED_KEY_UP, and \c B_MODIFIERS_CHANGED messages.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_type B_UNDEFINED_DEVICE
+	\brief An undefined/unknown type of input device.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\enum input_device_notification
+	\ingroup interface
+	\brief Constants for the \c be:opcode field of a \c B_INPUT_DEVICES_CHANGED
+		   message.
+
+	These message constants reflect changes in the state of input devices that
+	the Input Server is aware of.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_notification B_INPUT_DEVICE_ADDED
+	\brief An input device was added to the system.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_notification B_INPUT_DEVICE_STARTED
+	\brief An input device was started.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_notification B_INPUT_DEVICE_STOPPED
+	\brief An input device was stopped.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\var input_device_notification B_INPUT_DEVICE_REMOVED
+	\brief An input device was removed from the system.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BInputDevice* find_input_device(const char *name)
+	\brief Undocumented function
+
+	\param name Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t get_input_devices(BList *list)
+	\brief Undocumented function
+
+	\param list Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t watch_input_devices(BMessenger target, bool start)
+	\brief Start/stop watching input devices for state changes.
+
+	Informs the Input Server that \a target would like to start/stop receiving
+	\c B_INPUT_DEVICES_CHANGED messages, reflecting the state of input devices
+	the Input Server is aware of.
+
+	The \c B_INPUT_DEVICES_CHANGED message contains:
+		- \c be:opcode An \c input_device_notifcation constant that identifies
+			 which event occured.
+		- \c be:device_name A string containing the device's name.
+		- \c be:device_type An \c input_device_type constant representing the
+			 device's type.
+
+	\param target Where the device state change messages should or should not be
+		   sent.
+	\param start Whether \a target should start/stop receiving device state
+		   change messages.
+
+	\return A status code.
+	\retval B_OK Watching has successfully been started or stopped.
+	\retval B_BAD_VALUE \a target never started watching for device state
+			changes, though a request was made to stop watching for changes.
+	\retval Other errors depending on the state of the Input Server.
+
+	\since Haiku R1
+*/

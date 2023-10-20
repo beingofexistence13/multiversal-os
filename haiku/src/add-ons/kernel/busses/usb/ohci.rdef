@@ -1,0 +1,17 @@
+/*
+** ohci.rdef
+**
+*/
+
+resource app_signature "application/x-vnd.haiku-ohci";
+
+resource app_version {
+	major  = 1,
+	middle = 0,
+	minor  = 0,
+	variety = 0,
+	internal = 0,
+	short_info = "OHCI host controller driver",
+	long_info = "Haiku OHCI HCD - Copyright 2005-2013, Haiku Inc."
+};
+

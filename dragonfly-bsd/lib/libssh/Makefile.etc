@@ -1,0 +1,16 @@
+.PATH: ${.CURDIR}/../../crypto/openssh
+
+NOOBJ=
+FILES=		moduli
+FILESDIR=	/etc/ssh
+FILESOWN=	${BINOWN}
+FILESGRP=	${BINGRP}
+FILESMODE=	644
+
+# make confuses the text file `moduli' with a binary which needs
+# to be created from `moduli.c'.  Override this implicit rule by an
+# explicit do-nothing.
+moduli:
+	@true
+
+.include <bsd.prog.mk>

@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src add-ons accelerants neomagic ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics neomagic ] ;
+UseHeaders [ FDirName $(SUBDIR) engine ] ;
+
+Addon neomagic.accelerant :
+	Acceleration.c
+	Cursor.c
+	EngineManagment.c
+	GetAccelerantHook.c
+	GetDeviceInfo.c
+	GetModeInfo.c
+	GetTimingConstraints.c
+	InitAccelerant.c
+	Overlay.c
+	ProposeDisplayMode.c
+	SetDisplayMode.c
+	: libneomagic_engine.a
+;
+
+Depends neomagic.accelerant : neomagic ;
+
+SubInclude HAIKU_TOP src add-ons accelerants neomagic engine ;

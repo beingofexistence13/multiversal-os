@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons kernel network devices loopback ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon loopback :
+	loopback.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network/devices
+	: loopback ;

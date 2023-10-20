@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src tests add-ons opengl fake_renderer ;
+
+UsePrivateHeaders interface opengl ;
+
+
+Addon fake_renderer :
+	FakeRenderer.cpp
+	: libGL.so be
+;

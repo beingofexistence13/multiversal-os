@@ -1,0 +1,268 @@
+/*
+ * Copyright 2020 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/GroupLayoutBuilder.h	hrev45833
+ *		src/kits/interface/GroupLayoutBuilder.cpp	hrev38207
+ */
+
+
+/*!
+	\file GroupLayoutBuilder.h
+	\ingroup layout
+	\ingroup libbe
+	\brief Provides \b deprecated GroupLayoutBuilder class.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\class BGroupLayoutBuilder
+	\ingroup libbe
+	\brief \b Deprecated helper class that helps building a \ref BGroupLayout.
+
+	The modern builder can be found in \ref BLayoutBuilder::Group<>.
+
+	This builder supports nested group layouts. See \ref AddGroup() and
+	\ref End().
+
+	\warning This class is deprecated and should not be used in new projects.
+		It may be removed in newer releases.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder::BGroupLayoutBuilder(orientation orientation=B_HORIZONTAL, float spacing=B_USE_DEFAULT_SPACING)
+	\brief Create a new layout builder with a new underlying BGroupLayout.
+
+	\param orientation The orientation of the group.
+	\param spacing The spacing between items.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder::BGroupLayoutBuilder(BGroupLayout *layout)
+	\brief Create a new layout builder that operates on \a layout.
+
+	\param layout The existing layout you want the builder to alter.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder::BGroupLayoutBuilder(BGroupView *view)
+	\brief Create a new layout builder that operates on \a view.
+
+	\param view The existing group view you want the builder to alter.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayout* BGroupLayoutBuilder::RootLayout() const
+	\brief Get a reference to the closest underlying \ref BGroupLayout.
+
+	\return A borrowed pointer to the current underlaying layout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayout* BGroupLayoutBuilder::TopLayout() const
+	\brief Get a reference to the highest underlying \ref BGroupLayout.
+
+	\return A borrowed pointer to the current underlaying layout.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::GetTopLayout(BGroupLayout **_layout)
+	\brief Get a reference to the highest underlying \ref BGroupLayout.
+
+	\param[out] _layout The variable to store a borrowed pointer to the
+		highest underlying layout.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BView* BGroupLayoutBuilder::TopView() const
+	\brief Get a reference to the owning \ref BView.
+
+	Returns the same BView* as BLayout::Owner(), this method is inherited from
+	BLayoutItem.
+
+	\return A borrowed pointer to the owning \ref BView.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::GetTopView(BView **_view)
+	\brief Get a reference to the owning \ref BView.
+
+	\param[out] _view The variable to store the borrowed pointer to the owning
+		\ref BView.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::Add(BView *view)
+	\brief Add a \a view to the underlying \ref BGroupLayout.
+
+	\param view The BView to add.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::Add(BView *view, float weight)
+	\brief Add a \a view to the underlying \ref BGroupLayout.
+
+	\param view The BView to add.
+	\param weight The weight of this view within the group.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::Add(BLayoutItem *item)
+	\brief Add a \ref BLayoutItem to the underlying \ref BGroupLayout.
+
+	\param item The BLayoutItem to add.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::Add(BLayoutItem *item, float weight)
+	\brief Add a \ref BLayoutItem to the underlying \ref BGroupLayout.
+
+	\param item The BLayoutItem to add.
+	\param weight The weight of this view within the group.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::AddGroup(orientation orientation, float spacing=B_USE_DEFAULT_SPACING, float weight=1.0f)
+	\brief Add a subgroup to this layout, and return a reference to a builder
+		that works on that subgroup.
+
+	\param orientation The orientation of the subgroup.
+	\param spacing The spacing between elements of the subgroup.
+	\param weight The weight of the subgroup in the current group.
+
+	\return The method returns a reference to a builder that works on the newly
+	added group. See \ref End().
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::End()
+	\brief Get a reference to a builder of the parent of the current subgroup.
+
+	When you are currently in a subgroup, you may use this method to go back to
+	the higher level layout.
+
+	\return The method returns a reference to a builder that works on the
+		parent of the current subgroup. If you use this method on a toplevel
+		group, the returned reference will be unchanged from the level that you
+		are currently working on.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::AddGlue(float weight=1.0f)
+	\brief Set the glue for the top level group.
+
+	\param weight The weight of the glue.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::AddStrut(float size)
+	\brief Add a strut to the current group.
+
+	\param size The size of the strut.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder& BGroupLayoutBuilder::SetInsets(float left, float top, float right, float bottom)
+	\brief Set the insets of the top level group.
+
+	\param left The left inset.
+	\param top The top inset.
+	\param right The right inset.
+	\param bottom The bottom inset.
+
+	\return The method returns a self reference, so that calls to the builder
+		may be chained.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BGroupLayoutBuilder::operator BGroupLayout *()
+	\brief Cast the builder to the underlying \ref BGroupLayout.
+
+	Convenience method for the \ref RootLayout() method. 
+
+	\since Haiku R1
+*/

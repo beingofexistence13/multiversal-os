@@ -1,0 +1,84 @@
+SubDir HAIKU_TOP src kits shared ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UseLibraryHeaders agg ;
+UsePrivateHeaders shared locale ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		UseHeaders [ FDirName
+			$(TARGET_COMMON_DEBUG_OBJECT_DIR_$(TARGET_PACKAGING_ARCHS[1]))
+			servers input ] ;
+			# For the generated SystemKeymap.h. We're fine with the one for the
+			# primary architecture.
+		UseHeaders [ FDirName $(HAIKU_TOP) src kits ] ;
+
+		# for RWLockManager only
+		UsePrivateSystemHeaders ;
+		UsePrivateHeaders kernel libroot ;
+
+		# for BKeymap
+		UsePrivateHeaders interface ;
+
+		StaticLibrary <$(architecture)>libshared.a :
+			AboutMenuItem.cpp
+			ArgumentVector.cpp
+			AttributeUtilities.cpp
+			BarberPole.cpp
+			BitmapButton.cpp
+			CalendarView.cpp
+			ColorItem.cpp
+			ColorQuantizer.cpp
+			CommandPipe.cpp
+			DateTimeEdit.cpp
+			DragTrackingFilter.cpp
+			DriverSettingsMessageAdapter.cpp
+			HashString.cpp
+			IconButton.cpp
+			IconView.cpp
+			JsonWriter.cpp
+			JsonEventListener.cpp
+			JsonMessageWriter.cpp
+			JsonTextWriter.cpp
+			JsonEvent.cpp
+			Json.cpp
+			Keymap.cpp
+			LongAndDragTrackingFilter.cpp
+			md5.cpp
+			MemoryRingIO.cpp
+			MessageBuilder.cpp
+			NaturalCompare.cpp
+			PromptWindow.cpp
+			QueryFile.cpp
+			RegExp.cpp
+			RWLocker.cpp
+			RWLockManager.cpp
+			SettingsHandler.cpp
+			SettingsMessage.cpp
+			ShakeTrackingFilter.cpp
+			StatusView.cpp
+			StringForRate.cpp
+			StringForSize.cpp
+			StripeView.cpp
+			TextTable.cpp
+			Thread.cpp
+			ToolBar.cpp
+			Variant.cpp
+			WeakReferenceable.cpp
+			;
+
+		Includes [ FGristFiles Keymap.cpp ]
+			: <src!servers!input>SystemKeymap.h ;
+	}
+}
+
+
+UseLibraryHeaders mapm ;
+
+StaticLibrary libexpression_parser.a :
+	ExpressionParser.cpp
+	;

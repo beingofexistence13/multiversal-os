@@ -1,0 +1,37 @@
+SubDir HAIKU_TOP src add-ons accelerants radeon ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics radeon ] ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+
+Addon radeon.accelerant :
+	Acceleration.c
+	CP.c
+	Cursor.c
+	EngineManagment.c
+	GetAccelerantHook.c
+	GetModeInfo.c
+	GlobalData.c
+	InitAccelerant.c
+	ProposeDisplayMode.c
+	SetDisplayMode.c
+	crtc.c
+	dpms.c
+	driver_wrapper.c
+	flat_panel.c
+	impactv.c
+	internal_tv_out.c
+	monitor_detection.c
+	monitor_routing.c
+	multimon.c
+	overlay.c
+	overlay_management.c
+	palette.c
+	pll.c
+	settings.cpp
+	theatre_out.c
+	vesa_modes.c
+	: libaccelerantscommon.a libradeon.a be
+;
+
+Depends radeon.accelerant : radeon ;

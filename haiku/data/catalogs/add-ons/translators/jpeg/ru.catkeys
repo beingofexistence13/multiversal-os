@@ -1,0 +1,6 @@
+1	russian	x-vnd.Haiku-JPEGTranslator	2123465144
+Write black-and-white images as RGB24	JPEGTranslator		Сохранять чёрно-белые изображения как RGB24
+Output quality	JPEGTranslator		Качество вывода
+Low	JPEGTranslator		Низкое
+Write	JPEGTranslator		Запись
+Prevent colors 'washing out'	JPEGTranslator		Предотвращать "выцветание"

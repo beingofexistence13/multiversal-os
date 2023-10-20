@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src tests servers app find_view ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UseHeaders [ FDirName os app ] ;
+UseHeaders [ FDirName os interface ] ;
+
+Application FindView :
+	FindView.cpp
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+;
+
+if ( $(TARGET_PLATFORM) = libbe_test ) {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : FindView
+		: tests!apps ;
+}
+

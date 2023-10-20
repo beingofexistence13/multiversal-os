@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src tools translation inspector ;
+
+AddResources Inspector : Inspector.rsrc ;
+
+Application Inspector :
+	TranslatorItem.cpp
+	StatusCheck.cpp
+	ActiveTranslatorsWindow.cpp
+	InfoWindow.cpp
+	ImageView.cpp
+	ImageWindow.cpp
+	InspectorApp.cpp ;
+
+DoCatalogs Inspector :
+	x.vnd.OBOS-Inspector
+	:
+	InspectorApp.cpp
+	ImageWindow.cpp
+	ImageView.cpp
+	ActiveTranslatorsWindow.cpp
+;
+
+LinkAgainst Inspector :
+	be tracker translation [ TargetLibsupc++ ] localestub ;
+

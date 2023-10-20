@@ -1,0 +1,285 @@
+/*
+ * Copyright 2011 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Axel Dörfler, axeld@pinc-software.de
+ *		Adrien Destugues <pulkomandy@pulkomandy.ath.cx>
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/locale/Collator.h	 rev 42274
+ *		src/kits/locale/Collator.cpp	 rev 42274
+ */
+
+
+/*!
+	\file Collator.h
+	\ingroup locale
+	\ingroup libbe
+	\brief Provides the BCollator class.
+*/
+
+
+/*!
+	\class BCollator
+	\ingroup locale
+	\ingroup libbe
+	\brief Class for handling locale-aware collation (sorting) of strings.
+
+	BCollator is designed to handle collation (sorting) of strings. Unlike
+	string sorting using strcmp() or similar functions that compare raw bytes
+	the collation is done using a set of rules that changes from one locale
+	to another. For example, in Spanish, 'ch' is considered to be a letter
+	and is sorted between 'c' and 'd'. This class is also able to perform
+	natural number sorting so that 2 is sorted before 10 unlike byte-based
+	sorting.
+
+	\warning This class is not multithread-safe. So if you want to use a
+	         BCollator from more than one thread you need to protect it with
+	         a lock.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCollator::BCollator()
+	\brief Construct a collator with the default locale and strength.
+
+	\attention The default collator should be constructed by the BLocale
+	           instead since it is aware of the currently defined locale.
+
+	This constructor uses \c B_COLLATE_PRIMARY strength.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCollator::BCollator(const char* locale,
+		int8 strength = B_COLLATE_PRIMARY, bool ignorePunctuation = false)
+	\brief Construct a collator for the given \a locale and \a strength.
+
+	This constructor loads the data for the given locale. You can also
+	set the \a strength and choose if the collator should take
+	punctuation into account or not.
+
+	\param locale The \a locale to build the constructor for.
+	\param strength The collator class provide four level of \a strength.
+	       \li \c B_COLLATE_PRIMARY doesn't differentiate e from é,
+	       \li \c B_COLLATE_SECONDARY takes letter accents into account,
+	       \li \c B_COLLATE_TERTIARY is case sensitive,
+	       \li \c B_COLLATE_QUATERNARY is very strict. Most of the time you
+	              shouldn't need to go this far.
+	\param ignorePunctuation Ignore punctuation during sorting.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCollator::BCollator(BMessage* archive)
+	\brief Unarchive a collator from a message.
+
+	\param archive The message to unarchive the BCollator object from.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCollator::BCollator(const BCollator& other)
+	\brief Copy constructor.
+
+	Copies a BCollator object from another BCollator object.
+
+	\param other The BCollator to copy from.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCollator::~BCollator()
+	\brief Destructor method.
+
+	Deletes the BCollator object freeing the resources it consumes.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn Bcollator& BCollator::operator=(const BCollator& other)
+	\brief Assignment operator.
+
+	\param other the BCollator object to assign from.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BCollator::SetStrength(int8 strength)
+	\brief Set the \a strength of the collator.
+
+	\param strength The collator class provide four level of \a strength.
+	       \li \c B_COLLATE_PRIMARY doesn't differentiate e from é,
+	       \li \c B_COLLATE_SECONDARY takes letter accents into account,
+	       \li \c B_COLLATE_TERTIARY is case sensitive,
+	       \li \c B_COLLATE_QUATERNARY is very strict. Most of the time you
+	              shouldn't need to go this far.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BCollator::SetIgnorePunctuation(bool ignore)
+	\brief Enable or disable punctuation handling.
+
+	This function enables or disables the handling of punctuation.
+
+	\param ignore Whether or not punctuation should be ignored.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BCollator::IgnorePunctuation() const
+	\brief Gets the behavior of the collator with regards to punctuation.
+
+	\returns \c true if the collator will take punctuation into account
+	         when sorting, \c false otherwise.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BCollator::SetNumericSorting(bool ignore)
+	\brief Enable or disable numeric order sorting.
+
+	Numeric sorting enables the collator to identify strings of digits as
+	numbers, and sort them in ascending number. For example, the string "123"
+	is sorted after "234". Numbers and other characters can be mixed in the
+	same string.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BCollator::GetSortKey(const char* string, BString* key)
+			const
+	\brief Compute the sortkey of a \a string.
+
+	The sortkey is a modified version of the input \a string that you can use
+	to perform faster comparisons with other sortkeys using strcmp() or a
+	similar comparison function. If you need to compare one string with other
+	many times, storing the sortkey will allow you to perform the comparisons
+	faster.
+
+	\param string String from which to compute the sortkey.
+	\param key The resulting sortkey.
+
+	\retval B_OK if everything went well.
+	\retval B_ERROR if an error occurred generating the sortkey.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int BCollator::Compare(const char* s1, const char* s2)
+		const
+	\brief Returns the difference betweens the two strings.
+
+	This method should be used in place of the strcmp() function to perform
+	locale-aware comparisons.
+
+	\param s1 The first string to compare.
+	\param s2 The second string to compare.
+
+	\returns An integer value representing how the strings compare to each
+	         other.
+	\retval 0 if the strings are equal.
+	\retval <0 if s1 is less than s2.
+	\retval >0 if s1 is greater than s2.
+
+	\since Haiku R1
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BCollator::Equal(const char* s1, const char* s2)
+		const
+	\brief Compares two strings for equality.
+
+	Note that strings that are not byte-by-byte identical may end up being
+	treated as equal by this method. For example two strings may be
+	considered equal if the only differences between them are in case and
+	punctuation, depending on the \a strength used. Using
+	\c B_QUANTERNARY_STRENGTH will force this method return \c true only
+	if the strings are byte-for-byte identical.
+
+	\param s1 The first string to compare.
+	\param s2 The second string to compare.
+
+	\returns \c true if the strings are identical, \c false otherwise.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BCollator::Greater(const char* s1, const char* s2)
+		const
+	\brief Determine if a string is greater than another.
+
+	\note !Greater(s1, s2) is the same as GreaterOrEqual(s2, s1). This means
+	there is no need for Lesser(s1, s2) and LesserOrEqual(s1, s2) methods.
+
+	\param s1 The first string to compare.
+	\param s2 The second string to compare.
+
+	\returns \c true if s1 is greater than, but not equal to, s2.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BCollator::GreaterOrEqual(const char* s1, const char* s2)
+		const
+	\brief Determines if one string is greater than another.
+
+	\note !GreaterOrEqual(s1, s2) is the same as Greater(s2, s1).
+
+	\param s1 The first string to compare.
+	\param s2 The second string to compare.
+
+	\returns \c true if s1 is greater or equal than s2.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static BArchivable* BCollator::Instantiate(BMessage* archive)
+	\brief Unarchive the collator
+
+	This method allows you to restore a collator that you previously
+	archived.
+
+	\param archive The message to restore the collator from.
+
+	\returns A pointer to a BArchivable object containing the BCollator or
+	        \c NULL if an error occurred restoring the \a archive.
+
+	\since Haiku R1
+*/

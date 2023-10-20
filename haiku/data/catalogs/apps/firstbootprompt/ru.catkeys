@@ -1,0 +1,80 @@
+1	russian	x-vnd.Haiku-FirstBootPrompt	2131367349
+Japanese	KeymapNames		Японский
+US	KeymapNames		США
+Cancel	BootPromptWindow		Отмена
+Esperanto	KeymapNames		Эсперанто
+Belarusian	KeymapNames		Белорусский
+Brazilian	KeymapNames		Бразильский
+Dvorak	KeymapNames		Дворак
+Polish	KeymapNames		Польский
+Latin-American	KeymapNames		Латиноамериканский
+Ukrainian	KeymapNames		Украинский
+Russian (Yawert)	KeymapNames		Русская (фонетическая)
+United-Kingdom	KeymapNames		Британская
+Quit Haiku	System name		Выйти из Haiku
+Turkish (Type-F)	KeymapNames		Турецкая (Тип-F)
+Serbian (Cyrillic)	KeymapNames		Сербская (Кириллица)
+Belgian (point)	KeymapNames		Бельгийская (point)
+Bulgarian (Cyrillic)	KeymapNames		Болгарская (Кириллица)
+Finnish	KeymapNames		Финская
+Swedish	KeymapNames		Шведская
+Svorak	KeymapNames		Сворак
+German	KeymapNames		Немецкая
+Swiss-German	KeymapNames		Швейцарский диалект
+Keymap	BootPromptWindow		Раскладка клавиатуры
+Spanish (Dvorak)	KeymapNames		Испанская (Дворак)
+US-International	KeymapNames		US-международная
+Czech	KeymapNames		Чешская
+Turkish (Type-Q)	KeymapNames		Турецкая (Тип-Q)
+Slovak	KeymapNames		Словацкая
+Russian (Udmurt, Komi, Mari)	KeymapNames		Русская (Удмуртия, Коми, Мари)
+Thai (TIS-820.2538)	KeymapNames		Тайская (TIS-820.2538)
+Colemak	KeymapNames		Colemak
+Dvorak (programmer's)	KeymapNames		Дворак (для программистов)
+Russian (Mac)	KeymapNames		Русская (Mac)
+German (Mac)	KeymapNames		Немецкая (Mac)
+Arabic (102)	KeymapNames		Арабская (102)
+Belarusian (Latin)	KeymapNames		Белорусская (Латиница)
+Belarusian (Mac)	KeymapNames		Белорусская (Mac)
+Hebrew	KeymapNames		Иврит
+Greek	KeymapNames		Греческая
+Croatian	KeymapNames		Хорватская
+Faeroese	KeymapNames		Фарерская
+Polish (Typewriter)	KeymapNames		Польская (Печатная)
+French (Mac)	KeymapNames		Французская (Mac)
+Spanish	KeymapNames		Испанская
+Ukrainian (Mac)	KeymapNames		Украинская (Mac)
+Estonian	KeymapNames		Эстонская 
+French (Bépo)	KeymapNames		Французская (Bépo)
+Restart system	BootPromptWindow		Перезагрузить систему
+Serbian (Latin)	KeymapNames		Сербская (Латиница)
+Russian (Typewriter)	KeymapNames		Русская (Печатная)
+French	KeymapNames		Французская
+Italian	KeymapNames		Итальянская
+Portuguese	KeymapNames		Португальская
+Swiss-French	KeymapNames		Швейцарско-Французский
+Slovene	KeymapNames		Словенская
+French (NF Z71-300)	KeymapNames		Французская (NF Z71-300)
+Lithuanian	KeymapNames		Литовская
+ISO-9995	KeymapNames		ISO-9995
+Kazakh	KeymapNames		Казахская
+Language	BootPromptWindow		Язык
+Lithuanian (Standard)	KeymapNames		Литовская (Стандартная)
+Belgian (comma)	KeymapNames		Бельгийская (comma)
+Custom	BootPromptWindow		Пользовательская
+Norwegian	KeymapNames		Норвежская
+Danish	KeymapNames		Датская
+Bulgarian (Phonetic)	KeymapNames		Болгарская (Фонетическая)
+Canadian-French	KeymapNames		Канадо-Французская
+Russian	KeymapNames		Русская
+Hungarian	KeymapNames		Венгерская
+Irish	KeymapNames		Ирландская
+Romanian	KeymapNames		Румынская
+Are you sure you want to close this window? This will restart your system!	BootPromptWindow		Вы уверены, что хотите закрыть это окно? Это приведет к перезагрузке компьютера!
+Czech (Mac)	KeymapNames		Чешская (Mac)
+Macedonian	KeymapNames		Македонская
+Brazilian (ABNT2)	KeymapNames		Бразильская (ABNT2)
+Albanian	KeymapNames		Албанская
+Dutch	KeymapNames		Датская
+Friulian	KeymapNames		Фриульская
+Icelandic	KeymapNames		Исландская

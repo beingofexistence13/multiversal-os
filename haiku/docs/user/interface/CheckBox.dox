@@ -1,0 +1,340 @@
+/*
+ * Copyright 2011-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Stephan Aßmus, superstippi@gmx.de
+ *		Marc Flerackers, mflerackers@androme.be
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/CheckBox.h	 hrev47274
+ *		src/kits/interface/CheckBox.cpp	 hrev47274
+ */
+
+
+/*!
+	\file CheckBox.h
+	\ingroup interface
+	\ingroup libbe
+	\brief Defines the BCheckBox class
+*/
+
+
+/*!
+	\class BCheckBox
+	\ingroup interface
+	\ingroup libbe
+	\brief A user interface element used to make a binary decision.
+
+	A BCheckBox is used to draw a check box UI control. This simple control
+	has 2 states, \c B_CONTROL_OFF when the check box is unchecked and
+	\c B_CONTROL_ON when the check box is checked. A check box can also have a
+	descriptive label drawn to the right of the check box.
+
+	When the check box is checked it has an X drawn inside of it. The check box
+	can be checked by a mouse click or by pushing \key{Space} on the
+	keyboard when the check box has focus. A check box object with focus
+	is surrounded by a blue border. A check box can also be set
+	programmatically by calling the SetValue() method.
+
+	A few check box examples can be seen below in unchecked state, checked
+	state, and another unchecked check box with focus on it.
+
+	\image html BCheckBox_example.png
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BCheckBox::BCheckBox(BRect frame, const char* name, const char* label,
+		BMessage* message, uint32 resizingMode, uint32 flags)
+	\brief Construct a check box in the \a frame with a \a name, \a label,
+		model \a message, \a resizingMode, and creation \a flags.
+
+	\note This constructor will resize the control to its minimum height if needed
+	      for compatibility with BeOS R5.
+
+	The initial value of the check box is 0 (\c B_CONTROL_OFF).
+	The \a label and the \a message parameters can be set to \c NULL.
+
+	\param frame The \a frame to draw the check box in.
+	\param name The \a name of the check box.
+	\param label The \a label displayed along with the check box control.
+	\param message The \a message to send when the check box is activated.
+	\param resizingMode Defines the behavior of the check box as the parent
+		view resizes. See BView for details.
+	\param flags Behavior \a flags for the check box. See BView for details.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BCheckBox::BCheckBox(const char* name, const char* label,
+		BMessage* message, uint32 flags)
+	\brief Construct a check box with a \a name, \a label, model \a message,
+		and creation \a flags suitable for use with the Layout API.
+
+	The initial value of the check box is 0 (\c B_CONTROL_OFF).
+	The \a label and the \a message parameters can be set to \c NULL.
+
+	\param name The \a name of the check box.
+	\param label The \a label displayed along with the check box control.
+	\param message The \a message to send when the check box is activated.
+	       See BView for details.
+	\param flags Behavior \a flags for the check box. See BView for details.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCheckBox::BCheckBox(const char* label, BMessage* message)
+	\brief Constructs a BCheckBox object with just a \a label and model
+		\a message.
+
+	The initial value of the check box is set to 0 (\c B_CONTROL_OFF).
+	The \a label and the \a message parameters can be set to \c NULL.
+
+	\param label The \a label displayed along with the check box.
+	\param message The \a message to send when the check box is activated.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCheckBox::BCheckBox(BMessage* archive)
+	\brief Constructs a BCheckBox object from an \a archive message.
+
+	This method is usually not called directly, if you want to build a
+	check box from an archived message you should call Instantiate() instead
+	because it can handle errors properly.
+
+	\param archive The message to construct the BCheckBox object from.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BCheckBox::~BCheckBox()
+	\brief Destructor, does nothing.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\name Archiving
+*/
+
+
+//! @{
+
+
+/*!
+	\fn BArchivable* BCheckBox::Instantiate(BMessage* archive)
+	\brief Creates a new BCheckBox object from the \a archive message.
+
+	\param archive The \a archive message to restore from.
+
+	\return A newly created check box or \c NULL if the message doesn't
+	        contain an archived BCheckBox.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BCheckBox::Archive(BMessage* data, bool deep) const
+	\brief Archives the object into the \a data message.
+
+	\copydetails BControl::Archive()
+*/
+
+
+//! @}
+
+
+/*!
+	\name Hook Methods
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BCheckBox::AttachedToWindow()
+	\brief Hook method called when the control is attached to a window.
+
+	\copydetails BControl::AttachedToWindow()
+*/
+
+
+/*!
+	\fn void BCheckBox::DetachedFromWindow()
+	\brief Hook method called when the control is detached from a window.
+
+	\copydetails BControl::DetachedFromWindow()
+*/
+
+
+/*!
+	\fn void BCheckBox::AllAttached()
+	\brief Similar to AttachedToWindow() but this method is triggered after
+	       all child views have already been attached to a window.
+
+	\copydetails BView::AllAttached()
+*/
+
+
+/*!
+	\fn void BCheckBox::AllDetached()
+	\brief Similar to AttachedToWindow() but this method is triggered after
+	       all child views have already been detached from a window.
+
+	\copydetails BView::AllDetached()
+*/
+
+
+/*!
+	\fn void BCheckBox::Draw(BRect updateRect)
+	\brief Draws the area of the check box that intersects \a updateRect.
+
+	\note This is an hook method called by the Interface Kit, you don't
+	      have to call it yourself. If you need to forcefully redraw a
+	      check box consider calling Invalidate() instead.
+
+	\param updateRect The rectangular area to be drawn.
+
+	\sa BView::Draw()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BCheckBox::FrameMoved(BPoint newPosition)
+	\brief Hook method called when the check box is moved.
+
+	\copydetails BView::FrameMoved()
+*/
+
+
+/*!
+	\fn void BCheckBox::FrameResized(float newWidth, float newHeight)
+	\brief Hook method called when the check box is resized.
+
+	\copydetails BView::FrameResized()
+*/
+
+
+/*!
+	\fn void BCheckBox::GetPreferredSize(float* _width, float* _height)
+	\brief Fill out the preferred width and height of the check box
+	       into the \a _width and \a _height parameters.
+
+	\copydetails BView::GetPreferredSize()
+*/
+
+
+/*!
+	\fn status_t BCheckBox::GetSupportedSuites(BMessage* message)
+	\brief Report the suites of messages this control understands.
+
+	\param message Allows you to add the names of the suites the check box
+	       implements to the suites array.
+
+	\return \c B_OK if all went well or an error code otherwise.
+
+	\sa BControl::GetSupportedSuites();
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BCheckBox::KeyDown(const char* bytes, int32 numBytes)
+	\brief Hook method called when a keyboard key is pressed.
+
+	Inverts the value on \a B_ENTER or \a B_SPACE.
+
+	\copydetails BControl::KeyDown()
+*/
+
+
+/*!
+	\fn void BCheckBox::MessageReceived(BMessage* message)
+	\brief Handle \a message received by the associated looper.
+
+	\copydetails BControl::MessageReceived()
+*/
+
+
+/*!
+	\fn void BCheckBox::MouseDown(BPoint where)
+	\brief Hook method called when a mouse button is pressed.
+
+	Begins tracking the mouse cursor.
+
+	\copydetails BControl::MouseDown()
+*/
+
+
+/*!
+	\fn void BCheckBox::MouseMoved(BPoint where, uint32 code,
+		const BMessage* dragMessage)
+	\brief Hook method called when the mouse is moved.
+
+	Once MouseDown() has been called on a check box this method updates
+	the outline when the cursor is inside the control redrawing as necessary.
+
+	\copydetails BControl::MouseMoved()
+*/
+
+
+/*!
+	\fn void BCheckBox::MouseUp(BPoint where)
+	\brief Hook method called when a mouse button is released.
+
+	Inverts the check box value.
+
+	\copydetails BControl::MouseUp()
+*/
+
+
+
+/*!
+	\fn void BCheckBox::WindowActivated(bool active)
+	\brief Hook method called when the attached window is activated or
+	       deactivated.
+
+	\copydetails BControl::WindowActivated()
+*/
+
+
+//! @}
+
+
+/*!
+	\fn void BCheckBox::SetValue(int32 value)
+	\brief Turn the check box on or off.
+
+	\param value The value to set the check box to, should be
+		either \c B_CONTROL_ON or \c B_CONTROL_OFF.
+
+	\sa BControl::SetValue()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BHandler* BCheckBox::ResolveSpecifier(BMessage* message, int32 index,
+		BMessage* specifier, int32 what, const char* property)
+	\copydoc BHandler::ResolveSpecifier()
+*/

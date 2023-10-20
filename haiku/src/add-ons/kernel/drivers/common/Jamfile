@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src add-ons kernel drivers common ;
+
+UsePrivateKernelHeaders ;
+
+KernelAddon dprintf :
+	dprintf.cpp
+	;
+
+KernelAddon null :
+	null.c
+	;
+
+KernelAddon zero :
+	zero.c
+	;
+
+KernelAddon console :
+	console.cpp
+	;
+
+KernelAddon usb_modeswitch :
+	usb_modeswitch.cpp
+	;

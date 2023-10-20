@@ -1,0 +1,100 @@
+SubDir HAIKU_TOP src tests apps haikudepot ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps haikudepot ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps haikudepot model ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps haikudepot server ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps haikudepot server dumpexportrepository ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps haikudepot util ] ;
+
+UsePrivateHeaders interface netservices shared ;
+
+local sourceDirs =
+	model
+	server
+	server/dumpexportrepository
+	util
+	tar
+	textview
+	edits_generic
+;
+
+local sourceDir ;
+for sourceDir in $(sourceDirs) {
+	SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src apps haikudepot $(sourceDir) ] ;
+}
+SEARCH_SOURCE += [ FDirName $(HAIKUDEPOT_GENERATED_SOURCES_DIRECTORY)
+	dumpexportrepositorybulklistener ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKUDEPOT_GENERATED_SOURCES_DIRECTORY)
+	dumpexportrepositorymodel ] ;
+
+UnitTestLib haikudepottest.so :
+	HaikuDepotTestAddon.cpp
+
+	DataIOUtils.cpp
+	DataIOUtilsTest.cpp
+
+	DumpExportRepositorySource.cpp
+	DumpExportRepositorySourceMirror.cpp
+	DumpExportRepository.cpp
+	DumpExportRepositoryJsonListener.cpp
+	DumpExportRepositoryJsonListenerTest.cpp
+
+	JwtTokenHelper.cpp
+	JwtTokenHelperTest.cpp
+
+	Logger.cpp
+
+	StandardMetaData.cpp
+	StandardMetaDataJsonEventListener.cpp
+	StandardMetaDataJsonEventListenerTest.cpp
+
+	StorageUtils.cpp
+	StorageUtilsTest.cpp
+
+	TarArchiveHeader.cpp
+	TarArchiveService.cpp
+	TarArchiveServiceTest.cpp
+
+	ValidationFailure.cpp
+	ValidationFailureTest.cpp
+
+	ValidationUtils.cpp
+	ValidationUtilsTest.cpp
+
+	: be shared bnetapi package [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+;
+
+Application TextDocumentTest :
+	TextDocumentTest.cpp
+
+	# edits_generic
+	CompoundEdit.cpp
+	EditContext.cpp
+	EditManager.cpp
+	EditStack.cpp
+	UndoableEdit.cpp
+
+	# textview
+	Bullet.cpp
+	BulletData.cpp
+	CharacterStyle.cpp
+	CharacterStyleData.cpp
+	MarkupParser.cpp
+	Paragraph.cpp
+	ParagraphLayout.cpp
+	ParagraphStyle.cpp
+	ParagraphStyleData.cpp
+	TextDocument.cpp
+	TextDocumentLayout.cpp
+	TextDocumentView.cpp
+	TextEditor.cpp
+	TextListener.cpp
+	TextSelection.cpp
+	TextSpan.cpp
+	TextView.cpp
+	UndoableEditListener.cpp
+
+	: be translation shared [ TargetLibsupc++ ]
+;

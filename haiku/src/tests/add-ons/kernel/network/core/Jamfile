@@ -1,0 +1,34 @@
+SubDir HAIKU_TOP src tests add-ons kernel network core ;
+
+UseLegacyHeaders network ;
+UseHeaders [ FDirName $(HAIKU_TOP) headers posix ] : true ;
+UsePrivateHeaders net ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src add-ons kernel network core ] ;
+
+Addon <userland>core :
+	cksum.c
+	core.c
+	if.c
+	ifq.c
+	in.c
+	inpcb.c
+	mbuf.c
+	misc.c
+	net_timer.c
+	nhash.c
+	pools.c
+	radix.c
+	route.c
+	sockbuf.c
+	socket.c
+	: <installed-userland-networking>net_stack_tester
+;
+
+
+# Installation -- in the test directory for the time being
+HaikuInstall install-userland-networking 
+	: [ FDirName $(HAIKU_TEST_DIR) kits net userland add-ons obos_network ]
+	: <userland>core 
+	: installed-userland-networking
+;

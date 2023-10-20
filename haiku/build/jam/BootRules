@@ -1,0 +1,240 @@
+rule MultiBootSubDirSetup bootTargets
+{
+	local result ;
+	local bootTarget ;
+	bootTargets ?= $(HAIKU_BOOT_TARGETS) ;
+	for bootTarget in $(bootTargets) {
+		local bootTargetObject = $(bootTarget:G=<boot-target-object>) ;
+		result += $(bootTargetObject) ;
+
+		TARGET_BOOT_PLATFORM on $(bootTargetObject) = $(bootTarget) ;
+
+		SOURCE_GRIST on $(bootTargetObject)
+			= $(SOURCE_GRIST:E=)!$(bootTarget) ;
+
+		HDRGRIST on $(bootTargetObject)
+			= $(HDRGRIST:E=)!$(bootTarget) ;
+
+		local var ;
+		for var in TARGET_ARCH {
+			$(var) on $(architectureObject) = $($(var)_$(architecture)) ;
+		}
+
+		# Clone the current config variable values and the variables SubDir
+		# resets.
+		for var in $(AUTO_SET_UP_CONFIG_VARIABLES) SUBDIR$(SUBDIRRESET) {
+			$(var) on $(architectureObject) = $($(var)) ;
+		}
+
+		local hostTarget = HOST TARGET ;
+		local objectDirVars =
+			COMMON_ARCH COMMON_DEBUG DEBUG_$(HAIKU_DEBUG_LEVELS)
+			;
+		objectDirVars =
+			COMMON_PLATFORM_LOCATE_TARGET
+			$(hostTarget)_$(objectDirVars)_LOCATE_TARGET
+			LOCATE_TARGET
+			LOCATE_SOURCE
+			SEARCH_SOURCE
+			;
+
+		for var in $(objectDirVars) {
+			$(var) on $(bootTargetObject) = ;
+		}
+
+		on $(bootTargetObject) {
+			SetupObjectsDir ;
+			SetupFeatureObjectsDir $(bootTarget) ;
+
+			for var in $(objectDirVars) {
+				$(var) on $(bootTargetObject) = $($(var)) ;
+			}
+		}
+	}
+
+	return $(result) ;
+}
+
+rule MultiBootGristFiles files
+{
+	return $(files:G=$(TARGET_BOOT_PLATFORM)) ;
+}
+
+rule SetupBoot
+{
+	# Usage SetupBoot <sources_or_objects> : <extra_cc_flags> : <include_private_headers> ;
+	#
+	# <sources_or_objects> - Ideally sources, otherwise HDRSEARCH can not be
+	#						 set for the sources and the sources some header
+	#						 dependencies might be missing.
+
+	local sources = [ FGristFiles $(1) ] ;
+	local objects = $(sources:S=$(SUFOBJ)) ;
+
+	# add private kernel headers
+	if $(3) != false {
+		SourceSysHdrs $(sources) : $(TARGET_PRIVATE_KERNEL_HEADERS) ;
+	}
+
+	if $(HAIKU_BOOT_C++_HEADERS_DIR_$(TARGET_KERNEL_ARCH)) {
+		SourceSysHdrs $(sources) :
+			$(HAIKU_BOOT_C++_HEADERS_DIR_$(TARGET_KERNEL_ARCH)) ;
+	}
+
+	# MultiBootSubDirSetup sets the target boot platform on the target object,
+	# so this will be correct here in SetupBoot.
+	# This does mean, however, that MultiBootSubDirSetup needs to be used in
+	# all Jamfiles for things to work correctly.
+	# Also means ArchitectureRules need to use platform specific variables,
+	# rather than the previously generic TARGET_BOOT_CCFLAGS and friends.
+	local platform = $(TARGET_BOOT_PLATFORM:U) ;
+	local object ;
+	for object in $(objects) {
+		TARGET_PACKAGING_ARCH on $(object) = $(TARGET_KERNEL_ARCH) ;
+
+		# add boot flags for the object
+		ObjectCcFlags $(object) : $(HAIKU_BOOT_CCFLAGS) $(HAIKU_BOOT_$(platform)_CCFLAGS) $(2) ;
+		ObjectC++Flags $(object) : $(HAIKU_BOOT_C++FLAGS) $(HAIKU_BOOT_$(platform)_C++FLAGS) $(2) ;
+		ObjectDefines $(object) : $(TARGET_KERNEL_DEFINES) $(TARGET_BOOT_DEFINES) ;
+		ASFLAGS on $(object) = $(HAIKU_BOOT_CCFLAGS) $(HAIKU_BOOT_$(platform)_CCFLAGS) ;
+		OPTIM on $(object) = $(HAIKU_BOOT_OPTIM) ;
+
+		# override regular CCFLAGS/C++FLAGS, as we don't want them
+		TARGET_CCFLAGS_$(TARGET_KERNEL_ARCH) on $(object) = ;
+		TARGET_C++FLAGS_$(TARGET_KERNEL_ARCH) on $(object) = ;
+		TARGET_ASFLAGS_$(TARGET_KERNEL_ARCH) on $(object) = ;
+
+		# override warning flags
+		TARGET_WARNING_CCFLAGS_$(TARGET_KERNEL_ARCH) on $(object)
+			= $(TARGET_KERNEL_WARNING_CCFLAGS) ;
+		TARGET_WARNING_C++FLAGS_$(TARGET_KERNEL_ARCH) on $(object)
+			= $(TARGET_KERNEL_WARNING_C++FLAGS) ;
+	 }
+}
+
+rule BootObjects
+{
+	SetupBoot $(1) : $(2) ;
+	Objects $(1) ;
+}
+
+rule BootLd
+{
+	# BootLd <name> : <objs> : <linkerscript> : <args> ;
+
+	LINK on $(1) = $(TARGET_LD_$(TARGET_KERNEL_ARCH)) ;
+
+	LINKFLAGS on $(1) = $(HAIKU_BOOT_$(TARGET_BOOT_PLATFORM:U)_LDFLAGS) $(4) ;
+	if $(3) { LINKFLAGS on $(1) += --script=$(3) ; }
+
+	# Remove any preset LINKLIBS, but link against libgcc.a. Linking against
+	# libsupc++ is opt-out.
+	local libs ;
+	if ! [ on $(1) return $(HAIKU_NO_LIBSUPC++) ] {
+		libs += [ TargetBootLibsupc++ true ] ;
+		Depends $(1) : [ TargetBootLibsupc++ ] ;
+	}
+	LINKLIBS on $(1) = $(libs) [ TargetBootLibgcc $(TARGET_KERNEL_ARCH) : true ] ;
+	Depends $(1) : [ TargetBootLibgcc $(TARGET_KERNEL_ARCH) ] ;
+
+	# TODO: Do we really want to invoke SetupBoot here? The objects should
+	# have been compiled with BootObjects anyway, so we're doing that twice.
+	SetupBoot $(2) ;
+
+	# Show that we depend on the libraries we need
+	LocalClean clean : $(1) ;
+	LocalDepends all : $(1) ;
+	Depends $(1) : $(2) ;
+
+	MakeLocateDebug $(1) ;
+
+	on $(1) XRes $(1) : $(RESFILES) ;
+	if ! [ on $(1) return $(DONT_USE_BEOS_RULES) ] {
+		SetType $(1) ;
+		MimeSet $(1) ;
+		SetVersion $(1) ;
+	}
+}
+
+actions BootLd bind VERSION_SCRIPT
+{
+	$(LINK) $(LINKFLAGS) -o "$(1)" "$(2)" $(LINKLIBS) \
+		--version-script=$(VERSION_SCRIPT)
+}
+
+rule BootMergeObject
+{
+	# BootMergeObject <name> : <sources> : <extra CFLAGS> : <other objects> ;
+	# Compiles source files and merges the object files to an object file.
+	# <name>: Name of the object file to create. No grist will be added.
+	# <sources>: Sources to be compiled. Grist will be added.
+	# <extra CFLAGS>: Additional flags for compilation.
+	# <other objects>: Object files or static libraries to be merged. No grist
+	#				   will be added.
+	#
+
+	TARGET_PACKAGING_ARCH on $(1) = $(TARGET_KERNEL_ARCH) ;
+
+	SetupBoot $(2) : $(3) ;
+	Objects $(2) ;
+	MergeObjectFromObjects $(1) : $(2:S=$(SUFOBJ)) : $(4) ;
+	LINKFLAGS on $(1) += $(HAIKU_BOOT_$(TARGET_BOOT_PLATFORM:U)_LDFLAGS) ;
+}
+
+rule BootStaticLibrary
+{
+	# BootStaticLibrary <name> : <sources> : <extra cc flags> ;
+	# This is designed to take a set of sources and libraries and create
+	# a static library.
+	local extraFlags = $(3) ;
+
+	TARGET_PACKAGING_ARCH on $(1) = $(TARGET_KERNEL_ARCH) ;
+
+	if $(TARGET_CC_IS_LEGACY_GCC_$(TARGET_KERNEL_ARCH)) = 0
+			&& [ on $(1) return $(NO_HIDDEN_VISIBILITY) ] != 1 {
+		extraFlags += -fvisibility=hidden ;
+	}
+
+	SetupBoot $(2) : $(extraFlags) : false ;
+	Library $(1) : $(2) ;
+}
+
+rule BootStaticLibraryObjects
+{
+	# Usage BootStaticLibrary <name> : <sources> ;
+	# This is designed to take a set of sources and libraries and create
+	# a file called <name>
+
+	TARGET_PACKAGING_ARCH on $(1) = $(TARGET_KERNEL_ARCH) ;
+
+	# Show that we depend on the libraries we need
+	SetupBoot $(2) ;
+	LocalClean clean : $(1) ;
+	LocalDepends all : $(1) ;
+	Depends $(1) : $(2) ;
+
+	MakeLocateDebug $(1) ;
+}
+
+actions BootStaticLibraryObjects
+{
+	# Force recreation of the archive to avoid build errors caused by
+	# stale dependencies after renaming or deleting object files.
+	$(RM) "$(1)"
+	$(HAIKU_AR_$(TARGET_KERNEL_ARCH)) -r "$(1)" "$(2)" ;
+}
+
+rule BuildMBR binary : source
+{
+	SEARCH on $(source) = $(SUBDIR) ;
+	MakeLocateDebug $(binary) ;
+	Depends $(binary) : $(source) ;
+}
+
+actions BuildMBR
+{
+	$(RM) $(1)
+	$(HAIKU_CC_$(HAIKU_PACKAGING_ARCH)) $(HAIKU_LINKFLAGS_$(HAIKU_PACKAGING_ARCH)) \
+		$(2) -o $(1) $(MBRFLAGS) -nostdlib -m32 -Wl,--oformat,binary -Wl,-z,notext \
+		-Xlinker -S -Xlinker -N -Xlinker --entry=start -Xlinker -Ttext=0x600
+}

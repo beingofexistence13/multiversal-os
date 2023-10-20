@@ -1,0 +1,14 @@
+SubDir HAIKU_TOP src add-ons kernel bus_managers ata ;
+
+UsePrivateHeaders drivers ;
+UsePrivateKernelHeaders ;
+
+KernelAddon ata :
+	ATAChannel.cpp
+	ATADevice.cpp
+	ATAHelper.cpp
+	ATAModule.cpp
+	ATAPIDevice.cpp
+	ATARequest.cpp
+	ATATracing.cpp
+	;

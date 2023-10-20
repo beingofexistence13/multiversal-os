@@ -1,0 +1,23 @@
+1	dutch; flemish	x-vnd.Haiku-GLTeapot	400822745
+Right	TeapotWindow		Rechts
+Backface culling	TeapotWindow		Backface culling
+Add a teapot	TeapotWindow		Voeg een theepot toe
+Yellow	TeapotWindow		Geel
+Perspective	TeapotWindow		Perspectief
+Off	TeapotWindow		Uit
+Quit	TeapotWindow		Stoppen
+Green	TeapotWindow		Groen
+Blue	TeapotWindow		Blauw
+White	TeapotWindow		Wit
+Upper center	TeapotWindow		Middenboven
+Filled polygons	TeapotWindow		Gevulde polygonen
+Lower left	TeapotWindow		Linksonder
+Fog	TeapotWindow		Mist
+FPS display	TeapotWindow		Vertoning FPS
+GLTeapot	System name		GLTeapot
+Settings	TeapotWindow		Instellingen
+Gouraud shading	TeapotWindow		Gouraud-arcering
+Lighting	TeapotWindow		Verlichting
+Z-buffered	TeapotWindow		Z-gebufferd
+Red	TeapotWindow		Rood
+Lights	TeapotWindow		Lichten

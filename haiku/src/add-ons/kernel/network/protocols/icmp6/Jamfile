@@ -1,0 +1,14 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols icmp6 ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network protocols ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network datalink_protocols ] : true ;
+
+KernelAddon icmp6 :
+	icmp6.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network/protocols
+	: icmp6 ;

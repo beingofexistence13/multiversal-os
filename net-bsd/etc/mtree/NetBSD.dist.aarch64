@@ -1,0 +1,4 @@
+#	$NetBSD: NetBSD.dist.aarch64,v 1.13 2023/05/14 17:21:53 christos Exp $
+
+./usr/include/aarch64
+./usr/include/arm

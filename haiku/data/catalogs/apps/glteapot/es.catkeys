@@ -1,0 +1,23 @@
+1	spanish; castilian	x-vnd.Haiku-GLTeapot	400822745
+Right	TeapotWindow		Derecha
+Backface culling	TeapotWindow		Ocultar caras traseras
+Add a teapot	TeapotWindow		Agregar una tetera
+Yellow	TeapotWindow		Amarillo
+Perspective	TeapotWindow		Perspectiva
+Off	TeapotWindow		Apagado
+Quit	TeapotWindow		Salir
+Green	TeapotWindow		Verde
+Blue	TeapotWindow		Azul 
+White	TeapotWindow		Blanco
+Upper center	TeapotWindow		Superior al centro
+Filled polygons	TeapotWindow		Polígonos llenos
+Lower left	TeapotWindow		Abajo a la izquierda
+Fog	TeapotWindow		Niebla
+FPS display	TeapotWindow		Mostrar FPS
+GLTeapot	System name		GLTeapot
+Settings	TeapotWindow		Configuración
+Gouraud shading	TeapotWindow		Sombreado Gouraud
+Lighting	TeapotWindow		Iluminación
+Z-buffered	TeapotWindow		Con búfer Z
+Red	TeapotWindow		Rojo
+Lights	TeapotWindow		Luces

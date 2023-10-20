@@ -1,0 +1,8 @@
+SubDir HAIKU_TOP src add-ons input_server devices mouse ;
+
+UsePrivateHeaders input shared ;
+
+Addon <input>mouse :
+	MouseInputDevice.cpp
+	movement_maker.cpp
+	: be input_server [ TargetLibsupc++ ] ;

@@ -1,0 +1,13 @@
+SubDir HAIKU_TOP src tests system network posixnet ;
+
+UsePrivateHeaders private shared ;
+
+UnitTestLib posixnettest.so :
+	PosixNetTestAddon.cpp
+
+	GetAddrInfo.cpp
+	SocketTests.cpp
+
+	: be $(TARGET_NETWORK_LIBS) [ TargetLibstdc++ ]
+	;
+

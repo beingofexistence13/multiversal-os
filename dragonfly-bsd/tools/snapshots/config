@@ -1,0 +1,10 @@
+# Config file for builder
+#
+
+set build = /build/snapshots
+set dflygit = git://crater.dragonflybsd.org/dragonfly.git
+set dportsgit = git://crater.dragonflybsd.org/dports.git
+set dfly_branch = master
+set dports_branch = master
+set snapshots = /archive/snapshots
+set relsname = DEV

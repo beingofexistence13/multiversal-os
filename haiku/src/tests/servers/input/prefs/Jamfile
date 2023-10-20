@@ -1,0 +1,90 @@
+SubDir HAIKU_TOP src tests servers input prefs ;
+
+UsePrivateHeaders interface ;
+UsePrivateHeaders app ;
+UsePrivateHeaders input ;
+UsePrivateHeaders [ FDirName servers app ] ;
+
+AddResources KeymapTest : Keymap.rdef ;
+
+SimpleTest KeymapTest :
+	KeymapApplication.cpp
+	KeymapWindow.cpp
+	KeymapListItem.cpp
+	Keymap.cpp
+	KeymapTextView.cpp
+
+	InterfaceDefs.cpp
+	Input.cpp
+	: be tracker ;
+
+SEARCH on [ FGristFiles
+	KeymapApplication.cpp
+	KeymapWindow.cpp
+	KeymapListItem.cpp
+	Keymap.cpp
+	KeymapTextView.cpp
+	Keymap.rdef ]
+	= [ FDirName $(HAIKU_TOP) src preferences keymap ] ;
+
+AddResources KeyboardTest : Keyboard.rdef ;
+
+SimpleTest KeyboardTest :
+	Keyboard.cpp
+	KeyboardSettings.cpp
+	KeyboardView.cpp
+	KeyboardWindow.cpp
+
+	InterfaceDefs.cpp
+	Input.cpp
+	: translation be ;
+
+SEARCH on [ FGristFiles
+	Keyboard.cpp
+	KeyboardSettings.cpp
+	KeyboardView.cpp
+	KeyboardWindow.cpp
+	Keyboard.rdef ]
+	= [ FDirName $(HAIKU_TOP) src preferences keyboard ] ;
+
+AddResources MouseTest : Mouse.rdef ;
+
+SimpleTest MouseTest :
+	Mouse.cpp
+	MouseSettings.cpp
+	MouseWindow.cpp
+	MouseView.cpp
+	SettingsView.cpp
+
+	InterfaceDefs.cpp
+	Input.cpp
+	: translation be
+	;
+
+SEARCH on [ FGristFiles
+	Mouse.cpp
+	MouseSettings.cpp
+	MouseWindow.cpp
+	MouseView.cpp
+	SettingsView.cpp
+	Mouse.rdef
+	]
+	= [ FDirName $(HAIKU_TOP) src preferences mouse ] ;
+
+SimpleTest keymapTest :
+	main.cpp
+	Keymap.cpp
+
+	InterfaceDefs.cpp
+	Input.cpp
+	: be ;
+
+SEARCH on [ FGristFiles
+	main.cpp
+	Keymap.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src bin keymap ] ;
+
+SEARCH on [ FGristFiles InterfaceDefs.cpp Input.cpp ]
+	= [ FDirName $(HAIKU_TOP) src kits interface ] ;
+

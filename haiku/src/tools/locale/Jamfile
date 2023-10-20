@@ -1,0 +1,45 @@
+SubDir HAIKU_TOP src tools locale ;
+
+UsePublicHeaders locale ;
+UsePrivateHeaders locale ;
+UsePrivateHeaders shared ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits locale ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits tracker ] ;
+
+local localetools =
+	<build>linkcatkeys
+	<build>collectcatkeys
+;
+
+# Due to the use of STL fstream open() mapping the function names via macro
+# name doesn't work.
+DEFINES += _HAIKU_BUILD_DONT_REMAP_FD_FUNCTIONS ;
+# Use empty translation macros to avoid a dependency on the locale kit
+DEFINES += B_AVOID_TRANSLATION_MACROS 'B_TRANSLATE_NOCOLLECT(x)=x'
+	'B_TRANSLATE_MARK(x)=x' ;
+# We link against the host libbe.so which could also contain this class, so
+# rename it for locale tools
+DEFINES += DefaultCatalog=ToolsDefaultCatalog ;
+
+USES_BE_API on $(localetools) = true ;
+
+UseLibraryHeaders icu ;
+
+BuildPlatformMain <build>collectcatkeys :
+	collectcatkeys.cpp
+	PlainTextCatalog.cpp
+	HashMapCatalog.cpp
+	Catalog.cpp
+	CatalogData.cpp
+	RegExp.cpp
+	: $(HOST_LIBBE)  $(HOST_LIBSUPC++) $(HOST_LIBSTDC++) ;
+
+BuildPlatformMain <build>linkcatkeys :
+	linkcatkeys.cpp
+	PlainTextCatalog.cpp
+	HashMapCatalog.cpp
+	DefaultCatalog.cpp
+	Catalog.cpp
+	CatalogData.cpp
+	: $(HOST_LIBBE) $(HOST_LIBSUPC++) $(HOST_LIBSTDC++) ;

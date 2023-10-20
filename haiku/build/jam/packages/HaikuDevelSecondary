@@ -1,0 +1,66 @@
+local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+
+local haikuDevelPackage = haiku_$(architecture)_devel.hpkg ;
+HaikuPackage $(haikuDevelPackage) ;
+
+local arch = $(TARGET_ARCH) ;
+
+# glue code
+AddFilesToPackage develop lib $(architecture) :
+	<src!system!glue!arch!$(arch)!$(architecture)>crti.o
+	<src!system!glue!arch!$(arch)!$(architecture)>crtn.o
+	<src!system!glue!$(architecture)>init_term_dyn.o
+	<src!system!glue!$(architecture)>start_dyn.o
+	<src!system!glue!$(architecture)>haiku_version_glue.o
+	;
+
+# additional libraries
+local developmentLibs = [ MultiArchDefaultGristFiles libroot_debug.so : revisioned ] ;
+AddFilesToPackage lib $(architecture) : $(developmentLibs) ;
+
+# library symlinks
+local lib ;
+for lib in [ HaikuImageGetSystemLibs ] $(developmentLibs) {
+	AddSymlinkToPackage develop lib $(architecture)
+		: ../../../lib/$(architecture) $(lib:BS) ;
+	local abiVersion = [ on $(lib) return $(HAIKU_LIB_ABI_VERSION) ] ;
+	if $(abiVersion) {
+		local abiVersionedLib = $(lib:BS).$(abiVersion) ;
+		AddSymlinkToPackage develop lib $(architecture)
+			: ../../../lib/$(architecture) $(abiVersionedLib) ;
+	}
+}
+
+# static libraries
+AddFilesToPackage develop lib $(architecture) :
+	<$(architecture)>libc.a
+	<$(architecture)>libcolumnlistview.a
+	<$(architecture)>liblocalestub.a
+	<$(architecture)>libm.a
+	<$(architecture)>libnetservices.a
+	<$(architecture)>libpthread.a
+	<$(architecture)>libshared.a ;
+
+# libnetservices2.a
+if $(HAIKU_CC_IS_LEGACY_GCC_$(architecture)) = 0 {
+	# Modern C++ only; skip on gcc2
+	AddFilesToPackage develop lib $(architecture) :
+		<$(architecture)>libnetservices2.a ;
+}
+
+# the POSIX error code mapper library
+AddFilesToPackage develop lib $(architecture)
+	: libposix_error_mapper.a ;
+
+# ABI independent stuff
+
+# cpp headers
+if $(HAIKU_CC_IS_LEGACY_GCC_$(architecture)) = 1 {
+	# GCC 2 only -- for GCC 4 they come with the gcc package
+	CopyDirectoryToPackage develop headers c++
+		: [ FDirName $(HAIKU_TOP) headers cpp ] : 2.95.3 ;
+}
+
+
+BuildHaikuPackage $(haikuDevelPackage) : haiku_devel_secondary ;

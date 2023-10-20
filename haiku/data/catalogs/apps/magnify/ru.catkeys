@@ -1,0 +1,20 @@
+1	russian	x-vnd.Haiku-Magnify	3730034159
+  size must be > 4 and a multiple of 4	Console		  размер должен быть > 4 и кратным 4
+Decrease pixel size	Magnify-Main		Уменьшить размер пикселя
+no clip msg	In console, when clipboard is empty after clicking Copy image		клип не скопировался
+Increase pixel size	Magnify-Main		Увеличить размер пикселя
+magnify: size must be a multiple of 4	Console		увеличитель: размер должен быть кратным 4
+Stick coordinates	Magnify-Main		Зафиксировать координаты
+Copy image	Magnify-Main		Копировать изображение
+Decrease window size	Magnify-Main		Уменьшить размер окна
+Remove a crosshair	Magnify-Main		Удалить перекрестье
+Add a crosshair	Magnify-Main		Добавить перекрестье
+Freeze image	Magnify-Main		Стоп-кадр
+usage: magnify [size] (magnify size * size pixels)	Console		использование: увеличение [величина] (размер увеличения * размер пикселя)
+Increase window size	Magnify-Main		Увеличить размер окна
+Save image	Magnify-Main		Сохранить изображение
+Show grid	Magnify-Main		Показать сетку
+Magnify	System name		Увеличитель
+Info	Magnify-Main		Информация
+Show info	Magnify-Main		Показать информацию
+Make square	Magnify-Main		Сделать квадрат

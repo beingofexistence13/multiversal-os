@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src tests add-ons print pdf linepathbuilder ;
+
+SubDirHdrs $(HAIKU_TOP) src add-ons print drivers pdf source ;
+
+AddResources LinePathBuilder : LinePathBuilder.rdef ;
+
+local sources =
+	LPBApp.cpp
+	PathView.cpp
+	SubPath.cpp
+	LinePathBuilder.cpp
+;
+
+SimpleTest LinePathBuilder
+	: $(sources)
+	: be [ TargetLibsupc++ ] root
+;
+
+# Tell Jam where to find these sources:
+SEARCH on [ FGristFiles LinePathBuilder.cpp SubPath.cpp ]
+	= [ FDirName $(HAIKU_TOP) src add-ons print drivers pdf source ] ;
+
+

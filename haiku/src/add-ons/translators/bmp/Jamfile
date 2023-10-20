@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src add-ons translators bmp ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources BMPTranslator : BMPTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles BMPTranslator ] :
+			BMPMain.cpp
+			BMPTranslator.cpp
+			BMPView.cpp
+		: be translation 
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+		: true
+		;
+	}
+}
+
+DoCatalogs BMPTranslator :
+	x-vnd.Haiku-BMPTranslator
+	:
+	BMPMain.cpp
+	BMPTranslator.cpp
+	BMPView.cpp
+;

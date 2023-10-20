@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src tests apps miniterminal ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src tests apps miniterminal ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src apps terminal ] ;
+
+AddResources MiniTerminal : MiniTerminal.rdef ;
+
+Application MiniTerminal :
+	Arguments.cpp
+	Console.cpp
+	MiniApp.cpp
+	MiniView.cpp 
+	MiniWin.cpp
+	ViewBuffer.cpp
+	: be [ TargetLibsupc++ ]
+;

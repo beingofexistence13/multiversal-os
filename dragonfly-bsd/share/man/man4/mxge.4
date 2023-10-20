@@ -1,0 +1,214 @@
+.\" Copyright (c) 2006, Myricom Inc
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice,
+.\"    this list of conditions and the following disclaimer.
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" 3. Neither the name of the Myricom Inc nor the names of its
+.\"    contributors may be used to endorse or promote products derived from
+.\"    this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" * Other names and brands may be claimed as the property of others.
+.\"
+.\" $FreeBSD: src/share/man/man4/mxge.4,v 1.7.4.2.4.1 2009/04/15 03:14:26 kensmith Exp $
+.\"
+.Dd May 25, 2017
+.Dt MXGE 4
+.Os
+.Sh NAME
+.Nm mxge
+.Nd "Myricom Myri10GE 10 Gigabit Ethernet adapter driver"
+.Sh SYNOPSIS
+To compile this driver into the kernel,
+place the following lines in your
+kernel configuration file:
+.Bd -ragged -offset indent
+.Cd "device mxge"
+.Cd "device mxgefw"
+.Ed
+.Pp
+Alternatively, to load the driver as a
+module at boot time, place the following line in
+.Xr loader.conf 5 :
+.Bd -literal -offset indent
+if_mxge_load="YES"
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+driver provides support for PCI Express 10 Gigabit Ethernet adapters based on
+the Myricom LANai Z8E chip.
+The driver supports Transmit/Receive checksum offload,
+TCP Segmentation Offload (TSO),
+multiple reception queues,
+multiple tranmission queues and
+multiple vector MSI-X.
+.\"Support for Jumbo frames is not yet implemented, while support for
+.\"as well as Large Receive Offload (LRO) is not
+.\"implemented in
+Using multiple vector MSI-X requires that Myri10GE NIC be capable of MSI-X.
+Older Myri10GE NICs can be field upgraded to add MSI-X using the
+"Myri-10G Network Adapter Toolkit" for FreeBSD or Linux
+which is available from
+.Pa https://www.myricom.com/support/downloads/tools/myri-10g-toolkit.html .
+.Pp
+For questions related to hardware requirements,
+refer to the documentation supplied with your Myri10GE adapter.
+All hardware requirements listed apply to use with
+.Dx .
+For further hardware information, see
+.Pa http://www.myricom.com .
+.Pp
+The
+.Nm
+driver supports the following media options:
+.Bl -tag -width ".Cm forcepause"
+.It Cm rxpause
+Enable flow control PAUSE reception.
+Due to hardware limitation,
+this will also enable PAUSE transmission.
+.It Cm txpause
+Enable flow control PAUSE transmission.
+Due to hardware limitation,
+this will also enable PAUSE reception.
+.It Cm forcepause
+Force flow control PAUSE operation as configured by
+.Cm rxpause
+and
+.Cm txpause
+media options.
+This media option can't be turned off.
+.El
+.Pp
+For more information on configuring this device, see
+.Xr ifconfig 8 .
+The
+.Nm
+driver supports
+.Xr polling 4 .
+.Sh HARDWARE
+The
+.Nm
+driver supports 10 Gigabit Ethernet adapters based on the
+Myricom LANai Z8E chips:
+.Pp
+.Bl -bullet -compact
+.It
+Myricom 10GBase-CX4 (10G-PCIE-8A-C, 10G-PCIE-8AL-C)
+.It
+Myricom 10GBase-R (10G-PCIE-8A-R, 10G-PCIE-8AL-R)
+.It
+Myricom 10G XAUI over ribbon fiber (10G-PCIE-8A-Q, 10G-PCIE-8AL-Q)
+.El
+.Sh TUNABLES
+.Em X
+is the device unit number.
+.Bl -tag -width indent
+.It Va hw.mxge.msix.enable Va hw.mxgeX.msix.enable
+By default,
+the driver will use MSI-X
+if it is supported.
+This behaviour can be turned off by setting this tunable to 0.
+.It Va hw.mxge.msi.enable Va hw.mxgeX.msi.enable
+If MSI-X is disabled and MSI is supported,
+the driver will use MSI.
+This behavior can be turned off by setting this tunable to 0.
+.It Va hw.mxgeX.msi.cpu
+If MSI is used, it specifies the MSI's target CPU.
+.It Va hw.mxge.num_slices Va hw.mxgeX.num_slices
+If MSI-X is used,
+this value determines the maximum number of slices the driver
+will attempt to use.
+Setting this value to 0 allows driver to enable as many slices
+as allowed by the number of CPUs.
+Each slice is comprised of one reception queue and one transmission
+queue.
+The transmission queue of each slice,
+except the first slice,
+could be disabled.
+The default value is 0.
+.It Va hw.mxge.multi_tx Va hw.mxgeX.multi_tx
+If more than 1 slice is enabled,
+this tunable controls whether the tranmission queue of each
+slice should be enabled.
+Setting this tunable to 0 will only enable the transmission queue
+on the first slice.
+The default value is 1.
+.It Va hw.mxge.use_rss
+This tunable controls whether standard RSS input hash function or
+chip private input hash function should be used.
+Using standard RSS input hash function degenerates reception
+performance significantly.
+The default value is 0.
+.It Va hw.mxge.intr_coal_delay
+This value delays the generation of all interrupts in units of
+1 microsecond.
+The default value is 150.
+.It Va hw.mxge.flow_ctrl
+The default flow control settings.
+Supported values are:
+force-full (forcefully enable PAUSE reception and transmission).
+force-none (forcefully disable flow control PAUSE operation).
+Default is force-none.
+.El
+.Sh MIB Variables
+A number of per-interface variables are implemented in the
+.Va dev.mxge. Ns Em X
+branch of the
+.Xr sysctl 3
+MIB.
+.Bl -tag -width "firmware_version"
+.It Va firmware_version
+The version string of firmware that is currently loaded by the driver.
+It is read-only.
+.It Va use_rss
+See tunable
+.Va hw.mxge.use_rss .
+Flipping its value will cause chip reinitialization.
+.It Va intr_coal_delay
+See tunable
+.Va hw.mxge.intr_coal_delay .
+.El
+.Sh SUPPORT
+For general information and support,
+go to the Myricom support website at:
+.Pa https://www.myricom.com/support.html .
+.Sh SEE ALSO
+.Xr altq 4 ,
+.Xr arp 4 ,
+.Xr ifmedia 4 ,
+.Xr netintro 4 ,
+.Xr ng_ether 4 ,
+.Xr ifconfig 8 ,
+.Xr firmware 9
+.Sh HISTORY
+The
+.Nm
+device driver first appeared in
+.Fx 6.3 .
+It was first ported to
+.Dx 2.3 .
+.Sh AUTHORS
+The
+.Nm
+driver was written by
+.An Andrew Gallatin Aq Mt gallatin@FreeBSD.org .

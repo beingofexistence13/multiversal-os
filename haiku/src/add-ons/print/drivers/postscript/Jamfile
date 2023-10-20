@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src add-ons print drivers postscript ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers libs print libprint ] ;
+
+AddResources PS\ Compatible : PS.rdef ;
+
+Addon PS\ Compatible :
+	PSEntry.cpp
+	PS.cpp
+	PSCap.cpp
+	PSData.cpp
+	SelectPPDDlg.cpp
+	PPDParser.cpp
+	FilterIO.cpp
+	: be libprint.a [ TargetLibstdc++ ]
+;

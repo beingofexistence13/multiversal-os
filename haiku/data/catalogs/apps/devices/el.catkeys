@@ -1,0 +1,84 @@
+1	greek, modern (1453-)	x-vnd.Haiku-Devices	2322690158
+ACPI bus	DevicesView		Δίαυλος ACPI
+Encryption controller	Device		Ελεγκτής κρυπτογράφησης
+Devices	System name		Συσκευές
+USB bus	DevicesView		Θύρα USB
+Graphics Peripheral	DeviceSCSI		Περιφερειακή Συσκευή Γραφικών
+Processor	Device		Επεξεργαστής
+Generate system information	DevicesView		Πληροφορίες συστήματος
+Unknown	DeviceACPI		Άγνωστο
+Class info	DevicePCI		Πληροφορίες κατηγορίας
+<No device selected>	DevicesView		<Δεν επιλέχθηκε συσκευή>
+USB bus	Device		Θύρα USB
+Computer	DevicesView		Υπολογιστής
+Communications	DeviceSCSI		Επικοινωνίες
+Mass storage controller	Device		Ελεγκτής μαζικής αποθήκευσης
+Connection	DevicesView		Σύνδεση
+Printer	DeviceSCSI		Εκτυπωτής
+ACPI Processor Namespace '%2'	DeviceACPI		Επεξεργαστής ACPI Namespace '%2'
+Manufacturer	Device		Κατασκευαστής
+Scanner	DeviceSCSI		Σαρωτής
+Memory controller	Device		Ελεγκτής μνήμης
+Unknown device	DevicesView		Άγνωστη συσκευή
+Unknown	DevicePCI		Άγνωστο
+ACPI node '%1'	DeviceACPI		Μονάδα ACPI '%1'
+Optical Drive	DeviceSCSI		Οπτικός Οδηγός
+Name	PropertyList		Όνομα
+Manufacturer	DeviceSCSI		Κατασκευαστής
+Device name	Device		Όνομα συσκευής
+Satellite communications controller	Device		Ελεγκτής επικοινωνιών δορυφόρου
+Device class	DeviceSCSI		Κατηγορία συσκευής
+Device	Device		Συσκευή
+Input device controller	Device		Ελεγκτής εισαγώμενης συσκευής
+PCI bus	DevicesView		Δίαυλος PCI
+ACPI System Indicator	DeviceACPI		Δείκτης Συστήματος ACPI
+ACPI System Bus	DeviceACPI		Δίαυλος Συστήματος ACPI
+Tape Drive	DeviceSCSI		Κασέτα
+Changer	DeviceSCSI		Αλλαγή
+Serial bus controller	Device		Ελεγκτής σειριακού διαύλου
+Refresh devices	DevicesView		Ανανέωση συσκευών
+Category	DevicesView		Κατηγορία
+RBC	DeviceSCSI		RBC
+Device paths	Device		Διαδρομές συσκευών
+Unknown device	Device		Άγνωστη συσκευή
+Wireless controller	Device		Ελεγκτής ασύρματων τηλεπικοινωνιών
+Generic system peripheral	Device		Τυπική περιφερειακή συσκευή συστήματος
+Value	PropertyList		Τιμή
+Devices	DevicesView		Συσκευές
+Device name	DeviceACPI		Όνομα συσκευής
+Card Reader	DeviceSCSI		Μονάδα ανάγνωσης καρτών
+Display controller	Device		Ελεγκτής γραφικών
+ACPI Button '%1'	DeviceACPI		Κουμπί ACPI '%1'
+ACPI <unknown>	DeviceACPI		ACPI <άγνωστο>
+Device name	DevicePCI		Όνομα συσκευής
+Disk Drive	DeviceSCSI		Οδηγός Δίσκου
+Report compatibility	DevicesView		Αναφορά συμβατότητας
+Other	DeviceSCSI		Άλλο
+Computer	Device		Υπολογιστής
+PCI bus	Device		Δίαυλος PCI
+Enclosure	DeviceSCSI		Περίβλημα δίσκου
+ACPI Thermal Zone	DeviceACPI		Θερμική Ζώνη ACPI
+Order by:	DevicesView		Κατανομή κατά:
+Intelligent controller	Device		Έξυπνος ελεγκτής
+Multimedia controller	Device		Ελεγκτής πολυμέσων
+Quit	DevicesView		Έξοδος
+ISA bus	Device		Δίαυλος ISA
+ISA bus	DevicesView		Δίαυλος ISA
+Processor	DeviceSCSI		Επεξεργαστής
+Bridge	Device		Γέφυρα
+Worm	DeviceSCSI		Σκώληκας
+CD-ROM	DeviceSCSI		CD-ROM
+Manufacturer	DevicePCI		Κατασκευαστής
+Bridge	DeviceSCSI		Γέφυρα
+Signal processing controller	Device		Ελεγκτής επεξεργασίας σημάτων
+Device name	DeviceSCSI		Όνομα συσκευής
+Docking station	Device		Σταθμός σύνδεσης
+Array	DeviceSCSI		Συστοιχία δίσκων
+Unclassified device	Device		Απροσδιόριστη συσκευή
+Manufacturer	DeviceACPI		Κατασκευαστής
+ACPI controller	Device		Ελεγκτής ACPI
+Network controller	Device		Ελεγκτής δικτύου
+Driver used	Device		Χρησιμοποιημένος οδηγός
+Communication controller	Device		Ελεγκτής επικοινωνιών
+ACPI bus	Device		Δίαυλος ACPI
+unknown	Device		άγνωστο

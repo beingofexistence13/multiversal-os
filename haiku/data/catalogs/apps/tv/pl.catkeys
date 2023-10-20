@@ -1,0 +1,24 @@
+1	polish	x-vnd.Haiku.TV	3120244932
+No menu	MainWin		Bez menu
+No border	MainWin		Bez ramki
+Error, connecting to interface failed:\n\n	MainWin		Błąd, nie można podłączyć interfejsu:\n\n
+Full screen	MainWin		Pełny ekran
+Scale to native size	MainWin		Zeskaluj do oryginalnego rozmiaru
+unknown	MainWin		nieznany
+Next channel	MainWin		Następny kanał
+Keep aspect ratio	MainWin		Zachowaj proporcje
+DVB - Digital Video Broadcasting TV	MainWin		DVB - Digital Video Broadcasting TV
+Always on top	MainWin		Zawsze na wierzchu
+Debug	MainWin		Debuguj
+Interface	MainWin		Interfejs
+Quit	MainWin		Zakończ
+Channel	MainWin		Kanał
+Previous channel	MainWin		Poprzedni kanał
+OK	MainWin		OK
+TV	MainWin		Telewizja
+Settings	MainWin		Ustawienia
+TV	System name		TV
+Settings…	MainWin		Ustawienia…
+None	MainWin		Puste
+Error, interface is busy:\n\n	MainWin		Błąd, interfejs zajęty:\n\n
+pixel aspect ratio	MainWin		proporcje pikseli

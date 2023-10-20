@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src add-ons kernel debugger demangle ;
+
+UsePrivateHeaders kernel ;
+
+KernelAddon <kdebug>demangle :
+	demangle.cpp
+	gcc2.cpp
+	gcc3+.cpp
+;

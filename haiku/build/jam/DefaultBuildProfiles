@@ -1,0 +1,256 @@
+# set HAIKU_BUILD_TYPE early
+switch $(HAIKU_BUILD_PROFILE) {
+	case "bootstrap-*" : {
+		HAIKU_BUILD_TYPE = bootstrap ;
+		EnableBuildFeatures bootstrap_image ;
+
+		# Add a third pseudo target for the platform used when building anything
+		# for stage0 of the bootstrap process.
+		NotFile bootstrap_stage0 ;
+
+		HAIKU_DEFINES += HAIKU_BOOTSTRAP_BUILD ;
+		TARGET_DEFINES += HAIKU_BOOTSTRAP_BUILD ;
+	}
+
+	case "minimum-*" : {
+		HAIKU_BUILD_TYPE = minimum ;
+		EnableBuildFeatures minimum_image ;
+
+		HAIKU_DEFINES += HAIKU_MINIMUM_BUILD ;
+		TARGET_DEFINES += HAIKU_MINIMUM_BUILD ;
+	}
+
+	case "*" : {
+		HAIKU_BUILD_TYPE = regular ;
+		EnableBuildFeatures regular_image ;
+
+		HAIKU_DEFINES += HAIKU_REGULAR_BUILD ;
+		TARGET_DEFINES += HAIKU_REGULAR_BUILD ;
+	}
+}
+Echo "Starting build of type $(HAIKU_BUILD_TYPE) ..." ;
+
+
+rule DefineDefaultBuildProfiles
+{
+	# release profiles
+	DefineBuildProfile release-raw : image : "haiku-release.image" ;
+	DefineBuildProfile release-vmware : vmware-image : "haiku-release.vmdk" ;
+	DefineBuildProfile release-cd : cd-image : "haiku-release.iso" ;
+	DefineBuildProfile release-anyboot : anyboot-image
+		: "haiku-release-anyboot.iso" ;
+
+	# nightly profiles
+	DefineBuildProfile nightly-raw : image : "haiku-nightly.image" ;
+	DefineBuildProfile nightly-mmc : haiku-mmc-image : "haiku-nightly.mmc" ;
+	DefineBuildProfile nightly-vmware : vmware-image : "haiku-nightly.vmdk" ;
+	DefineBuildProfile nightly-cd : cd-image : "haiku-nightly.iso" ;
+	DefineBuildProfile nightly-anyboot : anyboot-image
+		: "haiku-nightly-anyboot.iso" ;
+
+	# bootstrap profiles
+	DefineBuildProfile bootstrap-raw : image : "haiku-bootstrap.image" ;
+	DefineBuildProfile bootstrap-mmc : haiku-mmc-image : "haiku-bootstrap.mmc" ;
+	DefineBuildProfile bootstrap-vmware : vmware-image
+		: "haiku-bootstrap.vmdk" ;
+	DefineBuildProfile bootstrap-anyboot : anyboot-image
+		: "haiku-bootstrap-anyboot.iso" ;
+
+	# minimum profiles
+	DefineBuildProfile minimum-raw : image : "haiku-minimum.image" ;
+	DefineBuildProfile minimum-mmc : haiku-mmc-image : "haiku-minimum.mmc" ;
+	DefineBuildProfile minimum-vmware : vmware-image : "haiku-minimum.vmdk" ;
+	DefineBuildProfile minimum-cd : cd-image : "haiku-minimum.iso" ;
+	DefineBuildProfile minimum-anyboot : anyboot-image
+		: "haiku-minimum-anyboot.iso" ;
+
+	switch $(HAIKU_BUILD_PROFILE) {
+		case "release-*" : {
+			Echo Building Haiku R1/development preview ;
+			HAIKU_ROOT_USER_NAME ?= user ;
+			HAIKU_ROOT_USER_REAL_NAME ?= "Yourself" ;
+			AddGroupToHaikuImage party : 101 : user sshd ;
+			HAIKU_IMAGE_HOST_NAME ?= shredder ;
+
+			if $(HAIKU_INCLUDE_SOURCES) = 1 || $(DEBUG) != 0 {
+				HAIKU_IMAGE_SIZE ?= 1400 ;
+			} else {
+				HAIKU_IMAGE_SIZE ?= 800 ;
+			}
+
+			AddHaikuImageSystemPackages
+				bepdf
+				keymapswitcher
+				mandoc
+				noto
+				noto_sans_cjk_jp
+				openssh
+				pdfwriter
+				pe
+				timgmsoundfont
+				vision
+				wpa_supplicant
+				wqy_microhei
+				# Some packages can't be built with gcc2, so we install the gcc8
+				# secondary architecture package instead in this case
+				!gcc2 @{ nano p7zip python3.9 xz_utils }@
+				gcc2 @{ nano_x86@secondary_x86 p7zip_x86@secondary_x86
+					python3.9_x86@secondary_x86 xz_utils_x86@secondary_x86 }@
+				;
+			AddHaikuImageSourcePackages
+				bepdf
+				nano
+				p7zip
+				;
+
+			local architectureObject ;
+			for architectureObject in [ MultiArchSubDirSetup ] {
+				on $(architectureObject) {
+					AddHaikuImageSystemPackages openssl wonderbrush@gcc2 ;
+				}
+			}
+
+			AddOptionalHaikuImagePackages BeBook Development Git Welcome ;
+
+			# WebPositive can only built for x86_gcc2, x86 and x86_64
+			if $(HAIKU_PACKAGING_ARCHS) in x86_gcc2 x86 x86_64 {
+				AddOptionalHaikuImagePackages WebPositive ;
+			} else {
+				Echo "WebPositive not available on $(HAIKU_PACKAGING_ARCHS)" ;
+			}
+		}
+
+		case "nightly-*" : {
+			Echo Building Haiku Nightly ;
+			HAIKU_ROOT_USER_NAME ?= user ;
+			HAIKU_ROOT_USER_REAL_NAME ?= "Yourself" ;
+			AddGroupToHaikuImage party : 101 : user sshd ;
+			HAIKU_IMAGE_HOST_NAME ?= shredder ;
+			if $(DEBUG) != 0 {
+				HAIKU_IMAGE_SIZE ?= 850 ;
+			}
+			HAIKU_IMAGE_SIZE ?= 600 ;
+			HAIKU_NIGHTLY_BUILD = 1 ;
+
+			AddHaikuImageSystemPackages
+				mandoc
+				noto
+				openssh
+				openssl
+				pe
+				vision
+				wpa_supplicant
+				# xz_utils can't be built with gcc2, so we install it for
+				# primary gcc 8 architectures or gcc 2 hybrids.
+				!gcc2 @{ nano p7zip xz_utils }@
+				gcc2 @{
+					nano_x86@secondary_x86
+					p7zip_x86@secondary_x86
+					xz_utils_x86@secondary_x86
+				}@
+				;
+			AddHaikuImageSourcePackages
+				nano
+				p7zip
+				;
+
+			AddOptionalHaikuImagePackages Development Git ;
+
+			# WebPositive can only built for x86_gcc2, x86 and x86_64
+			if $(HAIKU_PACKAGING_ARCHS) in x86_gcc2 x86 x86_64 {
+				AddOptionalHaikuImagePackages WebPositive ;
+			} else {
+				Echo "WebPositive not available on $(HAIKU_PACKAGING_ARCHS)" ;
+			}
+		}
+
+		case "minimum-*" : {
+			Echo Building Haiku Minimum Target ;
+			HAIKU_IMAGE_HOST_NAME ?= shredder ;
+			if $(DEBUG) != 0 {
+				HAIKU_IMAGE_SIZE ?= 450 ;
+			}
+
+			AddHaikuImageSystemPackages
+				openssl
+				;
+		}
+
+		case "bootstrap-*" : {
+			Echo Building Haiku Bootstrap ;
+			HAIKU_IMAGE_HOST_NAME ?= shredder ;
+			HAIKU_IMAGE_SIZE ?= 20000 ;
+
+			AddHaikuImageSystemPackages
+				binutils
+				bison
+				expat
+				flex
+				gcc
+				grep
+				haikuporter
+				less
+				libedit
+				make
+				ncurses6
+				noto
+				python
+				sed
+				texinfo
+				!gcc2 @{ gawk grep }@
+				gcc2 @{ grep_x86@secondary_x86 mawk }@
+				;
+
+			AddHaikuImageDisabledPackages
+				freetype_devel
+				libedit_devel
+				ncurses6_devel
+				zlib_devel
+			;
+
+			# secondary architecture packages
+			local architectureObject ;
+			for architectureObject
+					in [ MultiArchSubDirSetup $(TARGET_PACKAGING_ARCHS[2-]) ] {
+				on $(architectureObject) {
+					AddHaikuImageSystemPackages
+						binutils
+						expat
+						freetype
+						gcc
+						icu@gcc2 icu66@!gcc2
+						libsolv
+						libedit
+						ncurses6
+						zlib
+						;
+					AddHaikuImageDisabledPackages
+						freetype_devel
+						libedit_devel
+						ncurses6_devel
+						zlib_devel
+					;
+				}
+			}
+
+			AddOptionalHaikuImagePackages DevelopmentMin ;
+		}
+	}
+
+
+	# Uncomment in official release branch.
+	#HAIKU_DEFINES += HAIKU_OFFICIAL_RELEASE ;
+	#TARGET_DEFINES += HAIKU_OFFICIAL_RELEASE ;
+
+
+	# If a build profile was specified on the command line, now is the time to
+	# check whether it is unknown or one of the default profiles.
+	if $(HAIKU_BUILD_PROFILE) && ! $(HAIKU_BUILD_PROFILE_DEFINED) {
+		# define the obvious default profiles
+		if $(HAIKU_BUILD_PROFILE) in cd-image install vmware-image {
+			DefineBuildProfile $(HAIKU_BUILD_PROFILE) : $(HAIKU_BUILD_PROFILE) ;
+		} else {
+			Exit "Build profile" $(HAIKU_BUILD_PROFILE) "not defined." ;
+		}
+	}
+}

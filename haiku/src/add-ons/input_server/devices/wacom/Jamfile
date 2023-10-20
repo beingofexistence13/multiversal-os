@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src add-ons input_server devices wacom ;
+
+UsePrivateHeaders input ;
+
+Addon <input>wacom : 
+	DeviceReader.cpp
+	MasterServerDevice.cpp
+	PointingDevice.cpp
+	PointingDeviceFactory.cpp
+	TabletDevice.cpp
+	: be input_server [ TargetLibsupc++ ] ;

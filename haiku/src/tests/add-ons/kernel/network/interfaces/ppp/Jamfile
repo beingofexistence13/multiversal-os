@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src tests add-ons kernel network interfaces ppp ;
+
+UseLegacyHeaders network ;
+UseHeaders [ FDirName $(HAIKU_TOP) headers posix ] : true ;
+UsePrivateHeaders net ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared libkernelppp headers ] : true ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src add-ons kernel network interfaces ppp ] ;
+
+Addon <userland>ppp :
+	ppp.cpp
+	PPPManager.cpp
+	: <userland>libkernelppp.a 
+	  <installed-userland-networking>net_stack_tester be 
+;
+
+# Installation -- in the test directory for the time being
+HaikuInstall install-userland-networking 
+	: [ FDirName $(HAIKU_TEST_DIR) kits net userland add-ons obos_network interfaces ]
+	: <userland>ppp
+	: installed-userland-networking
+;

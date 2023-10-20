@@ -1,0 +1,45 @@
+# Builds the Haiku packages repository.
+
+local haikuRepository = <repository>Haiku ;
+MakeLocate $(haikuRepository)
+	: $(HAIKU_PACKAGE_REPOSITORIES_DIR_$(HAIKU_PACKAGING_ARCH)) ;
+
+local repoInfo = <repository-info-template>haiku ;
+SEARCH on $(repoInfo) = $(HAIKU_TOP)/src/data/repository_infos ;
+
+local secondaryArchs = $(TARGET_PACKAGING_ARCHS[2-]) ;
+local packages = [ FFilterByBuildFeatures
+	haiku
+	haiku_datatranslators
+	haiku_devel
+	haiku_loader
+
+	haiku_$(secondaryArchs)
+	haiku_$(secondaryArchs)_devel
+	] ;
+
+if $(HAIKU_IS_BOOTSTRAP) != 1 && $(HAIKU_BUILD_TYPE) != minimum {
+	packages += [ FFilterByBuildFeatures
+		haiku_extras
+		haiku_source
+		makefile_engine
+		netfs
+		userland_fs
+		] ;
+}
+
+local webPositiveIsAvailable ;
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		if [ FIsBuildFeatureEnabled webpositive ] {
+			webPositiveIsAvailable = true ;
+			break ;
+		}
+	}
+}
+if $(webPositiveIsAvailable) {
+	packages += webpositive ;
+}
+
+HaikuRepository $(haikuRepository) : $(repoInfo) : $(packages:S=.hpkg) ;

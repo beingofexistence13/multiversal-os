@@ -1,0 +1,45 @@
+OPENSSH
+=======
+
+Original source can be downloaded from OpenBSD at
+ftp://ftp.openbsd.org/pub/OpenBSD/OpenSSH/portable/
+
+file = openssh-9.1p1.tar.gz
+date = 04 October 2022
+size = 1838747
+sha1 = 15545440268967511d3194ebf20bcd0c7ff3fcc9
+
+A list of deleted files is in README.DELETED.
+
+Configured with
+===============
+./configure --prefix=/usr --sysconfdir=/etc/ssh --with-sandbox=rlimit --with-pam \
+	    --with-libedit --without-ssl-engine --without-rpath \
+	    --with-privsep-path=/var/empty --with-xauth=/usr/local/bin/xauth \
+	    --disable-pkcs11 ac_cv_lib_dl_dlopen=no
+
+The following files have been patched (* planned)
+=================================================
+  auth-pam.c			WARNS, static sshpam_password_change_required()
+  platform.h			pledge dummies
+  session.c			WARNS, unused copy_environment()
+				WARNS, strdup(login_getcapstr()) (leak)
+  servconf.c			PAM defaults
+  sshd_config			PasswordAuthentication no
+
+NOTE: The configure script misdetects few things.
+Update config.h and openbsd-compat in lib/libssh.
+
+Used in:
+lib/libssh/
+libexec/sftp-server/
+libexec/ssh-keysign/
+libexec/ssh-pkcs11-helper/
+usr.bin/scp/
+usr.bin/sftp/
+usr.bin/ssh-add/
+usr.bin/ssh-agent/
+usr.bin/ssh-keygen/
+usr.bin/ssh-keyscan/
+usr.bin/ssh/
+usr.sbin/sshd/

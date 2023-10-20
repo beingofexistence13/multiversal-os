@@ -1,0 +1,30 @@
+SubDir HAIKU_TOP src servers mail ;
+
+if $(TARGET_PLATFORM) != haiku {
+	UsePublicHeaders mail ;
+}
+
+UsePublicHeaders [ FDirName add-ons mail_daemon ] ;
+UsePrivateHeaders app mail shared tracker ;
+SubDirHdrs $(HAIKU_TOP) src kits tracker ;
+
+AddResources mail_daemon : mail_daemon.rdef DeskbarViewIcons.rdef ;
+
+Server mail_daemon :
+	DeskbarView.cpp
+	ErrorLogWindow.cpp
+	LEDAnimation.cpp
+	MailDaemonApplication.cpp
+	main.cpp
+	DefaultNotifier.cpp
+	: be libmail.so tracker localestub [ TargetLibstdc++ ]
+		$(TARGET_NETWORK_LIBS)
+;
+
+DoCatalogs mail_daemon :
+	x-vnd.Be-POST
+	:
+	DeskbarView.cpp
+	MailDaemonApplication.cpp
+	DefaultNotifier.cpp
+;

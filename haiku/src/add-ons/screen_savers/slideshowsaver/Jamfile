@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src add-ons screen_savers slideshowsaver ;
+
+AddResources Message : SlideShowSaver.rdef ;
+
+ScreenSaver SlideShowSaver :
+	# LiveSettings
+	LiveSetting.cpp
+	LiveSettings.cpp
+
+	# SlideShowSaver classes
+	SlideShowSaver.cpp
+	SlideShowConfigView.cpp
+	:
+	be screensaver [ TargetLibstdc++ ] [ TargetLibsupc++ ] tracker translation
+;
+
+DoCatalogs SlideShowSaver :
+	x-vnd.Haiku-SlideShowSaver
+	:
+	SlideShowSaver.cpp
+;

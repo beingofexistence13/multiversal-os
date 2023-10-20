@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src add-ons translators shared ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		StaticLibrary [ MultiArchDefaultGristFiles libtranslatorsutils.a ] :
+			BaseTranslator.cpp
+			StreamBuffer.cpp
+			TranslatorSettings.cpp
+			TranslatorWindow.cpp
+		;
+	}
+}
+
+DoCatalogs libtranslatorsutils.a :
+	x-pseudo.libtranslatorsutils
+	:
+	BaseTranslator.cpp
+	TranslatorWindow.cpp
+;

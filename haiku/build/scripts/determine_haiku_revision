@@ -1,0 +1,56 @@
+#!/bin/sh
+
+haikuTop=$1
+revisionFile=$2
+haikuBuildOutputDir=`dirname $revisionFile`
+lastBuiltRevisionFile=${haikuBuildOutputDir}/last-built-revision
+
+case `uname` in
+Darwin)
+	SED=gsed
+	;;
+*)
+	SED=sed
+	;;
+esac
+export SED
+
+revision=`cat ${revisionFile} 2>/dev/null`
+lastBuiltRevision=`cat $lastBuiltRevisionFile 2>/dev/null`
+
+originalDir=`pwd`
+cd ${haikuTop}
+export LC_ALL=C
+
+localRev=`git rev-parse HEAD`
+
+# only determine the haiku-revision if anything has changed from the
+# last build
+if [ -z "$revision" -o "$lastBuiltRevision" != "$localRev" ]; then
+	# the revision we use is the description of HEAD with respect to the
+	# last reachable hrev-(haiku-revision-)tag
+	revision=`git describe --dirty --tags --match=hrev* --abbrev=1`
+	if [ -z "$revision" ]; then
+		# failed to find any hrev tags, bail out
+		echo "Error: you are using a Haiku clone without tags, please set"
+		echo "       the revision tag to use (e.g. HAIKU_REVISION=hrev43210)"
+		exit 1
+	fi
+
+	revision=`echo $revision | sed 's/-g[0-9a-z]\+//' | sed 's/-/+/g'`
+	if echo "$revision" | grep -- '-' >/dev/null; then
+		# HEAD is not directly a changeset from Haiku's central repo, so we
+		# add the current branch name as additional info
+		branchName=`git branch | grep '*' | cut -b 3-`
+		revision="$revision [$branchName]"
+	fi
+fi
+
+cd $originalDir
+
+if [ -z "$revision" ]; then
+	revision=0
+fi
+
+echo $localRev >${lastBuiltRevisionFile}
+echo $revision >${revisionFile}

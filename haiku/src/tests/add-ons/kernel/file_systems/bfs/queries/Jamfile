@@ -1,0 +1,6 @@
+SubDir HAIKU_TOP src tests add-ons kernel file_systems bfs queries ;
+
+SimpleTest bfsQueryTest
+	: test.cpp
+	: be [ TargetLibsupc++ ] ;
+

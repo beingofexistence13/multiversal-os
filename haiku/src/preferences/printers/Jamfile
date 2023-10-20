@@ -1,0 +1,36 @@
+SubDir HAIKU_TOP src preferences printers ;
+
+UsePrivateHeaders shared print ;
+
+Preference Printers :
+	AddPrinterDialog.cpp
+	Printers.cpp
+	PrintersWindow.cpp
+	PrinterListView.cpp
+	JobListView.cpp
+	ScreenSettings.cpp
+	SpoolFolder.cpp
+	TestPageView.cpp
+	TransportMenu.cpp
+	Globals.cpp
+	:
+	be
+	translation
+	libprintutils.a
+	[ TargetLibsupc++ ]
+	localestub
+	:
+	Printers.rdef
+	;
+
+DoCatalogs Printers :
+	x-vnd.Be-PRNT
+	:
+	AddPrinterDialog.cpp
+	JobListView.cpp
+	PrinterListView.cpp
+	PrintersWindow.cpp
+	TestPageView.cpp
+	TransportMenu.cpp
+;
+

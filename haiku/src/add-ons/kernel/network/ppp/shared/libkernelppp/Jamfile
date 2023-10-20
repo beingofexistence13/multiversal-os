@@ -1,0 +1,37 @@
+SubDir HAIKU_TOP src add-ons kernel network ppp shared libkernelppp ;
+
+SubDirC++Flags -fno-rtti ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+UsePrivateHeaders libroot net ;
+UsePrivateHeaders [ FDirName kernel ] ;
+UsePrivateHeaders [ FDirName kernel util ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared
+	libkernelppp headers ] : true ;
+
+KernelStaticLibrary libkernelppp.a :
+	kernel_cpp.cpp
+
+	KPPPConfigurePacket.cpp
+	KPPPDevice.cpp
+	KPPPInterface.cpp
+	KPPPLayer.cpp
+	KPPPLCP.cpp
+	KPPPLCPExtension.cpp
+	KPPPOptionHandler.cpp
+	KPPPProtocol.cpp
+	KPPPReportManager.cpp
+	KPPPStateMachine.cpp
+	KPPPUtils.cpp
+	settings_tools.cpp
+
+	# integrated modules
+	_KPPPMRUHandler.cpp
+	_KPPPAuthenticationHandler.cpp
+	_KPPPPFCHandler.cpp
+;
+
+SEARCH on [ FGristFiles kernel_cpp.cpp ]
+	= [ FDirName $(HAIKU_TOP) src system kernel util ] ;

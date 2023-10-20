@@ -1,0 +1,38 @@
+SubDir HAIKU_TOP src add-ons translators webp ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources WebPTranslator : WebPTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		UseBuildFeatureHeaders libwebp ;
+
+		Translator [ MultiArchDefaultGristFiles WebPTranslator ] :
+
+			main.cpp
+
+			WebPTranslator.cpp
+			ConfigView.cpp
+
+			:
+			be translation [ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ BuildFeatureAttribute libwebp : library ]
+			[ TargetLibsupc++ ]	localestub
+			: true
+		;
+
+		Includes [ FGristFiles ConfigView.cpp WebPTranslator.cpp ]
+			: [ BuildFeatureAttribute libwebp : headers ] ;
+	}
+}
+
+DoCatalogs WebPTranslator :
+	x-vnd.Haiku-WebPTranslator
+	:
+	main.cpp
+	ConfigView.cpp
+	WebPTranslator.cpp
+;
+

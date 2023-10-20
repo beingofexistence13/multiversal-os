@@ -1,0 +1,286 @@
+/*-
+ * Copyright (c) 2016 The DragonFly Project
+ * Copyright (c) 2014 The FreeBSD Foundation
+ * All rights reserved.
+ *
+ * This software was developed by Edward Tomasz Napierala under sponsorship
+ * from the FreeBSD Foundation.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ */
+
+#include <sys/param.h>
+#include <sys/diskslice.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <err.h>
+#include <errno.h>
+#include <iconv.h>
+#include <locale.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <vis.h>
+
+#include "fstyp.h"
+
+#define	LABEL_LEN	512
+
+bool show_label = false;
+
+typedef int (*fstyp_function)(FILE *, char *, size_t, const char *);
+typedef int (*fsvtyp_function)(const char *, char *, size_t);
+
+static struct {
+	const char	*name;
+	fstyp_function	function;
+	bool		unmountable;
+	const char	*precache_encoding;
+} fstypes[] = {
+	{ "apfs", &fstyp_apfs, true, NULL },
+	{ "befs", &fstyp_befs, false, NULL },
+	{ "cd9660", &fstyp_cd9660, false, NULL },
+	{ "exfat", &fstyp_exfat, false, EXFAT_ENC },
+	{ "ext2fs", &fstyp_ext2fs, false, NULL },
+	{ "hfs+", &fstyp_hfsp, false, NULL },
+	{ "msdosfs", &fstyp_msdosfs, false, NULL },
+	{ "ntfs", &fstyp_ntfs, false, NTFS_ENC },
+	{ "ufs", &fstyp_ufs, false, NULL },
+	{ "hammer", &fstyp_hammer, false, NULL },
+	{ "hammer2", &fstyp_hammer2, false, NULL },
+	{ NULL, NULL, NULL, NULL }
+};
+
+static struct {
+	const char	*name;
+	fsvtyp_function	function;
+	bool		unmountable;
+	const char	*precache_encoding;
+} fsvtypes[] = {
+	{ "hammer", &fsvtyp_hammer, false, NULL }, /* Must be before partial */
+	{ "hammer(partial)", &fsvtyp_hammer_partial, true, NULL },
+	{ "hammer2", &fsvtyp_hammer2, false, NULL }, /* Must be before partial */
+	{ "hammer2(partial)", &fsvtyp_hammer2_partial, true, NULL },
+	{ NULL, NULL, NULL, NULL }
+};
+
+void *
+read_buf(FILE *fp, off_t off, size_t len)
+{
+	int error;
+	size_t nread;
+	void *buf;
+
+	error = fseek(fp, off, SEEK_SET);
+	if (error != 0) {
+		warn("cannot seek to %jd", (uintmax_t)off);
+		return (NULL);
+	}
+
+	buf = malloc(len);
+	if (buf == NULL) {
+		warn("cannot malloc %zd bytes of memory", len);
+		return (NULL);
+	}
+
+	nread = fread(buf, len, 1, fp);
+	if (nread != 1) {
+		free(buf);
+		if (feof(fp) == 0)
+			warn("fread");
+		return (NULL);
+	}
+
+	return (buf);
+}
+
+char *
+checked_strdup(const char *s)
+{
+	char *c;
+
+	c = strdup(s);
+	if (c == NULL)
+		err(1, "strdup");
+	return (c);
+}
+
+void
+rtrim(char *label, size_t size)
+{
+	ptrdiff_t i;
+
+	for (i = size - 1; i >= 0; i--) {
+		if (label[i] == '\0')
+			continue;
+		else if (label[i] == ' ')
+			label[i] = '\0';
+		else
+			break;
+	}
+}
+
+static void
+usage(void)
+{
+
+	fprintf(stderr, "usage: fstyp [-l] [-s] [-u] special\n");
+	exit(1);
+}
+
+static void
+type_check(const char *path, FILE *fp)
+{
+	int error, fd;
+	struct stat sb;
+	struct partinfo pinfo;
+
+	fd = fileno(fp);
+
+	error = fstat(fd, &sb);
+	if (error != 0)
+		err(1, "%s: fstat", path);
+
+	if (S_ISREG(sb.st_mode))
+		return;
+
+	error = ioctl(fd, DIOCGPART, &pinfo);
+	if (error != 0)
+		errx(1, "%s: not a disk", path);
+}
+
+int
+main(int argc, char **argv)
+{
+	int ch, error, i, nbytes;
+	bool ignore_type = false, show_unmountable = false;
+	char label[LABEL_LEN + 1], strvised[LABEL_LEN * 4 + 1];
+	char fdpath[MAXPATHLEN];
+	char *p;
+	const char *path;
+	const char *name = NULL;
+	FILE *fp;
+	fstyp_function fstyp_f;
+	fsvtyp_function fsvtyp_f;
+
+	while ((ch = getopt(argc, argv, "lsu")) != -1) {
+		switch (ch) {
+		case 'l':
+			show_label = true;
+			break;
+		case 's':
+			ignore_type = true;
+			break;
+		case 'u':
+			show_unmountable = true;
+			break;
+		default:
+			usage();
+		}
+	}
+
+	argc -= optind;
+	argv += optind;
+	if (argc != 1)
+		usage();
+
+	path = argv[0];
+
+	if (setlocale(LC_CTYPE, "") == NULL)
+		err(1, "setlocale");
+
+	/*
+	 * DragonFly: Filesystems may have syntax to decorate path.
+	 * Make a wild guess.
+	 */
+	strlcpy(fdpath, path, sizeof(fdpath));
+	p = strchr(fdpath, '@');
+	if (p)
+		*p = '\0';
+
+	fp = fopen(fdpath, "r");
+	if (fp == NULL) {
+		if (strcmp(path, fdpath))
+			fp = fopen(path, "r");
+		if (fp == NULL)
+			goto fsvtyp; /* DragonFly */
+		else
+			strlcpy(fdpath, path, sizeof(fdpath));
+	}
+
+	if (ignore_type == false)
+		type_check(fdpath, fp);
+
+	memset(label, '\0', sizeof(label));
+
+	for (i = 0;; i++) {
+		if (show_unmountable == false && fstypes[i].unmountable == true)
+			continue;
+		fstyp_f = fstypes[i].function;
+		if (fstyp_f == NULL)
+			break;
+
+		error = fstyp_f(fp, label, sizeof(label), path);
+		if (error == 0) {
+			name = fstypes[i].name;
+			goto done;
+		}
+	}
+fsvtyp:
+	for (i = 0;; i++) {
+		if (show_unmountable == false && fsvtypes[i].unmountable == true)
+			continue;
+		fsvtyp_f = fsvtypes[i].function;
+		if (fsvtyp_f == NULL)
+			break;
+
+		error = fsvtyp_f(path, label, sizeof(label));
+		if (error == 0) {
+			name = fsvtypes[i].name;
+			goto done;
+		}
+	}
+
+	warnx("%s: filesystem not recognized", path);
+	return (1);
+done:
+	if (show_label && label[0] != '\0') {
+		/*
+		 * XXX: I'd prefer VIS_HTTPSTYLE, but it unconditionally
+		 *      encodes spaces.
+		 */
+		nbytes = strsnvis(strvised, sizeof(strvised), label,
+		    VIS_GLOB | VIS_NL, "\"'$");
+		if (nbytes == -1)
+			err(1, "strsnvis");
+
+		printf("%s %s\n", name, strvised);
+	} else {
+		printf("%s\n", name);
+	}
+
+	return (0);
+}

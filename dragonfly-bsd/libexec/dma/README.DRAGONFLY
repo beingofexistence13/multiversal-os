@@ -1,0 +1,27 @@
+DragonFly Mail Agent (DMA)
+==========================
+
+While dma originated on DragonFly, the official repository is now
+considered to be at GitHub:
+
+https://github.com/corecode/dma
+
+Synced commit May 23 2020: 14ea7d7d5b8e0819d462c9265dafd1b222d994c1
+
+Local modifications applied to following files:
+	aliases_parse.y	(-Werror=redundant-decls)
+	dma.8		(typo)
+	dma.c		(-Werror=redundant-decls, -Werror=implicit-fallthrough)
+	dma.c		(recognize mailq -Ac)
+	dma.c		(recognize hoststat and purgestat)
+	dma.h		(-Werror=redundant-decls, -Werror=missing-prototypes)
+	mail.c		(-Werror=implicit-fallthrough)
+
+Not imported:
+	BSDmakefile
+	INSTALL
+	Makefile
+	Makefile.etc
+	bsd/
+	get-version.sh
+	test/

@@ -1,0 +1,62 @@
+SubDir HAIKU_TOP src add-ons media plugins ffmpeg ;
+
+UsePrivateHeaders media shared ;
+UsePrivateHeaders [ FDirName media experimental ] ;
+
+SubDirC++Flags -D__STDC_CONSTANT_MACROS -Wdeprecated ;
+
+local sources =
+	AVCodecDecoder.cpp
+	AVCodecEncoder.cpp
+	AVFormatReader.cpp
+	AVFormatWriter.cpp
+	CodecTable.cpp
+	DemuxerTable.cpp
+	EncoderTable.cpp
+	FFmpegPlugin.cpp
+	MuxerTable.cpp
+	CpuCapabilities.cpp
+
+	gfx_conv_c.cpp
+	gfx_conv_c_lookup.cpp
+	gfx_util.cpp
+	;
+
+#if $(TARGET_ARCH) != x86_64 {
+#	sources +=
+#		gfx_conv_mmx.cpp
+#		yuvrgb_sse.nasm
+#		yuvrgb_sse2.nasm
+#		yuvrgb_ssse3.nasm
+#	;
+#}
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		UseBuildFeatureHeaders ffmpeg ;
+		Includes [ FGristFiles $(sources) ]
+			: [ BuildFeatureAttribute ffmpeg : headers ] ;
+
+		local ffmpegHeaders = [ BuildFeatureAttribute ffmpeg : headers : path ] ;
+		UseHeaders $(ffmpegHeaders) ;
+		UseHeaders [ FDirName $(ffmpegHeaders) libavcodec ] ;
+		UseHeaders [ FDirName $(ffmpegHeaders) libavfilter ] ;
+		UseHeaders [ FDirName $(ffmpegHeaders) libavformat ] ;
+		UseHeaders [ FDirName $(ffmpegHeaders) libavutil ] ;
+		UseHeaders [ FDirName $(ffmpegHeaders) libswscale ] ;
+		UseHeaders [ FDirName $(ffmpegHeaders) libswresample ] ;
+
+		Addon [ MultiArchDefaultGristFiles ffmpeg ] :
+			$(sources)
+			:
+
+			# FFmpeg libraries (from FFmpeg optional package):
+			[ BuildFeatureAttribute ffmpeg : libraries ]
+
+			be
+			media
+			[ TargetLibsupc++ ]
+		;
+	}
+}

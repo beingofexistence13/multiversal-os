@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src bin network mount_nfs ;
+
+UsePrivateHeaders net ;
+
+#AddResources mount_nfs : mount_nfs.rdef ;
+
+BinCommand mount_nfs :
+	mount_nfs.cpp
+	: libnetwork.so [ TargetLibsupc++ ]
+;

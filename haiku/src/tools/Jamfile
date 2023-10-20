@@ -1,0 +1,120 @@
+SubDir HAIKU_TOP src tools ;
+
+UsePrivateBuildHeaders app storage ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src/bin ] ;
+
+local beapi_tools =
+	<build>catattr
+	<build>copyattr
+	<build>elf2aout
+	<build>generate_attribute_stores
+	<build>listattr
+	<build>mimeset
+	<build>mkindex
+	<build>rm_attrs_tmp
+	<build>rmattr
+	<build>settype
+	<build>setversion
+	<build>xres
+	<build>generate_boot_screen
+;
+
+USES_BE_API on $(beapi_tools) = true ;
+
+BuildPlatformMain <build>catattr : catattr.cpp : $(HOST_LIBBE) ;
+
+UsePrivateObjectHeaders copyattr.cpp : shared : : true ;
+BuildPlatformMain <build>copyattr : copyattr.cpp
+	: $(HOST_LIBBE) $(HOST_LIBSTDC++) $(HOST_LIBSUPC++) ;
+
+BuildPlatformMain <build>create_image : create_image.cpp : $(HOST_LIBSUPC++) ;
+
+BuildPlatformMain <build>data_to_source : data_to_source.cpp
+	: $(HOST_LIBSUPC++) ;
+
+BuildPlatformMain <build>elf2aout : elf2aout.c : ;
+
+BuildPlatformMain <build>generate_attribute_stores
+	: generate_attribute_stores.cpp : $(HOST_LIBBE) $(HOST_LIBSUPC++) ;
+
+UsePrivateObjectHeaders generate_boot_screen.cpp : shared : : true ;
+UsePrivateObjectHeaders ColorQuantizer.cpp : shared : : true ;
+BuildPlatformMain <build>generate_boot_screen :
+	generate_boot_screen.cpp
+	ColorQuantizer.cpp
+	: $(HOST_LIBSUPC++) $(HOST_LIBSTDC++) png z ;
+
+BuildPlatformMain <build>listattr : listattr.cpp : $(HOST_LIBBE) ;
+
+BuildPlatformMain <build>mimeset :
+	mimeset.cpp
+	: $(HOST_LIBBE) $(HOST_LIBSTDC++) $(HOST_LIBSUPC++)
+;
+
+BuildPlatformMain <build>mkindex : mkindex.cpp : $(HOST_LIBBE) ;
+
+BuildPlatformMain <build>rm_attrs_tmp : rm_attrs.cpp
+	: $(HOST_LIBSUPC++) $(HOST_LIBSTDC++) ;
+PLATFORM on <build>rm_attrs = host ;
+MakeLocateDebug <build>rm_attrs ;
+File <build>rm_attrs : <build>rm_attrs_tmp ;
+MODE on <build>rm_attrs = 755 ;
+
+BuildPlatformMain <build>rmattr : rmattr.cpp : $(HOST_LIBBE) ;
+
+UsePrivateObjectHeaders set_haiku_revision : system libroot : : true ;
+BuildPlatformMain <build>set_haiku_revision : set_haiku_revision.cpp
+	: $(HOST_LIBSTDC++) $(HOST_LIBSUPC++) ;
+
+BuildPlatformMain <build>settype : settype.cpp : $(HOST_LIBBE)
+	$(HOST_LIBSTDC++) $(HOST_LIBSUPC++) ;
+
+BuildPlatformMain <build>setversion : setversion.cpp : $(HOST_LIBBE)
+	$(HOST_LIBSTDC++) $(HOST_LIBSUPC++) ;
+
+BuildPlatformMain <build>xres : xres.cpp : $(HOST_LIBBE) $(HOST_LIBSTDC++)
+	$(HOST_LIBSUPC++) ;
+
+SEARCH on [ FGristFiles
+		Mime.cpp
+	] = [ FDirName $(HAIKU_TOP) src build libbe storage ] ;
+
+SEARCH on [ FGristFiles
+		UpdateMimeInfoThread.cpp MimeUpdateThread.cpp database_support.cpp
+	] = [ FDirName $(HAIKU_TOP) src build libbe storage mime ] ;
+
+SEARCH on [ FGristFiles
+		ColorQuantizer.cpp
+	] = [ FDirName $(HAIKU_TOP) src kits shared ] ;
+
+SubInclude HAIKU_TOP src tools addattr ;
+SubInclude HAIKU_TOP src tools anyboot ;
+SubInclude HAIKU_TOP src tools bfs_shell ;
+SubInclude HAIKU_TOP src tools fat_shell ;
+SubInclude HAIKU_TOP src tools cppunit ;
+SubInclude HAIKU_TOP src tools create_repository_config ;
+SubInclude HAIKU_TOP src tools elfsymbolpatcher ;
+SubInclude HAIKU_TOP src tools fixup_amiga_boot_checksum ;
+SubInclude HAIKU_TOP src tools fixup_next_boot_floppy ;
+SubInclude HAIKU_TOP src tools fixup_tos_boot_checksum ;
+SubInclude HAIKU_TOP src tools fs_shell ;
+SubInclude HAIKU_TOP src tools gensyscalls ;
+SubInclude HAIKU_TOP src tools get_package_dependencies ;
+SubInclude HAIKU_TOP src tools hack_coff ;
+SubInclude HAIKU_TOP src tools hvif2png ;
+SubInclude HAIKU_TOP src tools keymap ;
+SubInclude HAIKU_TOP src tools locale ;
+SubInclude HAIKU_TOP src tools makebootable ;
+SubInclude HAIKU_TOP src tools mbrtool ;
+SubInclude HAIKU_TOP src tools opd_to_package_info ;
+SubInclude HAIKU_TOP src tools package ;
+SubInclude HAIKU_TOP src tools package_repo ;
+SubInclude HAIKU_TOP src tools rc ;
+SubInclude HAIKU_TOP src tools remote_disk_server ;
+SubInclude HAIKU_TOP src tools resattr ;
+SubInclude HAIKU_TOP src tools translation ;
+SubInclude HAIKU_TOP src tools unflatten ;
+SubInclude HAIKU_TOP src tools unzip ;
+SubInclude HAIKU_TOP src tools update_package_requires ;
+SubInclude HAIKU_TOP src tools vmdkimage ;

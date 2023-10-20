@@ -1,0 +1,67 @@
+#disable_smp true
+	# Disables multiprocessor support, which is enabled by default.
+
+#disable_ioapic true
+	# Disables IO-APIC support, which is enabled by default.
+
+#apm true
+	# APM (advanced power management) support (shutdown, battery info, etc.
+	# for legacy hardware), disabled by default.
+
+#acpi false
+	# ACPI support (interrupt routing, shutdown/reboot, battery info for modern
+	# hardware), enabled by default.
+
+#4gb_memory_limit true
+	# Ignores all memory beyond 4 GB, disabled by default.
+
+#fail_safe_video_mode true
+	# Use failsafe (VESA/framebuffer) video mode on every boot.
+
+#bluescreen false
+	# Enables/disables on-screen KDL, which defaults to enabled.
+	# You likely want to disable this when using serial debugging.
+
+load_symbols true
+	# Load kernel and kernel add-on symbols, disabled by default.
+
+#emergency_keys false
+	# Disables emergency keys (ie. Alt-SysReq+*), enabled by default.
+
+#serial_debug_output false
+	# Disables serial debug output, which is enabled by default
+
+#serial_debug_port 1
+	# Possible values: <num>|<port>
+	# Serial interface number (as enumerated by the BIOS) or the base port of
+	# the serial interface to be used for kernel debug output and KDL.
+	# Default is 0 (COM1).
+
+#serial_debug_speed 57600
+	# Possible values: <9600|19200|38400|57600|115200>, default is 115200.
+
+#syslog_debug_output false
+	# Disables sending debug output to syslog_daemon, which is enabled by default.
+	# Does not affect serial and onscreen debug output.
+
+#syslog_buffer_size 131768
+	# The default size of the internal syslog ring buffer - if you often see
+	# <DROP> or <TRUNC> messages in your syslog, you might want to increase
+	# this value. Defaults to 65536 (bytes).
+
+#syslog_time_stamps true
+	# Include time stamps in syslog debug output, defaults to false.
+
+#syslog_max_size 20MB
+	# Sets the maximum syslog file size, default is 512kB.
+
+#bochs_debug_output true
+	# Activates Bochs debug output if enabled in the kernel (available on x86
+	# as a build option only)
+
+#laplinkll_debug_output true
+	# Activates parallel debug output. Requires a laplink cable and a custom
+	# driver on the other end.
+
+#qemu_single_step_hack true
+	# Activates a hack that allows single-stepping under QEMU to work.

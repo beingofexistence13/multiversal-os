@@ -1,0 +1,27 @@
+SubDir HAIKU_TOP src bin mail_utils ;
+
+UsePrivateHeaders mail ;
+
+StdBinCommands
+	mail.cpp
+	: be mail
+	: mail.rdef
+	;
+
+StdBinCommands
+	mail2mbox.cpp
+	: be
+	: mail2mbox.rdef
+	;
+
+StdBinCommands
+	mbox2mail.cpp
+	: be libmail.so
+	: mbox2mail.rdef
+	;
+
+StdBinCommands
+	spamdbm.cpp
+	: be tracker [ TargetLibstdc++ ] libmail.so
+	: spamdbm.rdef
+	;

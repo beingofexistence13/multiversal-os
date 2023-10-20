@@ -1,0 +1,191 @@
+SubDir HAIKU_TOP src tests kits app ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UsePrivateHeaders app ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers registrar mime ] ;
+
+# Let Jam know where to find some of our source files
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bapplication ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bclipboard ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bcursor ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bhandler ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) blooper ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bmessage ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bmessagequeue ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bmessagerunner ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bmessenger ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) bpropertyinfo ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) broster ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) broster testapps ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) common ] ;
+
+# TODO: bonefish: There is no MessageTestAddon.cpp. Remove, if noone uses
+# this.
+#UnitTestLib libmessagetest.so
+#	: MessageTestAddon.cpp
+#		MessageTest.cpp
+#		MessageConstructTest.cpp
+#		MessageDestructTest.cpp
+#		MessageOpAssignTest.cpp
+#		MessageEasyFindTest.cpp
+#		MessageSpeedTest.cpp
+#	: be [ TargetLibstdc++ ]
+#;
+
+
+UnitTestLib libapptest.so
+	: AppKitTestAddon.cpp
+
+		# BApplication
+		ApplicationTest.cpp
+		AppQuitRequestedTester.cpp
+		AppQuitTester.cpp
+		AppRunTester.cpp
+		BApplicationTester.cpp
+
+		# BClipboard
+		BClipboardTester.cpp
+		ClipboardTest.cpp
+		CountTester.cpp
+		LockTester.cpp
+		ReadWriteTester.cpp
+
+		# BCursor
+		BCursorTester.cpp
+		CursorTest.cpp
+
+		# BHandler
+		HandlerTest.cpp
+		AddFilterTest.cpp
+		BHandlerTester.cpp
+		IsWatchedTest.cpp
+		LockLooperTest.cpp
+		LockLooperTestCommon.cpp
+		LockLooperWithTimeoutTest.cpp
+		HandlerLooperTest.cpp
+		NextHandlerTest.cpp
+		RemoveFilterTest.cpp
+		SetFilterListTest.cpp
+		SetNextHandlerTest.cpp
+		UnlockLooperTest.cpp
+
+		# BLooper
+		LooperTest.cpp
+		AddHandlerTest.cpp
+		CountHandlersTest.cpp
+		HandlerAtTest.cpp
+		IndexOfTest.cpp
+		IsMessageWaitingTest.cpp
+		RemoveHandlerTest.cpp
+		PerformTest.cpp
+		RunTest.cpp
+		LooperForThreadTest.cpp
+		AddCommonFilterTest.cpp
+		RemoveCommonFilterTest.cpp
+		LooperSizeTest.cpp
+		SetCommonFilterListTest.cpp
+		QuitTest.cpp
+
+		# BMessage
+#		MessageTest.cpp
+#		MessageConstructTest.cpp
+#		MessageDestructTest.cpp
+#		MessageOpAssignTest.cpp
+#		MessageEasyFindTest.cpp
+#		MessageSpeedTest.cpp
+
+		# BMessageQueue
+		MessageQueueTest.cpp
+		AddMessageTest1.cpp
+		AddMessageTest2.cpp
+		ConcurrencyTest1.cpp
+		ConcurrencyTest2.cpp
+		FindMessageTest1.cpp
+		MessageQueueTestCase.cpp
+		
+		# BMessageRunner
+		MessageRunnerTest.cpp
+		BMessageRunnerTester.cpp
+		BroadcastTester.cpp
+		GetInfoTester.cpp
+		MessageRunnerTestHelpers.cpp
+		SetCountTester.cpp
+		SetIntervalTester.cpp
+
+		# BMessenger
+		MessengerTest.cpp
+		BMessengerTester.cpp
+		LockTargetTester.cpp
+		LockTargetWithTimeoutTester.cpp
+		MessengerAssignmentTester.cpp
+		MessengerComparissonTester.cpp
+		SendMessageTester.cpp
+		SMInvoker.cpp
+		SMLooper.cpp
+		SMReplyTarget.cpp
+		SMTarget.cpp
+		TargetTester.cpp
+
+		# BPropertyInfo
+		PropertyTestcase.cpp
+		PropertyConstructionTest.cpp
+		PropertyFindMatchTest.cpp
+		PropertyFlattenTest.cpp
+		PropertyInfoTest.cpp
+
+		# BRoster
+		RosterTest.cpp
+		FindAppTester.cpp
+		GetAppInfoTester.cpp
+		GetAppListTester.cpp
+		GetRecentTester.cpp
+		IsRunningTester.cpp
+		LaunchTester.cpp
+		LaunchTesterHelper.cpp
+		RecentAppsTestApp.cpp
+		RosterWatchingTester.cpp
+		TeamForTester.cpp
+		
+		# RegistrarThreadManager
+		RegistrarThread.cpp
+		RegistrarThreadManager.cpp
+		RegistrarThreadManagerTest.cpp
+
+		# common
+		AppRunner.cpp
+		PipedAppRunner.cpp
+
+	: be [ TargetLibstdc++ ]
+;
+
+UnitTestLib libappteststub.so
+	: AppKitTestStub.cpp
+	: libapptest.so [ TargetLibstdc++ ]
+;
+
+SimpleTest DanoMessageTest :
+	DanoMessageTest.cpp
+	dano_message.cpp
+	: be ;
+
+SEARCH on [ FGristFiles
+		dano_message.cpp
+	] = [ FDirName $(HAIKU_TOP) src kits app ] ;
+
+SEARCH on [ FGristFiles
+		RegistrarThread.cpp
+		RegistrarThreadManager.cpp
+	] = [ FDirName $(HAIKU_TOP) src servers registrar mime ] ;
+
+SubInclude HAIKU_TOP src tests kits app bapplication ;
+SubInclude HAIKU_TOP src tests kits app bclipboard ;
+SubInclude HAIKU_TOP src tests kits app bcursor ;
+#SubInclude HAIKU_TOP src tests kits app bhandler ;
+#SubInclude HAIKU_TOP src tests kits app blooper ;
+#SubInclude HAIKU_TOP src tests kits app bmessage ;
+#SubInclude HAIKU_TOP src tests kits app bmessageQueue ;
+SubInclude HAIKU_TOP src tests kits app bmessenger ;
+SubInclude HAIKU_TOP src tests kits app broster ;
+SubInclude HAIKU_TOP src tests kits app common ;
+SubInclude HAIKU_TOP src tests kits app messaging ;

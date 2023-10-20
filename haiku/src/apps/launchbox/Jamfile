@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src apps launchbox ;
+
+UsePrivateHeaders shared ;
+
+Application LaunchBox :
+	App.cpp
+	LaunchButton.cpp
+	main.cpp
+	MainWindow.cpp
+	NamePanel.cpp
+	PadView.cpp
+	Panel.cpp
+	support.cpp
+	: be translation shared [ TargetLibsupc++ ] localestub
+	: LaunchBox.rdef
+;
+
+DoCatalogs LaunchBox :
+	x-vnd.Haiku-LaunchBox
+	:
+	App.cpp
+	LaunchButton.cpp
+	MainWindow.cpp
+	NamePanel.cpp
+	PadView.cpp
+;

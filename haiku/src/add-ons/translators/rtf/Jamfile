@@ -1,0 +1,38 @@
+SubDir HAIKU_TOP src add-ons translators rtf ;
+
+# It's called RTF-Translator (with a dash) to differentiate it from the
+# RTFTranslator that comes with Gobe Productive (that doesn't support
+# STXT or plain text files output).
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+UsePrivateHeaders shared storage ;
+
+AddResources RTFTranslator : RTFTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles RTFTranslator ] :
+			main.cpp
+			ConfigView.cpp
+
+			convert.cpp
+			RTF.cpp
+			RTFTranslator.cpp
+
+			: be translation [ TargetLibstdc++ ]
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs RTFTranslator :
+	x-vnd.Haiku-RTFTranslator
+	:
+	main.cpp
+	RTFTranslator.cpp
+	ConfigView.cpp
+;

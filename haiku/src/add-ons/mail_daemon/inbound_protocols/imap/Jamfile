@@ -1,0 +1,39 @@
+SubDir HAIKU_TOP src add-ons mail_daemon inbound_protocols imap ;
+
+UsePublicHeaders [ FDirName add-ons mail_daemon ] ;
+UsePrivateHeaders mail shared ;
+SubDirHdrs [ FDirName $(SUBDIR) imap_lib ] ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers os add-ons mail_daemon ] ;
+
+AddResources IMAP : IMAP.rdef ;
+
+Addon IMAP :
+	IMAPProtocol.cpp
+	ConfigView.cpp
+	FolderConfigWindow.cpp
+	IMAPFolder.cpp
+	IMAPConnectionWorker.cpp
+	IMAPMailbox.cpp
+	Settings.cpp
+	Utilities.cpp
+
+	# imap_lib
+	Commands.cpp
+	Protocol.cpp
+	Response.cpp
+	:
+	be libmail.so localestub $(TARGET_NETWORK_LIBS) libbnetapi.so
+	shared [ TargetLibsupc++ ] [ TargetLibstdc++ ]
+;
+
+SEARCH on [ FGristFiles Commands.cpp Protocol.cpp Response.cpp ]
+	= [ FDirName $(HAIKU_TOP) src add-ons mail_daemon inbound_protocols imap
+		imap_lib ] ;
+
+DoCatalogs IMAP :
+	x-vnd.Haiku-IMAP
+	:
+	ConfigView.cpp
+	FolderConfigWindow.cpp
+;

@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src tests libs linprog ;
+
+
+UseLibraryHeaders lp_solve linprog ;
+
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+SimpleTest [ MultiArchDefaultGristFiles linprog_test ] :
+	Program.cpp
+	:
+	be [ MultiArchDefaultGristFiles liblinprog.a ]
+		[ TargetLibsupc++ ] [ TargetLibstdc++ ]
+;
+	}
+}

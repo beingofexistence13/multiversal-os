@@ -1,0 +1,77 @@
+1	lithuanian	x-vnd.Haiku-Devices	2347806408
+ACPI bus	DevicesView		ACPI magistralė
+Encryption controller	Device		Šifravimo valdiklis
+Devices	System name		Įrenginiai
+Graphics Peripheral	DeviceSCSI		Periferinis grafikos įrenginys
+Processor	Device		Procesorius
+Generate system information	DevicesView		Generuoti informaciją apie sistemą
+Class info	DevicePCI		Klasės savybės
+Computer	DevicesView		Kompiuteris
+Communications	DeviceSCSI		Ryšio įrenginiai
+Mass storage controller	Device		Kaupiklių valdiklis
+Connection	DevicesView		ryšį
+Printer	DeviceSCSI		Spausdintuvas
+ACPI Processor Namespace '%2'	DeviceACPI		ACPI procesoriaus vardų sritis „%2“
+Manufacturer	Device		Gamintojas
+Scanner	DeviceSCSI		Skeneris
+Memory controller	Device		Atminties valdiklis
+Unknown device	DevicesView		Nežinomas įrenginys
+Unknown	DevicePCI		nežinoma
+ACPI node '%1'	DeviceACPI		ACPI mazgas „%1“
+Optical Drive	DeviceSCSI		Optinis kaupiklis
+Name	PropertyList		Pavadinimas
+Manufacturer	DeviceSCSI		Gamintojas
+Device name	Device		Įrenginio pavadinimas
+Satellite communications controller	Device		Palydovinio ryšio valdiklis
+Device class	DeviceSCSI		Įrenginio klasė
+Device	Device		Įrenginys
+Input device controller	Device		Įvesties įrenginių valdiklis
+PCI bus	DevicesView		PCI magistralė
+ACPI System Indicator	DeviceACPI		ACPI sistemos indikatorius
+ACPI System Bus	DeviceACPI		ACPI sistemos magistralė
+Tape Drive	DeviceSCSI		Juostų kaupiklis
+Changer	DeviceSCSI		Keitiklis
+Serial bus controller	Device		Nuosekliosios magistralės valdiklis
+Refresh devices	DevicesView		Atnaujinti įrenginių sąrašą
+Category	DevicesView		kategoriją
+RBC	DeviceSCSI		RBC
+Device paths	Device		Įrenginio kelias
+Unknown device	Device		Nežinomas įrenginys
+Wireless controller	Device		Bevielio tinklo valdiklis
+Generic system peripheral	Device		Bendro pobūdžio periferiniai įrenginiai
+Value	PropertyList		Reikšmė
+Devices	DevicesView		Įrenginiai
+Device name	DeviceACPI		Įrenginio pavadinimas
+Card Reader	DeviceSCSI		Kortelių skaitytuvas
+Display controller	Device		Ekranų valdiklis
+Device name	DevicePCI		Įrenginio pavadinimas
+Disk Drive	DeviceSCSI		Standusis diskas
+Report compatibility	DevicesView		Pranešti apie suderinamumą
+Other	DeviceSCSI		Kita
+Computer	Device		Kompiuteris
+PCI bus	Device		PCI magistralė
+Enclosure	DeviceSCSI		Kasetė
+ACPI Thermal Zone	DeviceACPI		ACPI temperatūros zona
+Order by:	DevicesView		Rūšiuoti pagal:
+Intelligent controller	Device		Išmanusis valdiklis
+Multimedia controller	Device		Įvairialypės terpės valdiklis
+Quit	DevicesView		Baigti darbą
+ISA bus	Device		ISA magistralė
+ISA bus	DevicesView		ISA magistralė
+Processor	DeviceSCSI		Procesorius
+Bridge	Device		Tiltas
+Worm	DeviceSCSI		WORM
+CD-ROM	DeviceSCSI		CD kaupiklis
+Manufacturer	DevicePCI		Gamintojas
+Bridge	DeviceSCSI		Tiltas
+Signal processing controller	Device		Signalų apdorojimo valdiklis
+Device name	DeviceSCSI		Įrenginio pavadinimas
+Docking station	Device		Jungčių replikatorius
+Array	DeviceSCSI		Masyvas
+Unclassified device	Device		Neklasifikuotas įrenginys
+ACPI controller	Device		ACPI valdiklis
+Network controller	Device		Tinklo valdiklis
+Driver used	Device		Naudojama tvarkyklė
+Communication controller	Device		Ryšio įrenginių valdiklis
+ACPI bus	Device		ACPI magistralė
+unknown	Device		nežinoma

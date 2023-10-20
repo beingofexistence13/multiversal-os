@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src add-ons accelerants via engine ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics via ] ;
+
+SubDirCcFlags -Wno-unused ;
+
+StaticLibrary libvia_engine.a :
+	acc.c
+	bes.c
+	tvout.c
+	crtc.c
+	crtc2.c
+	dac.c
+	dac2.c
+	general.c
+	agp.c
+	globals.c
+	i2c.c
+	info.c
+	support.c
+	;

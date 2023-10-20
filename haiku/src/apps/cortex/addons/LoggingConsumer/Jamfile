@@ -1,0 +1,29 @@
+SubDir HAIKU_TOP src apps cortex addons LoggingConsumer ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps cortex addons common ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src apps cortex addons common ] ;
+
+Addon cortex_logging_consumer.media_addon :
+	LoggingConsumerApp.cpp
+	LoggingConsumerAddOn.cpp
+	NodeHarnessApp.cpp
+	NodeHarnessWin.cpp
+	LogWriter.cpp
+	LoggingConsumer.cpp
+
+	# common/
+	MediaNodeControlApp.cpp
+
+	: be media localestub [ TargetLibstdc++ ]
+;
+
+DoCatalogs cortex_logging_consumer.media_addon
+	: x-vnd.Be.LoggingConsumerApp
+	:
+	LoggingConsumer.cpp
+	LoggingConsumerAddOn.cpp
+	NodeHarnessApp.cpp
+	NodeHarnessWin.cpp
+
+	../common/MediaNodeControlApp.cpp
+;

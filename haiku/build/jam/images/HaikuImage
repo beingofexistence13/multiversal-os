@@ -1,0 +1,27 @@
+# This file defines what ends up on the Haiku image (respectively in the Haiku
+# installation directory) and it executes the rules building the image
+# (respectively installing the files in the installation directory).
+
+# import the defintions of the image content
+if $(HAIKU_BUILD_TYPE) = bootstrap {
+	include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions bootstrap ] ;
+} else if $(HAIKU_BUILD_TYPE) = minimum {
+	include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions minimum ] ;
+} else {
+	include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions regular ] ;
+}
+
+# build the haiku system packages and add them
+include [ FDirName $(HAIKU_BUILD_RULES_DIR) HaikuPackages ] ;
+
+AddPackageFilesToHaikuImage system packages :
+	haiku_loader.hpkg
+	haiku.hpkg
+	haiku_datatranslators.hpkg
+	haiku_$(TARGET_PACKAGING_ARCHS[2-]).hpkg
+	:
+	nameFromMetaInfo
+	;
+
+# import what is shared by all images
+include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions common-tail ] ;

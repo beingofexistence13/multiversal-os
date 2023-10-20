@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src tests add-ons kernel network ;
+
+UseLegacyHeaders network ;
+UseHeaders [ FDirName $(HAIKU_TOP) headers posix ] : true ;
+UsePrivateHeaders net ;
+
+# the network stack tester app
+SimpleTest net_stack_tester : 
+	net_stack_tester.cpp 
+	userland_ipc.c
+	userland_modules.cpp
+	: be
+;
+
+# Installation -- in the test directory for the time being
+HaikuInstall install-userland-networking 
+	: [ FDirName $(HAIKU_TEST_DIR) kits net userland ]
+	: net_stack_tester
+	: installed-userland-networking
+;
+
+SubInclude HAIKU_TOP src tests add-ons kernel network core ;
+SubInclude HAIKU_TOP src tests add-ons kernel network interfaces ;
+SubInclude HAIKU_TOP src tests add-ons kernel network ppp ;
+SubInclude HAIKU_TOP src tests add-ons kernel network protocols ;

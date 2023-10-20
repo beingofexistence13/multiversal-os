@@ -1,0 +1,35 @@
+SubDir HAIKU_TOP src apps pulse ;
+
+UsePrivateSystemHeaders ;
+UsePrivateHeaders shared interface app ;
+
+Application Pulse :
+	ConfigView.cpp
+	CPUButton.cpp
+	DeskbarPulseView.cpp
+	MiniPulseView.cpp
+	NormalPulseView.cpp
+	Prefs.cpp
+	PrefsWindow.cpp
+	ProgressBar.cpp
+	PulseApp.cpp
+	PulseView.cpp
+	PulseWindow.cpp
+
+	: be localestub [ TargetLibsupc++ ]
+	: Pulse.rdef
+;
+
+DoCatalogs Pulse :
+	x-vnd.Haiku-Pulse
+	:
+	PulseApp.cpp
+	PulseView.cpp
+	ConfigView.cpp
+	CPUButton.cpp
+	DeskbarPulseView.cpp
+	MiniPulseView.cpp
+	NormalPulseView.cpp
+	PrefsWindow.cpp
+	PulseWindow.cpp
+;

@@ -1,0 +1,33 @@
+SubDir HAIKU_TOP src tests add-ons kernel network ppp shared libkernelppp ;
+
+UsePrivateHeaders net ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared libkernelppp headers ] : true ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared libkernelppp ] ;
+
+StaticLibrary <userland>libkernelppp.a :
+	KPPPConfigurePacket.cpp
+	KPPPDevice.cpp
+	KPPPInterface.cpp
+	KPPPLayer.cpp
+	KPPPLCP.cpp
+	KPPPLCPExtension.cpp
+	KPPPOptionHandler.cpp
+	KPPPProtocol.cpp
+	KPPPReportManager.cpp
+	KPPPStateMachine.cpp
+	KPPPUtils.cpp
+	settings_tools.cpp
+
+	# integrated modules
+	_KPPPMRUHandler.cpp
+	_KPPPAuthenticationHandler.cpp
+	_KPPPPFCHandler.cpp
+
+	# for driver_settings
+	strlcat.c
+	driver_settings.cpp
+;
+
+SEARCH on [ FGristFiles strlcat.c ] = [ FDirName $(HAIKU_TOP) src system libroot posix string ] ;
+SEARCH on [ FGristFiles driver_settings.cpp ] = [ FDirName $(HAIKU_TOP) src system libroot os ] ;

@@ -1,0 +1,562 @@
+/*
+ * Copyright 2011 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/Button.h	 hrev47274
+ *		src/kits/interface/Button.cpp	 hrev47273
+ */
+
+
+/*!
+	\file Button.h
+	\ingroup interface
+	\ingroup libbe
+	\brief Describes the BButton class.
+*/
+
+
+/*!
+	\class BButton Button.h
+	\ingroup interface
+	\ingroup libbe
+	\brief A control used to initiate an action.
+
+	An action is activated by clicking on the button with the mouse
+	or by a keyboard button. If the button is the default button for
+	the active window then you can activate it by pushing the
+	<span class="keycap">Enter</span> key.
+
+	\image html BButton_example.png
+
+	The behavior of a button depends on its behavior. The normal behavior
+	of a button is to set the value to 1 (\c B_CONTROL_ON) only when the
+	button is activated, otherwise the value is 0 (\c B_CONTROL_OFF).
+	Setting a button to use \c B_TOGGLE_BEHAVIOR makes the button behave
+	like a checkbox so that each time the button is activate the value
+	toggles between \c B_CONTROL_OFF and \c B_CONTROL_ON. The third
+	behavior to use is \c B_POP_UP_BEHAVIOR which adds a pop-up marker
+	to the button similar to that of BMenuField.
+
+	A button may have either a text label, an icon, or both. The button's
+	label is set in the constructor or by the SetLabel() method. To set the
+	icon for a button use the SetIcon() method. The text label will draw
+	to the right of the icon.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BButton::BButton(BRect frame, const char* name, const char* label,
+		BMessage* message, uint32 resizingMode, uint32 flags)
+	\brief Creates and initializes a BButton control.
+
+	\note A BButton created with a constructor that includes a frame
+	parameter does \b not utilize the Layout Kit to position and size the
+	control.
+
+	BControl initializes the button's label and assigns it a message that 
+	identifies the action that should be carried out when the button is
+	pressed. When the button is attached to a window it is resizes to the
+	height of the button's frame rectangle to fit the button's border and
+	label in the button's font.
+
+	The \a frame, \a name, \a resizingMode, and \a flags parameters are
+	passed up the inheritance chain to the BView class.
+
+	\param frame The frame rectangle that the button is draw into.
+	\param name The name of the button. Can be \c NULL.
+	\param label The button label text. Can be \c NULL.
+	\param message The BButtons's action message. Can be \c NULL.
+	\param resizingMode Mask sets the parameters by which the BButton can be
+	       resized. See BView for more information on resizing options.
+	\param flags The \a flags mask sets what notifications the BButton can
+	       receive. See BView for more information on \a flags.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BButton::BButton(const char* name, const char* label, BMessage* message,
+		uint32 flags)
+	\brief Creates and initializes a BButton control.
+
+	BControl initializes the button's label and assigns it a message that 
+	identifies the action that should be carried out when the button is
+	pressed. When the button is attached to a window it is resizes to the
+	height of the button's frame rectange to fit the button's border and
+	label in the button's font.
+	
+	\param name The \a name of the button. Can be \c NULL.
+	\param label The button's \a label text. Can be \c NULL.
+	\param message The button's action \a message. Can be \c NULL.
+	\param flags The \a flags mask sets what notifications the button can
+	       receive. See BView for more information on \a flags.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BButton::BButton(const char* label, BMessage* message)
+	\brief Creates and initializes a BButton control.
+
+	Creates the button with the specified \a label. The action carried out
+	by the button is specified by the \a message.
+
+	\param label The button's \a label text. Can be \c NULL.
+	\param message The buttons action \a message. Can be \c NULL.
+
+	\since Haiku R1
+*/
+
+
+/*! \fn BButton::BButton(BMessage* data)
+	\brief Constructs a BButton object from an \a data message.
+
+	This method is usually not called directly. If you want to build a
+	button from a message you should call Instantiate() which can
+	handle errors properly.
+
+	If the \a data deep, the BButton object will also unarchive each
+	of its child views recursively.
+
+	\param data The \a data message to restore from.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BButton::~BButton()
+	\brief Destructor, does nothing.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\name Archiving
+*/
+
+
+//! @{
+
+
+/*!
+	\fn BArchivable* BButton::Instantiate(BMessage* archive)
+	\brief Creates a new BButton object from the \a archive message.
+
+	\param archive The \a archive message to restore from.
+
+	\return A newly created check box or \c NULL if the message doesn't
+	        contain an archived BButton.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BButton::Archive(BMessage* data, bool deep) const
+	\brief Archives the object into the \a data message.
+
+	\param data A pointer to the BMessage object to archive the object into.
+	\param deep Whether or not to archive child views as well.
+
+	\return A status code, \c B_OK if everything went well or an error code
+	        otherwise.
+
+	\sa BControl::Archive()
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\name Hook Methods
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BButton::AttachedToWindow()
+	\brief Hook method called when the button is attached to a window.
+
+	The view color is set to \c B_TRANSPARENT_COLOR. If the button is
+	the default button the window's default button is updated.
+
+	\sa BControl::AttachedToWindow()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BButton::DetachedFromWindow()
+	\brief Hook method called when the button is detached from a window.
+
+	\copydetails BControl::DetachedFromWindow()
+*/
+
+
+/*!
+	\fn void BButton::AllAttached()
+	\brief Similar to AttachedToWindow() but this method is triggered after
+	       all child views have already been attached to a window.
+
+	\copydetails BView::AllAttached()
+*/
+
+
+/*!
+	\fn void BButton::AllDetached()
+	\brief Similar to AttachedToWindow() but this method is triggered after
+	       all child views have already been detached from a window.
+
+	\copydetails BView::AllDetached()
+*/
+
+
+/*!
+	\fn void BButton::Draw(BRect updateRect)
+	\brief Draws the area of the button that intersects \a updateRect and
+		sets the label.
+
+	\note This is an hook method called by the Interface Kit, you don't
+	      have to call it yourself. If you need to forcefully redraw the
+	      button consider calling Invalidate() instead.
+
+	\param updateRect The rectangular area to be drawn.
+
+	\sa BView::Draw()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BButton::FrameMoved(BPoint newPosition)
+	\brief Hook method called when the button is moved.
+
+	\copydetails BView::FrameMoved()
+*/
+
+
+/*!
+	\fn void BButton::FrameResized(float newWidth, float newHeight)
+	\brief Hook method called when the button is resized.
+
+	\copydetails BView::FrameResized()
+*/
+
+
+/*!
+	\fn void BButton::KeyDown(const char* bytes, int32 numBytes)
+	\brief Hook method called when a keyboard key is pressed.
+
+	Invokes the button on \a B_ENTER or \a B_SPACE.
+
+	\param bytes The bytes of the key combination pressed.
+	\param numBytes The number of bytes in \a bytes.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BButton::LayoutInvalidated(bool descendants)
+	\brief Hook method called when the layout is invalidated.
+
+	Invalidate cached preferred size.
+
+	\param descendants Whether or not child views have also been invalidated.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BButton::MessageReceived(BMessage* message)
+	\brief Handle \a message received by the associated looper.
+
+	\copydetails BControl::MessageReceived()
+*/
+
+
+/*!
+	\fn void BButton::MouseDown(BPoint where)
+	\brief Hook method called when a mouse button is pressed.
+
+	Begins tracking the mouse cursor.
+
+	\copydetails BControl::MouseDown()
+*/
+
+
+/*!
+	\fn void BButton::MouseMoved(BPoint where, uint32 code,
+		const BMessage* dragMessage)
+	\brief Hook method called when the mouse is moved.
+
+	Once MouseDown() has been called this method updates the button's value
+	if the mouse cursor is inside the button. The value that is set depends on
+	if the button is using \c B_TOGGLE_BEHAVIOR or not.
+
+	\copydetails BControl::MouseMoved()
+*/
+
+
+/*!
+	\fn void BButton::MouseUp(BPoint where)
+	\brief Hook method called when a mouse button is released.
+
+	Set the value of the button if MouseDown() was previously called on the
+	button. The value that is set depends on if the button is using
+	\c B_TOGGLE_BEHAVIOR or not.
+
+	\copydetails BControl::MouseUp()
+*/
+
+
+/*!
+	\fn void BButton::WindowActivated(bool active)
+	\brief Hook method called when the attached window is activated or
+	       deactivated.
+
+	\copydetails BControl::WindowActivated()
+*/
+
+
+//! @}
+
+
+/*!
+	\fn void BButton::GetPreferredSize(float* _width, float* _height)
+	\brief Fill out the preferred width and height of the button
+		into the \a _width and \a _height parameters.
+
+	\copydetails BControl::GetPreferredSize()
+*/
+
+
+/*!
+	\fn status_t BButton::GetSupportedSuites(BMessage* message)
+	\brief Report the suites of messages this control understands.
+
+	\copydetails BControl::GetSupportedSuites()
+*/
+
+
+/*!
+	\fn status_t BButton::Invoke(BMessage* message)
+	\brief Sends a copy of the model \a message to the designated target.
+
+	\copydetails BControl::Invoke()
+*/
+
+
+/*!
+	\fn void BButton::MakeDefault(bool flag)
+	\brief Make the BButton the default button i.e. it will be activated
+		when the user pushes the \key{Enter} key.
+
+	A window can have only one default button at a time.
+
+	\param flag \c true to make the button the default button, \c false
+	       to remove the default button status.
+
+	\sa BWindow::SetDefaultButton()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BButton::MakeFocus(bool focus)
+	\brief Makes the button the current focus view of the window or
+	       gives up being the window's focus view.
+
+	\copydetails BControl::MakeFocus()
+*/
+
+
+/*!
+	\fn BSize BButton::MinSize()
+	\brief Returns the button's minimum size.
+
+	\return The button's minimum size as a BSize.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BSize BButton::MaxSize()
+	\brief Returns the button's maximum size.
+
+	\return The button's maximum size as a BSize.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BSize BButton::PreferredSize()
+	\brief Returns the button's preferred size.
+
+	\return The button's preferred size as a BSize.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BButton::Perform(perform_code code, void* _data)
+	\copydoc BView::Perform()
+*/
+
+
+/*!
+	\fn void BButton::ResizeToPreferred()
+	\brief Resize the button to its preferred size.
+
+	\copydetails BView::ResizeToPreferred()
+*/
+
+
+/*!
+	\fn BHandler* BButton::ResolveSpecifier(BMessage* message,
+		int32 index, BMessage* specifier, int32 what, const char* property)
+	\copydoc BHandler::ResolveSpecifier()
+*/
+
+
+/*!
+	\fn void BButton::SetLabel(const char* label)
+	\brief Sets the button's label.
+
+	\param label The string to set the label to.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BButton::IsDefault() const
+	\brief Returns whether or not the button is the default button on the
+	       window, i.e. whether or not it responds to the \key{Enter} key.
+
+	\returns \c true if the button is the default button, \c false otherwise.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BButton::IsFlat() const
+	\brief Returns whether or not the button is flat or not.
+
+	\returns \c true if the button is flat, \c false otherwise.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BButton::SetFlat(bool flat)
+	\brief Sets or unsets the button to be flat.
+
+	\param flat \c true to make the button flat, \c false to make the button
+	       not flat.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BButton::BBehavior BButton::Behavior() const
+	\brief Returns the buttons behavior.
+
+	\return The button behavior flag.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BButton::SetBehavior(BBehavior behavior)
+	\brief Sets the button behavior.
+
+	\param behavior One of the following:
+	- \c B_BUTTON_BEHAVIOR Normal behavior,
+	- \c B_TOGGLE_BEHAVIOR Acts like a check box,
+	- \c B_POP_UP_BEHAVIOR Adds a pop-up marker to the button
+	     (similar to that of BMenuField).
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BMessage* BButton::PopUpMessage() const
+	\brief Returns the message sent to the button's target when the
+	       pop-up marker is selected using \c B_POP_UP_BEHAVIOR.
+
+	\return The message sent to the button's target.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BButton::SetPopUpMessage(BMessage* message)
+	\brief Sets the message sent to the button's target when the
+	       pop-up marker is selected using \c B_POP_UP_BEHAVIOR.
+
+	\param message The \a message sent to the button's target.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BButton::SetIcon(const BBitmap* icon, uint32 flags)
+	\brief This convenience method is used to set the bitmaps
+	       for the standard states from a single bitmap.
+
+	\param icon The \a icon to set.
+	\param flags Modify how the icon is set.
+
+	\return \c B_OK if the icon was set or an error code otherwise.
+
+	\sa BControl::SetIcon()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BButton::SetValue(int32 value)
+	\brief Sets the value of the button.
+
+	\note This method can be overridden in order to take a different action
+	when the value changes.
+
+	\param value The value to set to the BButton to. Options include:
+		- \c 0 (\c B_CONTROL_OFF)
+		- \c 1 (\c B_CONTROL_ON)
+
+	\see BControl::SetValue()
+
+	\since BeOS R3
+*/

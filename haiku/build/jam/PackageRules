@@ -1,0 +1,356 @@
+rule FHaikuPackageGrist package
+{
+	local grist = [ Match "<(.*)>" : $(package:G) ] ;
+	return hpkg_$(grist:E="")-$(package:G=) ;
+}
+
+
+rule HaikuPackage package
+{
+	local grist = [ FHaikuPackageGrist $(package) ] ;
+
+	HAIKU_CONTAINER_GRIST on $(package) = $(grist) ;
+	HAIKU_INCLUDE_IN_CONTAINER_VAR on $(package) = HAIKU_INCLUDE_IN_PACKAGES ;
+	HAIKU_INSTALL_TARGETS_VAR on $(package)
+		= $(grist)_HAIKU_PACKAGE_INSTALL_TARGETS ;
+	HAIKU_CONTAINER_SYSTEM_DIR_TOKENS on $(package) = ;
+
+	HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE = $(package) ;
+
+	if $(HAIKU_PACKAGES_UPDATE_ONLY) {
+		HAIKU_CONTAINER_UPDATE_ONLY on $(package) = 1 ;
+		HAIKU_CONTAINER_INHERIT_UPDATE_VARIABLE on $(package)
+			= HAIKU_INCLUDE_IN_IMAGE ;
+	} else if $(HAIKU_UPDATE_ALL_PACKAGES) {
+		HAIKU_INCLUDE_IN_IMAGE on $(package) = 1 ;
+	}
+
+	HAIKU_CONTAINER_ALWAYS_CREATE_DIRECTORIES on $(package) = 1 ;
+
+	# If HAIKU_DONT_REBUILD_PACKAGES is defined, don't rebuild an existing
+	# package.
+	if $(HAIKU_DONT_REBUILD_PACKAGES) {
+		local file = [ Glob $(HAIKU_PACKAGES_DIR_$(HAIKU_PACKAGING_ARCH))
+			: $(package:BS) ] ;
+		if $(file) {
+			HAIKU_DONT_REBUILD_PACKAGE on $(package) = 1 ;
+		}
+	}
+}
+
+
+rule PreprocessPackageInfo source : directory : architecture
+	: secondaryArchitecture
+{
+	source = $(source:G=package-info-source) ;
+	SEARCH on $(source) +=
+		[ FDirName $(HAIKU_PACKAGE_INFOS_DIR) $(architecture) ]
+		[ FDirName $(HAIKU_PACKAGE_INFOS_DIR) any ]
+		[ FDirName $(HAIKU_PACKAGE_INFOS_DIR) generic ]
+	;
+
+	local grist = package-info ;
+	if $(secondaryArchitecture) {
+		grist = $(grist)$(secondaryArchitecture) ;
+	}
+	local target = $(source:BSG=$(grist))-package-info ;
+	MakeLocate $(target) : $(directory) ;
+
+	PreprocessPackageOrRepositoryInfo $(target) : $(source) : $(architecture)
+		: $(secondaryArchitecture) : useCPP ;
+
+	# Update requires in the package info.
+	if $(HAIKU_BUILD_TYPE) != bootstrap {
+		local updateRequiresFiles =
+			<build>update_package_requires
+			[ on <repository>HaikuPorts return $(HAIKU_REPOSITORY_CACHE_FILE) ]
+			;
+		Depends $(target) : $(updateRequiresFiles) ;
+		UpdatePackageInfoRequires $(target) : $(updateRequiresFiles) ;
+	}
+
+	return $(target) ;
+}
+
+
+actions UpdatePackageInfoRequires
+{
+	$(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR) \
+	"$(2[1])" "$(1)" "$(2[2])"
+}
+
+
+rule PreprocessPackageOrRepositoryInfo target : source : architecture
+	: secondaryArchitecture : flags
+{
+	# PreprocessPackageOrRepositoryInfo <target> : <source> : <architecture>
+	#	: [ <secondaryArchitecture> ] [ : <flags> ] ;
+	# Preprocesses the package or repository info template file <source> by
+	# performing several placeholder substitutions and optionally filtering it
+	# through the C preprocessor.
+	#
+	# <target> - The generated preprocessed file.
+	# <source> - The package or repository info template file.
+	# <architecture> - The primary packaging architecture.
+	# <secondaryArchitecture> - If given, the secondary packaging architecture
+	#	the package targets. Otherwise the primary architecture is targeted.
+	# <flags>:
+	#	useCPP - Filter the source file through the C preprocessor after the
+	#		placeholder substitutions have been performed.
+
+	local defines = HAIKU_PACKAGING_ARCH=$(architecture)
+		HAIKU_PACKAGING_ARCH_$(architecture)
+		HAIKU_$(HAIKU_BUILD_TYPE:U)_BUILD ;
+	local sedReplacements = %HAIKU_PACKAGING_ARCH%,$(architecture) ;
+	if $(secondaryArchitecture) {
+		defines += HAIKU_SECONDARY_PACKAGING_ARCH=$(secondaryArchitecture) ;
+		defines += HAIKU_SECONDARY_PACKAGING_ARCH_$(secondaryArchitecture:U) ;
+		sedReplacements
+			+= %HAIKU_SECONDARY_PACKAGING_ARCH%,$(secondaryArchitecture) ;
+		sedReplacements +=
+			%HAIKU_SECONDARY_PACKAGING_ARCH_SUFFIX%,_$(secondaryArchitecture) ;
+	} else {
+		sedReplacements
+			+= %HAIKU_SECONDARY_PACKAGING_ARCH_SUFFIX%, ;
+	}
+	for feature in $(HAIKU_BUILD_FEATURES) {
+		local featureSplit = [ FSplitString $(feature) : ":" ] ;
+		defines += HAIKU_BUILD_FEATURE_$(featureSplit:J=_)_ENABLED ;
+	}
+
+	local revisionFile = [ DetermineHaikuRevision ] ;
+	Depends $(target) : $(source) $(revisionFile) ;
+
+	if useCPP in $(flags) {
+		PREPROCESSOR on $(target)
+			= "|" $(HOST_CC) -E -w [ FDefines $(defines) ] - ;
+	} else {
+		PREPROCESSOR on $(target) = ;
+	}
+
+	HAIKU_SED_REPLACEMENTS on $(target) = "-e s,$(sedReplacements),g" ;
+
+	PreprocessPackageOrRepositoryInfo1 $(target) : $(source) $(revisionFile) ;
+}
+
+
+actions PreprocessPackageOrRepositoryInfo1
+{
+	revision=`cat $(2[2]) | sed 's/[+-]/_/g'`
+	version=$(HAIKU_VERSION)_${revision}
+	sed $(HAIKU_SED_REPLACEMENTS) \
+			-e s,%HAIKU_VERSION%,${version}-1, \
+			-e s,%HAIKU_VERSION_NO_REVISION%,${version}, $(2[1]) \
+		$(PREPROCESSOR) > $(1)
+}
+
+
+rule BuildHaikuPackage package : packageInfo
+{
+	local architecture = $(HAIKU_PACKAGING_ARCH) ;
+	local secondaryArchitecture ;
+	if $(TARGET_PACKAGING_ARCH) != $(architecture) {
+		secondaryArchitecture = $(TARGET_PACKAGING_ARCH) ;
+	}
+
+	MakeLocate $(package) : $(HAIKU_PACKAGES_DIR_$(architecture)) ;
+
+	# Don't rebuild an existing package, if requested.
+	if [ on $(package) return $(HAIKU_DONT_REBUILD_PACKAGE) ] {
+		NoUpdate $(package) ;
+		BuildHaikuPackageDummy $(package) ;
+		return ;
+	}
+
+	local grist = [ FHaikuPackageGrist $(package) ] ;
+
+	local tempDir = [ FDirName
+		$(HAIKU_PACKAGES_BUILD_DIR_$(architecture)) $(HAIKU_BUILD_TYPE) $(grist)
+	] ;
+	local scriptDir = [ FDirName $(tempDir) scripts ] ;
+
+	#  build the package info and locate the package
+	packageInfo = [ PreprocessPackageInfo $(packageInfo) : $(tempDir)
+		: $(architecture) : $(secondaryArchitecture) ] ;
+	Depends $(package) : $(packageInfo) ;
+
+	# prepare the script that initializes the shell variables
+	local initVariablesScript = <$(grist)>haiku.package-init-vars ;
+	MakeLocate $(initVariablesScript) : $(scriptDir) ;
+	Always $(initVariablesScript) ;
+
+	local script = $(initVariablesScript) ;
+	AddVariableToScript $(script) : sourceDir : $(HAIKU_TOP) ;
+	AddVariableToScript $(script) : outputDir : $(HAIKU_OUTPUT_DIR) ;
+	AddVariableToScript $(script) : tmpDir : $(tempDir) ;
+	AddVariableToScript $(script) : addBuildCompatibilityLibDir
+		: "export $(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR)" ;
+	AddVariableToScript $(script) : compressionLevel
+		: [ on $(package) return $(HAIKU_PACKAGE_COMPRESSION_LEVEL) ] ;
+	AddVariableToScript $(script) : updateOnly
+		: [ on $(package) return $(HAIKU_CONTAINER_UPDATE_ONLY) ] ;
+	AddVariableToScript $(script) : cc : $(TARGET_CC_$(architecture)) ;
+	AddTargetVariableToScript $(script) : <build>addattr ;
+	AddTargetVariableToScript $(script) : <build>copyattr ;
+	AddTargetVariableToScript $(script) : <mimedb>mime_db : mimeDB ;
+	AddTargetVariableToScript $(script) : <build>mimeset ;
+	AddTargetVariableToScript $(script) : <build>package ;
+	AddTargetVariableToScript $(script) : <build>rc ;
+	AddTargetVariableToScript $(script) : <build>resattr ;
+	AddTargetVariableToScript $(script) : <build>unzip ;
+	if $(HOST_RM_ATTRS_TARGET) {
+		AddTargetVariableToScript $(script) : $(HOST_RM_ATTRS_TARGET)
+			: rmAttrs ;
+	} else {
+		AddVariableToScript $(script) : rmAttrs : rm ;
+	}
+
+	# create the other scripts
+	local makeDirsScript = <$(grist)>haiku.package-make-dirs ;
+	local copyFilesScript = <$(grist)>haiku.package-copy-files ;
+	local extractFilesScript = <$(grist)>haiku.package-extract-files ;
+
+	MakeLocate $(makeDirsScript) $(copyFilesScript) $(extractFilesScript)
+		: $(scriptDir) ;
+
+	CreateContainerMakeDirectoriesScript $(package) : $(makeDirsScript) ;
+	CreateContainerCopyFilesScript $(package) : $(copyFilesScript) ;
+	CreateContainerExtractFilesScript $(package) : $(extractFilesScript) ;
+
+	local scripts = $(initVariablesScript) $(makeDirsScript)
+		$(copyFilesScript) $(extractFilesScript) ;
+
+	# call the build actions
+	local mainScript = build_haiku_package ;
+	SEARCH on $(mainScript) = [ FDirName $(HAIKU_TOP) build scripts ] ;
+
+	Depends $(package) : $(mainScript) $(scripts) ;
+	BuildHaikuPackage1 $(package) : $(mainScript) $(packageInfo) $(scripts) ;
+}
+
+
+actions BuildHaikuPackage1
+{
+	$(2[1]) "$(1)" "$(2[2])" $(2[3-])
+}
+
+
+actions BuildHaikuPackageDummy
+{
+	# do nothing
+}
+
+
+rule FDontRebuildCurrentPackage
+{
+	on $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+		return $(HAIKU_DONT_REBUILD_PACKAGE) ;
+}
+
+
+rule AddDirectoryToPackage directoryTokens : attributeFiles
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		return [ AddDirectoryToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(directoryTokens) : $(attributeFiles) ] ;
+	}
+}
+
+
+rule AddFilesToPackage directory : targets : destName
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddFilesToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(directory) : $(targets) : $(destName) ;
+	}
+}
+
+
+rule AddSymlinkToPackage directoryTokens : linkTarget : linkName
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		linkTarget = $(linkTarget:J=/) ;
+
+		AddSymlinkToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(directoryTokens) : $(linkTarget) : $(linkName) ;
+	}
+}
+
+
+rule CopyDirectoryToPackage directoryTokens : sourceDirectory
+	: targetDirectoryName : excludePatterns : flags
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		CopyDirectoryToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(directoryTokens) : $(sourceDirectory) : $(targetDirectoryName)
+			: $(excludePatterns) : $(flags) ;
+	}
+}
+
+
+rule AddHeaderDirectoryToPackage dirTokens : dirName : flags
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddHeaderDirectoryToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(dirTokens) : $(dirName) : $(flags) ;
+	}
+}
+
+
+rule AddWifiFirmwareToPackage driver : subDirToExtract : archive
+	: extract
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddWifiFirmwareToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(driver) : $(subDirToExtract) : $(archive) : $(extract) ;
+	}
+}
+
+
+rule ExtractArchiveToPackage dirTokens : archiveFile : flags : extractedSubDir
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		ExtractArchiveToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(dirTokens) : $(archiveFile) : $(flags) : $(extractedSubDir) ;
+	}
+}
+
+
+rule AddDriversToPackage relativeDirectoryTokens : targets
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddDriversToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(relativeDirectoryTokens) : $(targets) ;
+	}
+}
+
+
+rule AddNewDriversToPackage relativeDirectoryTokens : targets
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddNewDriversToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(relativeDirectoryTokens) : $(targets) ;
+	}
+}
+
+
+rule AddBootModuleSymlinksToPackage targets
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddBootModuleSymlinksToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(targets) ;
+	}
+}
+
+
+rule AddLibrariesToPackage directory : libs
+{
+	if ! [ FDontRebuildCurrentPackage ] {
+		AddLibrariesToContainer $(HAIKU_CURRENTLY_BUILT_HAIKU_PACKAGE)
+			: $(directory) : $(libs) ;
+	}
+}
+
+
+# default value for the package compression level
+HAIKU_PACKAGE_COMPRESSION_LEVEL ?= 9 ;

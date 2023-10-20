@@ -1,0 +1,45 @@
+SubDir HAIKU_TOP src add-ons translators icns ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+	#for BaseTranslator.h and friends
+	
+SubDirC++Flags [ FDefines BEOS_R5_COMPATIBLE ] ;
+
+
+AddResources ICNSTranslator : ICNSTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		UseBuildFeatureHeaders libicns ;
+
+		Translator [ MultiArchDefaultGristFiles ICNSTranslator ] :
+
+			# ICNSTranslator
+			ICNSTranslator.cpp
+			ICNSLoader.cpp
+			ConfigView.cpp
+			main.cpp
+
+			: be translation 
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ]
+			[ BuildFeatureAttribute libicns : library ]
+			[ BuildFeatureAttribute jasper : library ]
+			[ BuildFeatureAttribute libpng : library ]
+			localestub
+			: true
+		;
+
+		Includes [ FGristFiles ICNSTranslator.cpp ICNSLoader.cpp ]
+			: [ BuildFeatureAttribute libicns : headers ] ;
+	}
+}
+
+DoCatalogs ICNSTranslator :
+	x-vnd.Haiku-ICNSTranslator
+	:
+	ConfigView.cpp
+	ICNSTranslator.h
+	ICNSTranslator.cpp
+;

@@ -1,0 +1,173 @@
+1	ukrainian	x-vnd.Haiku-FileTypes	436017301
+Left	Attribute Window	Attribute column alignment in Tracker	Вліво
+Float	Attribute ListView		З рухомою комою
+Final	Application Types Window		Завершення
+FileTypes request	FileTypes Window		Запит Типів файлів
+This file type already exists	New File Type Window		Тип файлу вже існує
+Preferred application	FileTypes Window		Пріоритетна програма
+Launch	Application Types Window		Запустити
+Removing uninstalled application types	Application Types Window		Вилучити типи деінстальованих програм
+Width:	Attribute Window	Default column width in Tracker for this attribute.	Ширина:
+Same as…	FileType Window	The same TYPE as ...	Такий як…
+(from super type)	FileTypes Window		(від супертипу)
+Select same preferred application as	FileTypes Window		Вибрати таку ж пріоритетну програму як у
+Could not change attributes	Attribute Window		Неможливо змінити атрибути
+Icon	FileTypes Window		Значок
+Add…	Application Type Window		Додати…
+Attribute name:	Attribute Window		Назва атрибута:
+Long description:	Application Type Window		Докладний опис:
+Cancel	Preferred App Menu		Скасувати
+Remove	FileTypes Window		Вилучити
+The application \"%s\" does not support this file type.\nAre you sure you want to set it anyway?	Preferred App Menu		Програма \«%s\» Не підтримує цей тип файлів.\nВи дійсно бажаєте встановити його?
+Remove	Application Type Window		Вилучити
+Gamma	Application Type Window		Гамма
+Cancel	Application Type Window		Скасувати
+Attribute	Attribute Window		Атрибут
+Multiple launch	Application Type Window		Багаторазовий запуск
+{0, plural, one{# Application type could be removed} other{# Application types could be removed}}	Application Types Window		{0, plural, one{# тип програми вилучено} few{# типи програм вилучено} other{# типів програм вилучено}}
+Edit…	Application Types Window		Редагувати…
+Could not set preferred application	FileTypes Window		Неможливо встановити пріоритетну програму
+Description	FileTypes Window		Опис
+Signature:	Application Types Window		Підпис:
+None	FileTypes Window		Пусто
+Exclusive launch	Application Type Window		Ексклюзивний запуск
+Removing a file type cannot be reverted.\nAre you sure you want to remove it?	FileTypes Window		Вилучення типу файлу незворотнє.\nВи впевнені, що бажаєте вилучити його?
+Integer 64 bit	Attribute ListView		Ціле 64 біта
+Cancel	New File Type Window		Скасувати
+Select same preferred application as	FileType Window		Вибрати таку ж пріоритетну програму як
+Cancel	Type List Window		Скасувати
+Don't save	Application Type Window		Не зберігати
+Center	Attribute Window	Attribute column alignment in Tracker	Центр
+Done	Extension Window		Готово
+Development	Application Types Window		Розробка
+Same as…	FileType Window	The same APPLICATION as ...	Така як…
+Abort	Application Types Window		Перервати
+Save	Application Type Window		Зберегти
+%1 application type	Application Type Window		%1 тип програми
+Icon	Application Type Window		Значок
+Duration	Attribute ListView		Тривалість
+Version:	Application Type Window		Версія:
+Default application	FileType Window		Програма за замовчуванням
+Internal name:	New File Type Window		MIME-тип:
+Integer 8 bit	Attribute ListView		Ціле 8 бітів
+Extension:	Extension Window		Розширення:
+Time	Attribute ListView		Час
+Extensions:	FileTypes Window		Розширення:
+Select preferred application	FileType Window		Вибрати пріоритетну програму
+Description:	FileTypes Window		Опис:
+Multiple files from \"%s\" file type	FileType Window		Багаточисельні файли типу \«%s\»
+Add new group	New File Type Window		Додати нову групу
+Remove uninstalled	Application Types Window		Вилучити деінстальовані
+File	Application Type Window		Файл
+Progress	Application Types Window		Хід
+Select…	FileType Window		Вибрати…
+Information	Application Types Window		Інформація
+Settings	FileTypes Window		Налаштування
+Done	Attribute Window		Готово
+FileTypes request	FileTypes		Запит FileTypes
+Select same type as	FileType Window		Вибрати такий тип як у
+Version:	Application Types Window		Версія:
+(from application)	FileTypes Window		(з програми)
+Application types	Application Types Window		Типи програм
+Description:	Application Types Window		Опис:
+Name:	Application Types Window		Назва:
+Rating	Attribute ListView		Рейтинг
+duration	Attribute ListView		тривалість
+File could not be opened	Preferred App Menu		Файл неможливо відкрити
+Args only	Application Type Window		Тільки аргументи
+Could not open \"%s\":\n%s	FileTypes		Неможливо відкрити \«%s\»:\n%s
+Right	Attribute Window	Attribute column alignment in Tracker	Вправо
+Save changes before closing?	Application Type Window		Зберегти зміни перед закриттям?
+Background app	Application Type Window		Фонова програма
+Recognition rule is not valid:\n\n	FileTypes Window		Невірне правило розпізнання:\n\n
+Show icons in list	FileTypes Window		Показати значки у списку
+Editable	Attribute Window	If Tracker allows to edit this attribute.	Може редагуватись
+New resource file…	FileTypes Window		Новий файл ресурсів…
+[Multiple files] file types	FileType Window		[Множинні файли] типи файлів
+Application type	Application Type Window		Тип програми
+Show in Tracker…	Application Types Window		Показати в Tracker…
+Type name:	FileTypes Window		Назва типу:
+Visible	Attribute Window		Видимий
+Select preferred application	FileTypes Window		Вибрати пріоритетну програму
+Path:	Application Types Window		Шлях:
+rating	Attribute ListView		рейтинг
+Could not install file type	New File Type Window		Неможливо встановити тип файла
+Same as…	FileTypes Window		Така як…
+Golden master	Application Type Window		Золотий майстер
+Checkbox	Attribute ListView		Чекбокс
+FileTypes request	Preferred App Menu		Запит FileTypes
+no icon	FileTypes Window		значок відсутній
+Single launch	Application Type Window		Одноразовий запуск
+%s file type	FileType Window		Тип файлу %s
+Default	Attribute ListView		За замовчуванням
+Removing a super type cannot be reverted.\nAll file types that belong to this super type will be lost!\n\nAre you sure you want to do this? To remove the whole group, hold down the Shift key and press \"Remove\".	FileTypes Window		Вилучення головного типу незоротнє.\nВсі типи файлів що відносяться до нього будуть втрачені!\n\nВи впевнені, що бажаєте цього? Щоб вилучити цілу групу, утримуйти клавішу Shift та натисніть \«Вилучити\».
+String	Attribute ListView		Рядок
+Add type	New File Type Window		Додати тип
+Remove icon	Icon View		Вилучити значок
+Boolean	Attribute ListView		Булевий
+Cancel	Extension Window		Скасувати
+Alignment:	Attribute Window		Вирівнювання:
+Icon	FileType Window		Значок
+Signature:	Application Type Window		Сигнатура:
+Development	Application Type Window		Розробка
+Golden master	Application Types Window		Золотий майстер
+Add	Extension Window		Додати
+Open…	FileTypes Window		Відкрити…
+checkbox	Attribute ListView		чекбокс
+Could not change file extensions	Extension Window		Неможливо змінити розширення файлу
+Could not open file	FileType Window		Неможливо відкрити файл
+Choose type	Type List Window		Вибрати тип
+Select…	FileTypes Window		Вибрати…
+File recognition	FileTypes Window		Розпізнання файлу
+Application types…	FileTypes Window		Типи програм…
+Add icon…	Icon View		Додати значок…
+Cancel	FileTypes Window		Скасувати
+Save into resource file…	Application Type Window		Зберегти в файлі ресурсів…
+Special:	Attribute Window		Спеціальний:
+Type:	Attribute Window		Тип:
+Could not retrieve application signature	Preferred App Menu		Неможливо визначити сигнатуру програми
+Beta	Application Types Window		Бета
+Add group	New File Type Window		Додати групу
+Cancel	Attribute Window		Скасувати
+Gamma	Application Types Window		Гамма
+Supported types	Application Type Window		Типи файлів, які підтримуються
+Integer 32 bit	Attribute ListView		Ціле 32 біта
+Beta	Application Type Window		Бета
+Could not retrieve preferred application of this file	Preferred App Menu		Неможливо визначити пріоритетну програму для цього файлу
+Application flags	Application Type Window		Флаги програм
+OK	FileTypes		ОК
+Group name:	New File Type Window		Назва групи:
+Move up	FileTypes Window		Вгору
+File	FileTypes Window		Файл
+Add	Attribute Window		Додати
+Open file	FileTypes		Відкрити файл
+Version info	Application Type Window		Інформація про версію
+Final	Application Type Window		Фінальна
+Preferred application	FileType Window		Пріоритетна програма
+FileTypes	FileTypes		FileTypes
+Set preferred application	Preferred App Menu		Вибрати пріоритетну програму
+New file type	New File Type Window		Новий тип файлу
+Short description:	Application Type Window		Короткий опис:
+Save request	Application Type Window		Зберегти запит
+Could not remove file type: %s\n	FileTypes Window		Неможливо вилучити тип файлу: %s\n
+Display as:	Attribute Window	Tracker offers different display modes for attributes.	Показати як:
+Done	Type List Window		Готово
+Extra attributes	FileTypes Window		Додаткові атрибути
+Group:	New File Type Window		Група:
+Alpha	Application Types Window		Aльфа
+Close	Application Type Window		Закрити
+Integer 16 bit	Attribute ListView		Ціле 16 бітів
+Extension	Extension Window		Розширення
+Rule:	FileTypes Window		Правило:
+FileTypes	System name		FileTypes
+Version	Application Types Window		Версія
+Quit	FileTypes Window		Вийти
+File type	FileType Window		Тип файлу
+Internal name:	FileTypes Window		MIME-тип:
+Add…	FileTypes Window		Додати…
+Edit icon…	Icon View		Редагувати значок…
+Internal name:	Attribute Window		MIME-тип:
+Show recognition rule	FileTypes Window		Показати правило розпізнавання
+Double	Attribute ListView		Подвійної точності
+Move down	FileTypes Window		Вниз
+Alpha	Application Type Window		Альфа

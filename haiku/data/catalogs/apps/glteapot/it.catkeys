@@ -1,0 +1,23 @@
+1	italian	x-vnd.Haiku-GLTeapot	400822745
+Right	TeapotWindow		Destra
+Backface culling	TeapotWindow		Backface culling
+Add a teapot	TeapotWindow		Aggiungi una teiera
+Yellow	TeapotWindow		Giallo
+Perspective	TeapotWindow		Prospettiva
+Off	TeapotWindow		Spento
+Quit	TeapotWindow		Esci
+Green	TeapotWindow		Verde
+Blue	TeapotWindow		Blu
+White	TeapotWindow		Bianco
+Upper center	TeapotWindow		In alto al centro
+Filled polygons	TeapotWindow		Poligoni pieni
+Lower left	TeapotWindow		In basso a sinistra
+Fog	TeapotWindow		Nebbia
+FPS display	TeapotWindow		Indicatore FPS
+GLTeapot	System name		GLTeapot
+Settings	TeapotWindow		Impostazioni
+Gouraud shading	TeapotWindow		Gouraud shading
+Lighting	TeapotWindow		Illuminazione
+Z-buffered	TeapotWindow		Z-buffered
+Red	TeapotWindow		Rosso
+Lights	TeapotWindow		Illuminazione

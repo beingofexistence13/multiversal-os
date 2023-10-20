@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src kits midi2 ;
+
+UsePrivateHeaders midi ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		SharedLibrary [ MultiArchDefaultGristFiles libmidi2.so ] :
+			MidiConsumer.cpp
+			MidiEndpoint.cpp
+			MidiLocalConsumer.cpp
+			MidiLocalProducer.cpp
+			MidiProducer.cpp
+			MidiRoster.cpp
+			MidiRosterLooper.cpp
+			:
+			be [ TargetLibsupc++ ]
+			;
+	}
+}

@@ -1,0 +1,1 @@
+BASEDIR=	${.CURDIR}/../../../contrib/libedit

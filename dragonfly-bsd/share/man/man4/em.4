@@ -1,0 +1,489 @@
+.\" Copyright (c) 2001-2003, Intel Corporation
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice,
+.\"    this list of conditions and the following disclaimer.
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" 3. Neither the name of the Intel Corporation nor the names of its
+.\"    contributors may be used to endorse or promote products derived from
+.\"    this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" * Other names and brands may be claimed as the property of others.
+.\"
+.\" $FreeBSD: src/share/man/man4/em.4,v 1.30 2008/10/06 21:55:53 simon Exp $
+.\"
+.Dd December 17, 2017
+.Dt EM 4
+.Os
+.Sh NAME
+.Nm em ,
+.Nm emx
+.Nd "Intel(R) PRO/1000 Gigabit Ethernet adapter driver"
+.Sh SYNOPSIS
+To compile this driver into the kernel,
+place the following lines in your
+kernel configuration file:
+.Bd -ragged -offset indent
+.Cd "device ig_hal"
+.Cd "device em  # for em(4)"
+.Cd "device emx # for emx(4)"
+.Ed
+.Pp
+Alternatively, to load the driver as a
+module at boot time, place the following lines in
+.Xr loader.conf 5 :
+.Bd -literal -offset indent
+ig_hal_load="YES"
+if_em_load="YES"  # for em(4)
+if_emx_load="YES" # for emx(4)
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+driver provides support for PCI Gigabit Ethernet adapters based on
+the Intel 82540, 82541ER, 82541PI, 82542, 82543, 82544, 82545, 82546,
+82546EB, 82546GB, 82547, 82571, 81572, 82573, 82574, I217, I218 and
+i219 Ethernet controller chips.
+The driver supports Transmit/Receive checksum offload
+and Jumbo Frames on all but 82542-based adapters.
+Furthermore it supports TCP segmentation offload (TSO) on PCI-E adapters.
+.Pp
+The
+.Nm emx
+is a version of the
+.Nm em
+driver for 82571, 82572, 82573, 82574, I217, I218 and I219 Ethernet
+controller chips
+that additionally supports Receive Side Scaling (RSS, 2 reception queues).
+By default,
+the
+.Nm emx
+driver will try enabling 2 reception queues
+if there are multiple CPUs on the system.
+For 82571, 82572, 82574, I217, I218 and I219
+the
+.Nm emx
+driver could be configured to enable 2 transmission queues.
+By default,
+the
+.Nm emx
+driver only enables 1 transmission queue,
+since enabling 2 transmission queues will require setting up context
+descriptor for every packets requiring hardware transmission offloading,
+which hurts tiny packet transmission performance.
+However,
+if the workload is mainly bulk data
+or hardware transmission offloading is rarely required,
+extra transmission queue could be enabled to reduce contention on
+transmission path.
+2 transmission queues will only be used when
+.Xr polling 4
+is enabled on the device.
+If multiple transmission queues are used,
+the round-robin arbitration is performed among the transmission queues.
+It should be noted that
+if both TSO and multiple transmission queues are used,
+the round-robin arbitration between transmission queues is done
+at the TSO packet boundary.
+.Pp
+.\"For questions related to hardware requirements,
+.\"refer to the documentation supplied with your Intel PRO/1000 adapter.
+.\"All hardware requirements listed apply to use with
+.\".Dx .
+.\".Pp
+Support for Jumbo Frames is provided via the interface MTU setting.
+Selecting an MTU larger than 1500 bytes with the
+.Xr ifconfig 8
+utility configures the adapter to receive and transmit Jumbo Frames.
+The maximum MTU size for Jumbo Frames is 16114.
+.Pp
+This driver version supports VLANs.
+The
+.Nm
+and
+.Nm emx
+drivers support the following media types:
+.Bl -tag -width ".Cm 10baseT/UTP"
+.It Cm autoselect
+Enables auto-negotiation for speed and duplex.
+.It Cm 10baseT/UTP
+Sets 10Mbps operation.
+Use the
+.Cm mediaopt
+option to select
+.Cm full-duplex
+mode.
+.It Cm 100baseTX
+Sets 100Mbps operation.
+Use the
+.Cm mediaopt
+option to select
+.Cm full-duplex
+mode.
+.It Cm 1000baseSX
+Sets 1000Mbps operation.
+Only
+.Cm full-duplex
+mode is supported at this speed.
+.It Cm 1000baseT
+Sets 1000Mbps operation.
+Only
+.Cm full-duplex
+mode is supported at this speed.
+.El
+.Pp
+The
+.Nm
+and
+.Nm emx
+drivers support the following media options:
+.Bl -tag -width ".Cm full-duplex"
+.It Cm full-duplex
+Forces full-duplex operation
+.It Cm half-duplex
+Forces half-duplex operation.
+.It Cm rxpause
+Enable flow control PAUSE reception.
+This is only supported by
+.Cm autoselect
+and
+.Cm full-duplex
+mode.
+.It Cm txpause
+Enable flow control PAUSE transmission.
+This is only supported by
+.Cm autoselect
+and
+.Cm full-duplex
+mode.
+.It Cm forcepause
+Force flow control PAUSE operation as configured by
+.Cm rxpause
+and
+.Cm txpause
+media options.
+.El
+.Pp
+Only use
+.Cm mediaopt
+to set the driver to
+.Cm full-duplex .
+If
+.Cm mediaopt
+is not specified, the driver defaults to
+.Cm half-duplex .
+.Pp
+For more information on configuring this device, see
+.Xr ifconfig 8 .
+.Pp
+The
+.Nm
+and
+.Nm emx
+drivers support
+.Xr polling 4 .
+.Sh HARDWARE
+The
+.Nm
+driver supports Gigabit Ethernet adapters based on the Intel
+82540, 82541ER, 82541PI, 82542, 82543, 82544, 82545, 82546, 82546EB,
+82546GB, 82547, 82571, 82572, 82573, 82574, I217, I218 and I219
+controller chips:
+.Pp
+.Bl -bullet -compact
+.It
+Intel 82540EM Gigabit Ethernet Controller
+.It
+Intel 82540EP Gigabit Ethernet Controller
+.It
+Intel 82543GC Gigabit Ethernet Controller
+.It
+Intel 82544EI Gigabit Ethernet Controller
+.It
+Intel 82544GC Gigabit Ethernet Controller
+.It
+Intel 82545GM Gigabit Ethernet Controller
+.It
+Intel 82546EB Gigabit Ethernet Controller
+.It
+Intel 82547GI Gigabit Ethernet Controller
+.It
+Intel 82567 Gigabit Ethernet Controller
+.It
+Intel 82571EB Gigabit Ethernet Controller
+.It
+Intel 82572EI Gigabit Ethernet Controller
+.It
+Intel 82573E Gigabit Ethernet Controller
+.It
+Intel 82573L Gigabit Ethernet Controller
+.It
+Intel 82573V Gigabit Ethernet Controller
+.It
+Intel 82574IT Gigabit Ethernet Controller
+.It
+Intel 82574L Gigabit Ethernet Controller
+.It
+Intel 82578DC Gigabit Ethernet PHY
+.It
+Intel 82578DM Gigabit Ethernet PHY
+.It
+Intel 82579LM Gigabit Ethernet PHY
+.It
+Intel 82579V Gigabit Ethernet PHY
+.It
+Intel Ethernet Connection I217-LM
+.It
+Intel Ethernet Connection I217-V
+.It
+Intel Ethernet Connection I218-LM
+.It
+Intel Ethernet Connection I218-V
+.It
+Intel Ethernet Connection I219-LM
+.It
+Intel Ethernet Connection I219-V
+.It
+Intel Gigabit CT Desktop Adapter
+.It
+Intel PRO/1000 F Server Adapter
+.It
+Intel PRO/1000 MF Dual Port Server Adapter
+.It
+Intel PRO/1000 MF Server Adapter
+.It
+Intel PRO/1000 MF Server Adapter (LX)
+.It
+Intel PRO/1000 MT Dual Port Server Adapter
+.It
+Intel PRO/1000 MT Quad Port Server Adapter
+.It
+Intel PRO/1000 PF Dual Port Server Adapter
+.It
+Intel PRO/1000 PT Dual Port Server Adapter
+.It
+Intel PRO/1000 PT Quad Port Low Profile Server Adapter
+.It
+Intel PRO/1000 PT Quad Port Server Adapter
+.It
+Intel PRO/1000 T Server Adapter
+.It
+Intel PRO/1000 XT Low Profile Server Adapter
+.It
+Intel PRO/1000 XT Server Adapter
+.El
+.Pp
+The
+.Nm emx
+driver supports Gigabit Ethernet adapters based on the Intel
+82571, 82572, 82573, 82574, I217, I218 and I219 controller chips.
+.Sh TUNABLES
+Tunables can be set at the
+.Xr loader 8
+prompt before booting the kernel or stored in
+.Xr loader.conf 5 .
+.Em Y
+is the device unit number.
+.Bl -tag -width "hw.em.int_throttle_ceil"
+.It Va hw.em.int_throttle_ceil
+Hardware interrupt throttling rate.
+The default value is 6000Hz.
+This tunable also applies to
+.Nm emx .
+.Nm emx
+has a per device tunable
+.Va hw.emxY.int_throttle_ceil ,
+which serves the same purpose.
+.It Va hw.em.rxd
+Number of receive descriptors allocated by the driver.
+The default value is 512.
+The 82542 and 82543-based adapters can handle up to 256 descriptors,
+while others can have up to 4096.
+This tunable also applies to
+.Nm emx .
+.Nm emx
+has a per device tunable
+.Va hw.emxY.rxd ,
+which serves the same purpose.
+.It Va hw.em.txd
+Number of transmit descriptors allocated by the driver.
+The default value is 512.
+The 82542 and 82543-based adapters can handle up to 256 descriptors,
+while others can have up to 4096.
+This tunable also applies to
+.Nm emx .
+.Nm emx
+has a per device tunable
+.Va hw.emxY.txd ,
+which serves the same purpose.
+.It Va hw.em.msi.enable Va hw.emY.msi.enable
+By default, the driver will use MSI if it is supported.
+This behavior can be turned off by setting these tunable to 0.
+These tunables also applies to
+.Nm emx .
+.It Va hw.emY.msi.cpu
+If MSI is used,
+it specifies the MSI's target CPU.
+This tunable also applies to
+.Nm emx .
+.It Va hw.emY.irq.unshared
+If legacy interrupt is used,
+by default,
+the driver assumes the interrupt could be shared.
+Setting this tunable to 1 allows the driver to
+perform certain optimization based on the knowledge
+that the interrupt is not shared.
+These tunables also applies to
+.Nm emx .
+.It Va hw.em.flow_ctrl Va hw.emY.flow_ctrl
+The default flow control settings.
+Supported values are:
+rxpause (only enable PAUSE reception),
+txpause (only enable PAUSE transmission),
+full (enable PAUSE reception and transmission),
+none (disable flow control PAUSE operation),
+force-rxpause (force PAUSE reception),
+force-txpause (force PAUSE transmission),
+force-full (forcefully enable PAUSE reception and transmission),
+force-none (forcefully disable flow control PAUSE operation).
+Default is none.
+These tunables also applies to
+.Nm emx .
+.It Va hw.emx.rxr Va hw.emxY.rxr
+This tunable specifies the number of reception queues could be enabled.
+Maximum allowed value for these tunables is 2.
+Setting these tunables to 0 allows the driver to enable reception
+queues based on the number of CPUs.
+The default value is 0.
+.It Va hw.emx.txr Va hw.emxY.txr
+These tunables only take effect on 82571 and 82572.
+This tunable specifies the number of transmission queues could be enabled.
+Maximum allowed value for these tunables is 2.
+Setting these tunables to 0 allows the driver to enable transmission
+queues based on the number of CPUs.
+The default value is 1.
+.El
+.Sh MIB Variables
+A number of per-interface variables are implemented in the
+.Va dev.emx. Ns Em Y
+or
+.Va dev.em. Ns Em Y
+branch of the
+.Xr sysctl 3
+MIB.
+.Bl -tag -width "int_throttle_ceil"
+.It Va rxd
+Number of reception descriptors enabled (read-only).
+Use the tunable
+.Va hw.em.rxd
+or
+.Va hw.emY.rxd
+to configure it.
+.It Va txd
+Number of transmission descriptors enabled (read-only).
+Use the tunable
+.Va hw.em.txd
+or
+.Va hw.emY.txd
+to configure it.
+.It Va int_throttle_ceil
+See the tunable
+.Va hw.em.int_throttle_ceil .
+.It Va int_tx_nsegs
+This value controls how many transmit descriptors should be consumed
+by the hardware before the hardware generates a transmit interrupt.
+The default value is 1/16 of the number of transmit descriptors.
+If
+.Xr polling 4
+is not used on the hardware and
+the major part of the transmitted data are bulk data,
+this value could safely be set to 1/2 of the number of transmit descriptors.
+.It Va tx_wreg_nsegs
+The number of transmission descriptors should be setup
+before the hardware register is written.
+Setting this value too high will have negative effect
+on transmission timeliness.
+Setting this value too low will hurt overall transmission due to
+the frequent hardware register writing.
+Default value is 8.
+.It Va rx_ring_cnt
+Number of reception queues enabled (read-only).
+This sysctl only applies to
+.Nm emx .
+Use the tunable
+.Va hw.emx.rxr
+or
+.Va hw.emxY.rxr
+to configure it.
+.It Va tx_ring_cnt
+Number of transmission queues that can be enabled (read-only).
+This sysctl only applies to
+.Nm emx .
+Use the tunable
+.Va hw.emx.txr
+or
+.Va hw.emxY.txr
+to configure it.
+.It Va tx_ring_inuse
+Number of transmission queues being used (read-only).
+This sysctl only applies to
+.Nm emx .
+.El
+.\".Sh SUPPORT
+.\"For general information and support,
+.\"go to the Intel support website at:
+.\".Pa http://support.intel.com .
+.\".Pp
+.\"If an issue is identified with the released source code on the supported kernel
+.\"with a supported adapter, email the specific information related to the
+.\"issue to
+.\".Aq Mt freebsdnic@mailbox.intel.com .
+.Sh SEE ALSO
+.Xr arp 4 ,
+.Xr ifmedia 4 ,
+.Xr netintro 4 ,
+.Xr ng_ether 4 ,
+.Xr polling 4 ,
+.Xr vlan 4 ,
+.Xr ifconfig 8
+.Sh HISTORY
+The
+.Nm
+device driver first appeared in
+.Fx 4.4
+and the
+.Nm emx
+driver first appeared in
+.Dx 2.3 .
+.Sh AUTHORS
+.An -nosplit
+The
+.Nm
+driver was written by
+.An Intel Corporation Aq Mt freebsdnic@mailbox.intel.com .
+.Pp
+The
+.Nm emx
+driver was written by
+.An Sepherosa Ziehau
+(in parts based on
+.Tn Intel Ap s ) .

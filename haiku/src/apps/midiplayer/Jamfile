@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src apps midiplayer ;
+
+UsePrivateHeaders interface ;
+
+Application MidiPlayer :
+	MidiPlayerApp.cpp 
+	MidiPlayerWindow.cpp 
+	ScopeView.cpp
+	SynthBridge.cpp
+	: be midi midi2 [ TargetLibsupc++ ] localestub
+	: MidiPlayer.rdef
+;
+
+DoCatalogs MidiPlayer :
+	x-vnd.Haiku-MidiPlayer
+	:
+	MidiPlayerApp.cpp 
+	MidiPlayerWindow.cpp 
+	ScopeView.cpp
+;

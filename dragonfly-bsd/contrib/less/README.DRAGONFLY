@@ -1,0 +1,21 @@
+LESS 608
+========
+
+Original source can be downloaded from:
+http://www.greenwoodsoftware.com/less/
+
+file = less-608.tar.gz
+date = 22 July 2022
+size = 362346
+sha1 = 94493a15bed80574cefc30153a10ceebab6824a0
+
+A list of deleted files is in README.DELETED.
+
+Use "git diff vendor/LESS contrib/less" to see local modifications.
+
+When upgrading, remember to update usr.bin/less/defines.h.
+
+This source is used in:
+	usr.bin/less
+	usr.bin/lessecho
+	usr.bin/lesskey

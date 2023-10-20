@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio cmedia ;
+
+UsePrivateHeaders audio device ;
+
+KernelAddon cmedia :
+	cm.c
+	joy.c
+	midi.c
+	mixer.c
+	mux.c
+	pcm.c
+;

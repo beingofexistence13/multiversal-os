@@ -1,0 +1,117 @@
+1	russian	x-vnd.haiku-icon_o_matic	1244334028
+None	Icon-O-Matic-Properties		Ничего
+Add empty	Icon-O-Matic-ShapesList		Добавить пустую
+Opening the icon failed!	Icon-O-Matic-Main		Не удалось открыть значок!
+Add with path	Icon-O-Matic-ShapesList		Добавить с контуром
+Copy	Icon-O-Matic-Properties		Копировать
+Color	Icon-O-Matic-PropertyNames		Цвет
+Format	Icon-O-Matic-SavePanel		Формат
+Color	Icon-O-Matic-StyleTypes		Цвет
+Select	Icon-O-Matic-Properties		Выбрать
+Reset transformation	Icon-O-Matic-ShapesList		Сбросить изменение
+Duplicate	Icon-O-Matic-StylesList		Дублировать
+Rotate	Icon-O-Matic-TransformationBoxStates		Поворот
+Shorten	Icon-O-Matic-PropertyNames		Короче
+The text you are trying to import is quite long, are you sure?	Icon-O-Matic-StyledTextImport		Текст, который вы пытаетесь импортировать, довольно длинный. Уверены?
+Paste	Icon-O-Matic-Properties		Вставить
+Close	Icon-O-Matic-Menu-File		Закрыть
+Add rect	Icon-O-Matic-PathsList		Добавить прямоугольник
+Rotation	Icon-O-Matic-PropertyNames		Поворот
+Transform	Icon-O-Matic-PathManipulator		Изменить
+Add shape with style	Icon-O-Matic-Menu-Shape		Добавить форму со стилем
+Remove	Icon-O-Matic-StylesList		Удалить
+Cancel	Icon-O-Matic-Menu-Settings		Отмена
+Transformation	Icon-O-Matic-TransformationBoxStates		Преобразование
+Closed	Icon-O-Matic-PropertyNames		Замкнут
+<nothing to redo>	Icon-O-Matic-Menu-Edit		<нечего возвращать>
+Height	Icon-O-Matic-PropertyNames		Высота
+warning	Icon-O-Matic-SVGExport		предупреждение
+File	Icon-O-Matic-Menus		Файл
+Properties	Icon-O-Matic-Menus		Свойства
+Path	Icon-O-Matic-PropertyNames		Контур
+Path	Icon-O-Matic-Menus		Контур
+Stroke	Transformation		Штрих
+Flip	Icon-O-Matic-PathManipulator		Отразить
+Opacity	Icon-O-Matic-PropertyNames		Прозрачность
+OK	Icon-O-Matic-ColorPicker		ОК
+Error: 	Icon-O-Matic-Main		Ошибка: 
+Saving your document failed!	Icon-O-Matic-Exporter		Не удалось сохранить документ!
+Snap to grid	Icon-O-Matic-Menu-Settings		Выровнять по сетке
+Opening the document failed!	Icon-O-Matic-Main		Не удалось открыть документ!
+Add with path & style	Icon-O-Matic-ShapesList		Добавить путь & стиль
+Shape	Icon-O-Matic-Menus		Форма
+<unavailable>	Icon-O-Matic-StyleTypes		<недоступно>
+Min LOD	Icon-O-Matic-PropertyNames		Мин. LOD
+Add	Icon-O-Matic-TransformersList		Добавить
+Settings	Icon-O-Matic-Menus		Настройки
+Scale X	Icon-O-Matic-PropertyNames		Масштабировать по X
+Add	Icon-O-Matic-PathsList		Добавить
+Remove	Icon-O-Matic-PathManipulator		Удалить
+Duplicate	Icon-O-Matic-ShapesList		Дублировать
+Contour	Transformation		Обводка
+Rounding	Icon-O-Matic-PropertyNames		Скругление
+Joins	Icon-O-Matic-PropertyNames		Соединения
+Cancel	Icon-O-Matic-ColorPicker		Отмена
+Duplicate	Icon-O-Matic-PathsList		Дублировать
+Save	Icon-O-Matic-Menu-Settings		Сохранить
+Export as…	Icon-O-Matic-Menu-File		Экспортировать как…
+Diamond	Icon-O-Matic-StyleTypes		Ромбовидный
+Don't save	Icon-O-Matic-Menu-Settings		Не сохранять
+Add shape with path	Icon-O-Matic-Menu-Shape		Добавить форму с контуром
+Translation X	Icon-O-Matic-PropertyNames		Сдвиг по X
+Icon-O-Matic might not have interpreted all data from the SVG when it was loaded. By overwriting the original file, this information would now be lost.	Icon-O-Matic-SVGExport		Возможно, Icon-O-Matic не перенес все данные из загруженного SVG файла. Перезаписывая оригинальный файл, эта информация может быть потеряна.
+Rotate indices backwards	Icon-O-Matic-PathsList		Переместить начало контура назад
+Overwrite	Icon-O-Matic-SVGExport		Перезаписать
+Cancel	Icon-O-Matic-SVGExport		Отмена
+Open…	Icon-O-Matic-Menu-File		Открыть…
+Remove	Icon-O-Matic-ShapesList		Удалить
+Drop shapes	Icon-O-Matic-ShapesList		Удалить формы
+Linear	Icon-O-Matic-StyleTypes		Линейный
+Clean up	Icon-O-Matic-PathsList		Очистить
+Split	Icon-O-Matic-PathManipulator		Разделить
+Move	Icon-O-Matic-TransformationBoxStates		Переместить
+Conic	Icon-O-Matic-StyleTypes		Конический
+Name	Icon-O-Matic-PropertyNames		Название
+Reset transformation	Icon-O-Matic-StylesList		Сбросить изменение
+Reverse	Icon-O-Matic-PathsList		Обратить
+Remove	Icon-O-Matic-PathsList		Удалить
+Style type	Icon-O-Matic-StyleTypes		Тип стиля
+Quit	Icon-O-Matic-Menu-File		Выход
+Gradient	Icon-O-Matic-StyleTypes		Градиент
+Add shape with path & style	Icon-O-Matic-Menu-Shape		Добавить форму с контуром и стилем
+Radial	Icon-O-Matic-StyleTypes		Радиальный
+Text too long	Icon-O-Matic-StyledTextImport		Текст слишком длинный
+Caps	Icon-O-Matic-PropertyNames		Шапки
+OK	Icon-O-Matic-SVGImport		ОК
+Append…	Icon-O-Matic-Menu-File		Добавить…
+Scale Y	Icon-O-Matic-PropertyNames		Масштабировать по Y
+Rotate indices forwards	Icon-O-Matic-PathsList		Переместить начало контура вперед
+Save	Icon-O-Matic-Menu-File		Сохранить
+Add circle	Icon-O-Matic-PathsList		Добавить окружность
+Freeze transformation	Icon-O-Matic-ShapesList		Применить изменения
+Untitled	Icon-O-Matic-Main		Новый значок
+Max LOD	Icon-O-Matic-PropertyNames		Макс. LOD
+Save changes to current icon before closing?	Icon-O-Matic-Menu-Settings		Сохранить изменения теущего значка перед закрытием?
+Failed to open the file '%s' as an SVG document.\n\n	Icon-O-Matic-SVGImport		Не удалось открыть файл '%s' как документ SVG.\n\n
+Save as…	Icon-O-Matic-Menu-File		Сохранить как…
+Swatches	Icon-O-Matic-Menus		Палитра
+<modify path>	Icon-O-Matic-PathCmd		<изменить путь>
+Icon-O-Matic	System name		Icon-O-Matic
+<nothing to undo>	Icon-O-Matic-Menu-Edit		<нечего отменять>
+Add	Icon-O-Matic-StylesList		Добавить
+Translation Y	Icon-O-Matic-PropertyNames		Сдвиг по Y
+Scale	Icon-O-Matic-TransformationBoxStates		Масштабировать
+All	Icon-O-Matic-Properties		Все
+Transformer	Icon-O-Matic-Menus		Трансформер
+Invert selection	Icon-O-Matic-Properties		Инвертировать выделение
+<unkown property>	Icon-O-Matic-PropertyNames		<неизвестное свойство>
+Pick a color	Icon-O-Matic-ColorPicker		Выберите цвет
+Settings…	Icon-O-Matic-SavePanel		Настройки…
+Add with style	Icon-O-Matic-ShapesList		Добавить со стилем
+New	Icon-O-Matic-Menu-File		Новый
+Gradient type	Icon-O-Matic-StyleTypes		Тип градиента
+Export	Icon-O-Matic-Menu-File		Экспортировать
+Width	Icon-O-Matic-PropertyNames		Ширина
+Style	Icon-O-Matic-Menus		Стиль
+Off	Icon-O-Matic-Menu-Settings		Без сетки
+Edit	Icon-O-Matic-Menus		Изменить

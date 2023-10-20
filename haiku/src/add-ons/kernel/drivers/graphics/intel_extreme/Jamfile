@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src add-ons kernel drivers graphics intel_extreme ;
+
+UsePrivateHeaders [ FDirName graphics intel_extreme ] ;
+UsePrivateHeaders [ FDirName graphics vesa ] ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+UsePrivateHeaders graphics ;
+UsePrivateKernelHeaders ;
+
+KernelAddon intel_extreme :
+	bios.cpp
+	driver.cpp
+	device.cpp
+	intel_extreme.cpp
+	power.cpp
+
+	kernel_cpp.cpp
+	: libgraphicscommon.a
+;
+
+SEARCH on [ FGristFiles
+		kernel_cpp.cpp 
+	] = [ FDirName $(HAIKU_TOP) src system kernel util ] ;

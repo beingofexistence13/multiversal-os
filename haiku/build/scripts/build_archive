@@ -1,0 +1,88 @@
+#!/bin/sh
+set -o errexit
+
+if [ $# -lt 2 ]; then
+	echo "Usage: $0 <archive> <scripts> ..."
+fi
+
+# get the archive name
+archive=$1
+shift
+
+# The second argument is the shell script that initializes the variables:
+# tmpDir
+# addBuildCompatibilityLibDir
+#
+# copyattr
+# rmAttrs
+# zip
+# NOTE: rmAttrs and zip are only passed in when building zip
+#
+. $1
+shift
+
+outputDir=$tmpDir/archive
+
+# this adds the build library dir to LD_LIBRARY_PATH
+eval "$addBuildCompatibilityLibDir"
+
+# map the shell commands
+sPrefix=
+tPrefix="$outputDir/"
+cd=cd
+scd=:
+cp="$copyattr -d"
+ln=ln
+mkdir=mkdir
+rm=rm
+
+
+cleanDir()
+{
+	# clearDir <directory>
+	if [ $rmAttrs ] ; then
+		$rmAttrs -rf $1
+	else
+		$rm -rf $1
+	fi
+}
+
+
+# clean output dir
+cleanDir $outputDir
+$mkdir -p $outputDir
+
+# populate output dir
+echo "Preparing contents of archive $archive ..."
+while [ $# -gt 0 ]; do
+	. $1
+	shift
+done
+
+# get an absolute path for the archive
+cwd=$(pwd)
+cd $(dirname $archive)
+archive=$(pwd)/$(basename $archive)
+cd $cwd
+
+# build the archive
+echo "Building archive $archive ..."
+$rm -f $archive
+cd $outputDir
+case "$archive" in
+	*.zip)
+		$zip -ryq $archive .
+		;;
+	*.tgz)
+		contents=$(ls)
+		tar --format ustar -czf $archive $contents
+		;;
+	*)
+		echo "Unhandled archive format in build_archive"
+		exit 1
+		;;
+esac
+cd ..
+
+# clean up
+cleanDir $outputDir

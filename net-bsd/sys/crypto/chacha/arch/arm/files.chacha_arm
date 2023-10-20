@@ -1,0 +1,13 @@
+#	$NetBSD: files.chacha_arm,v 1.5 2020/09/08 17:35:27 jakllsch Exp $
+
+ifdef aarch64
+makeoptions	chacha	"COPTS.chacha_neon.c"+="-march=armv8-a"
+makeoptions	chacha	"CWARNFLAGS.chacha_neon.c"+="${${ACTIVE_CC} == clang :? -Wno-nonportable-vector-initialization :}"
+else
+makeoptions	chacha	"COPTS.chacha_neon.c"+="-mfloat-abi=softfp -mfpu=neon"
+endif
+
+file	crypto/chacha/arch/arm/chacha_neon.c	chacha & (cpu_cortex | aarch64)
+file	crypto/chacha/arch/arm/chacha_neon_32.S	chacha & cpu_cortex & !aarch64
+file	crypto/chacha/arch/arm/chacha_neon_64.S	chacha & aarch64
+file	crypto/chacha/arch/arm/chacha_neon_impl.c chacha & (cpu_cortex | aarch64)

@@ -1,0 +1,32 @@
+SubDir HAIKU_TOP src add-ons media media-add-ons multi_audio ;
+
+UsePrivateHeaders audio shared ;
+
+if ! $(TARGET_PLATFORM_HAIKU_COMPATIBLE) {
+	SubDirC++Flags -fmultiple-symbol-spaces ;
+}
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		AddResources [ MultiArchDefaultGristFiles hmulti_audio.media_addon ] :
+			MultiAudio.rdef ;
+
+		Addon [ MultiArchDefaultGristFiles hmulti_audio.media_addon ] :
+			MultiAudioAddOn.cpp
+			MultiAudioDevice.cpp
+			MultiAudioNode.cpp
+			MultiAudioUtility.cpp
+			Resampler.cpp
+			TimeComputer.cpp
+			: be media [ TargetLibsupc++ ] localestub
+		;
+	}
+}
+
+DoCatalogs hmulti_audio.media_addon
+	:
+	x-vnd.Haiku-hmulti_audio.media_addon
+	:
+	MultiAudioNode.cpp
+	;

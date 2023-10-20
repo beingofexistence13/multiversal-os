@@ -1,0 +1,39 @@
+SubDir HAIKU_TOP src servers package ;
+
+UsePrivateSystemHeaders ;
+UsePrivateHeaders app interface kernel shared storage ;
+
+Server package_daemon
+	:
+	CommitTransactionHandler.cpp
+	Constants.cpp
+	DebugSupport.cpp
+	Exception.cpp
+	FSTransaction.cpp
+	FSUtils.cpp
+	Job.cpp
+	JobQueue.cpp
+	Package.cpp
+	PackageDaemon.cpp
+	PackageFile.cpp
+	PackageFileManager.cpp
+	PackageManager.cpp
+	ProblemWindow.cpp
+	ResultWindow.cpp
+	Root.cpp
+	Volume.cpp
+	VolumeState.cpp
+	:
+	be localestub package
+	[ TargetLibstdc++ ]
+	:
+	package_daemon.rdef
+;
+
+DoCatalogs package_daemon :
+	x-vnd.haiku-package_daemon
+	:
+	PackageManager.cpp
+	ProblemWindow.cpp
+	ResultWindow.cpp
+;

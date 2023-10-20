@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src preferences ;
+
+SubInclude HAIKU_TOP src preferences appearance ;
+SubInclude HAIKU_TOP src preferences backgrounds ;
+SubInclude HAIKU_TOP src preferences bluetooth ;
+SubInclude HAIKU_TOP src preferences datatranslations ;
+SubInclude HAIKU_TOP src preferences deskbar ;
+SubInclude HAIKU_TOP src preferences filetypes ;
+SubInclude HAIKU_TOP src preferences input ;
+SubInclude HAIKU_TOP src preferences joysticks ;
+SubInclude HAIKU_TOP src preferences keymap ;
+SubInclude HAIKU_TOP src preferences locale ;
+SubInclude HAIKU_TOP src preferences mail ;
+SubInclude HAIKU_TOP src preferences media ;
+SubInclude HAIKU_TOP src preferences network ;
+SubInclude HAIKU_TOP src preferences notifications ;
+SubInclude HAIKU_TOP src preferences printers ;
+SubInclude HAIKU_TOP src preferences repositories ;
+SubInclude HAIKU_TOP src preferences screen ;
+SubInclude HAIKU_TOP src preferences screensaver ;
+SubInclude HAIKU_TOP src preferences shortcuts ;
+SubInclude HAIKU_TOP src preferences sounds ;
+SubInclude HAIKU_TOP src preferences time ;
+SubInclude HAIKU_TOP src preferences tracker ;
+SubInclude HAIKU_TOP src preferences virtualmemory ;

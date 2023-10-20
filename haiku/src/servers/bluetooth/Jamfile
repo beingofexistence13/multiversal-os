@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src servers bluetooth ;
+
+UsePrivateHeaders shared bluetooth net kernel ;
+
+AddResources bluetooth_server : bluetooth_server.rdef ;
+
+Server bluetooth_server
+ 	:
+	BluetoothServer.cpp
+	DeskbarReplicant.cpp
+	DeviceManager.cpp
+	HCIControllerAccessor.cpp
+	HCITransportAccessor.cpp
+	LocalDeviceHandler.cpp
+	LocalDeviceImpl.cpp
+	: be network libbluetooth.so localestub
+	[ TargetLibstdc++ ]
+;
+
+DoCatalogs bluetooth_server :
+	x-vnd.Haiku-bluetooth_server
+	:
+	DeskbarReplicant.cpp
+;

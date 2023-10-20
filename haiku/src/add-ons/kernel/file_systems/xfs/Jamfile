@@ -1,0 +1,62 @@
+SubDir HAIKU_TOP src add-ons kernel file_systems xfs ;
+
+# set some additional defines
+{
+	local defines =
+		XFS_DEBUGGER_COMMANDS
+		;
+
+	defines = [ FDefines $(defines) ] ;
+	SubDirCcFlags $(defines) ;
+	SubDirC++Flags $(defines) ;
+}
+
+UsePrivateHeaders [ FDirName kernel util ] ;
+UsePrivateHeaders shared storage file_systems ;
+UsePrivateKernelHeaders ;
+
+DEFINES += DEBUG_APP="\\\"xfs\\\"" ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src libs uuid ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel file_systems shared ] : true ;
+
+local xfsSources =
+	Attribute.cpp
+	BPlusTree.cpp
+	Directory.cpp
+	Extent.cpp
+	Inode.cpp
+	kernel_cpp.cpp
+	kernel_interface.cpp
+	LeafAttribute.cpp
+	LeafDirectory.cpp
+	Node.cpp
+	NodeAttribute.cpp
+	ShortAttribute.cpp
+	ShortDirectory.cpp
+	Symlink.cpp
+	Volume.cpp
+	xfs.cpp
+	;
+local sharedSources =
+	crc32.cpp
+	CRCTable.cpp
+	DeviceOpener.cpp
+	;
+KernelAddon xfs :
+	$(xfsSources)
+	$(sharedSources)
+	:
+	libuuid_kernel.a
+;
+
+SEARCH on [ FGristFiles $(xfsSources) ]
+	= [ FDirName  $(HAIKU_TOP) src add-ons kernel file_systems xfs ] ;
+
+SEARCH on [ FGristFiles $(sharedSources) ]
+	= [ FDirName  $(HAIKU_TOP) src add-ons kernel file_systems shared ] ;
+
+SEARCH on [ FGristFiles kernel_cpp.cpp ]
+	= [ FDirName $(HAIKU_TOP) src system kernel util ] ;
+
+

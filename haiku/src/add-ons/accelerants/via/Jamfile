@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src add-ons accelerants via ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics via ] ;
+UseHeaders [ FDirName $(SUBDIR) engine ] ;
+
+Addon via.accelerant :
+	Acceleration.c
+	Cursor.c
+	EngineManagement.c
+	GetAccelerantHook.c
+	GetDeviceInfo.c
+	GetModeInfo.c
+	GetTimingConstraints.c
+	InitAccelerant.c
+	Overlay.c
+	ProposeDisplayMode.c
+	SetDisplayMode.c
+	: libvia_engine.a
+;
+
+Depends via.accelerant : via ;
+
+SubInclude HAIKU_TOP src add-ons accelerants via engine ;

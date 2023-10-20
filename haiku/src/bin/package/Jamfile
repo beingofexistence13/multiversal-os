@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src bin package ;
+
+UsePrivateHeaders kernel libroot shared storage support ;
+
+if [ FIsBuildFeatureEnabled zstd ] {
+	SubDirC++Flags -DZSTD_DEFAULT ;
+}
+
+BinCommand package :
+	command_add.cpp
+	command_checksum.cpp
+	command_create.cpp
+	command_dump.cpp
+	command_extract.cpp
+	command_info.cpp
+	command_list.cpp
+	command_recompress.cpp
+	package.cpp
+	PackageWriterListener.cpp
+	PackageWritingUtils.cpp
+	:
+	package be bnetapi
+	[ TargetLibsupc++ ]
+;

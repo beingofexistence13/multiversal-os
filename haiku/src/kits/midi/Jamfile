@@ -1,0 +1,39 @@
+SubDir HAIKU_TOP src kits midi ;
+
+UsePrivateHeaders midi ;
+
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		if ! [ FIsBuildFeatureEnabled fluidlite ] {
+			continue ;
+		}
+
+		UseBuildFeatureHeaders fluidlite ;
+		Includes [ FGristFiles MidiSynth.cpp MidiSynthFile.cpp
+			SoftSynth.cpp Synth.cpp ]
+			: [ BuildFeatureAttribute fluidlite : headers ] ;
+
+		SharedLibrary [ MultiArchDefaultGristFiles libmidi.so ] :
+			Midi.cpp
+			MidiGlue.cpp
+			MidiPort.cpp
+			MidiSettings.cpp
+			MidiStore.cpp
+			MidiSynth.cpp
+			MidiSynthFile.cpp
+			MidiText.cpp
+			Samples.cpp
+			SoftSynth.cpp
+			Synth.cpp
+			:
+			be
+			midi2
+			media
+			[ BuildFeatureAttribute libvorbis : library ]
+			[ BuildFeatureAttribute fluidlite : library ]
+			[ TargetLibsupc++ ]
+			;
+	}
+}

@@ -1,0 +1,2 @@
+- add missing settings support (ConnectRetryDelay, etc.)
+- finish support for server mode

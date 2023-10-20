@@ -1,0 +1,13 @@
+SubDir HAIKU_TOP src add-ons media plugins ape_reader LibMonkeysAudio ;
+
+SubDirHdrs [ FDirName $(SUBDIR) ../MAClib ] ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		StaticLibrary [ MultiArchDefaultGristFiles libMonkeysAudio.a ] :
+			PositionBridgeIO.cpp
+			LibMonkeysAudio.cpp
+		;
+	}
+}

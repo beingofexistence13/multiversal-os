@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src preferences backgrounds ;
+
+UsePrivateHeaders preferences shared ;
+
+Preference Backgrounds :
+	BackgroundImage.cpp
+	Backgrounds.cpp
+	BackgroundsView.cpp
+	ImageFilePanel.cpp
+	: be tracker translation [ TargetLibsupc++ ] localestub
+	: Backgrounds.rdef
+	;
+
+DoCatalogs Backgrounds :
+	x-vnd.Haiku-Backgrounds
+	:
+	Backgrounds.cpp
+	BackgroundsView.cpp
+	ImageFilePanel.cpp
+;
+

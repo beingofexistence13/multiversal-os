@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src bin network ppp_up ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net app libroot shared interface libbe be root tracker textencoding
+			root ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared libppp
+	headers ] : true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared
+	libkernelppp headers ] : true ;
+
+AddResources ppp_up : ppp_up.rdef ;
+
+BinCommand ppp_up :
+	ConnectionView.cpp
+	ConnectionWindow.cpp
+	PPPDeskbarReplicant.cpp
+	PPPStatusView.cpp
+	PPPStatusWindow.cpp
+	PPPUpApplication.cpp
+	:
+	be libppp.a [ TargetLibsupc++ ] translation $(HAIKU_LOCALE_LIBS) libbsd.so $(TARGET_NETWORK_LIBS)
+;
+
+# Installation
+HaikuInstall install-ppp
+    : /boot/home/config/non-packaged/bin
+    : ppp_up ;

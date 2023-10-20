@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src system boot loader file_systems tarfs ;
+
+UsePrivateHeaders [ FDirName kernel disk_device_manager ] ;
+UsePrivateHeaders kernel shared storage ;
+
+UseBuildFeatureHeaders zlib ;
+
+SubDirC++Flags -fno-rtti ;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup ] {
+	on $(platform) {
+		UsePrivateHeaders [ FDirName kernel boot platform $(TARGET_BOOT_PLATFORM) ] ;
+
+		BootStaticLibrary [ MultiBootGristFiles boot_tarfs ] :
+			tarfs.cpp
+			;
+
+		Includes [ FGristFiles tarfs.cpp ] : [ BuildFeatureAttribute zlib : headers ] ;
+	}
+}

@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src add-ons accelerants intel_extreme ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics intel_extreme ] ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+UsePrivateHeaders shared ;
+
+Addon intel_extreme.accelerant :
+	accelerant.cpp
+	cursor.cpp
+	dpms.cpp
+	engine.cpp
+	hooks.cpp
+	memory.cpp
+	mode.cpp
+	overlay.cpp
+#	overlay_3d_i965.cpp
+	pll.cpp
+	# classes
+	FlexibleDisplayInterface.cpp
+	PanelFitter.cpp
+	Ports.cpp
+	Pipes.cpp
+	: be $(TARGET_LIBSTDC++) libaccelerantscommon.a
+;

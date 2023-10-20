@@ -1,0 +1,11 @@
+resource app_signature "application/x-vnd.Haiku-DialUpInterface";
+
+resource app_version {
+	major  = 1,
+	middle = 0,
+	minor  = 0,
+	variety = 0,
+	internal = 0,
+	short_info = "DialUpInterface",
+	long_info = "PPP interface configuration tool."
+};

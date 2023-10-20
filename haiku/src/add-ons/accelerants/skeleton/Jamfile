@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src add-ons accelerants skeleton ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics skeleton ] ;
+UseHeaders [ FDirName $(SUBDIR) engine ] ;
+
+Addon skel.accelerant :
+	Acceleration.c
+	Cursor.c
+	EngineManagement.c
+	GetAccelerantHook.c
+	GetDeviceInfo.c
+	GetModeInfo.c
+	GetTimingConstraints.c
+	InitAccelerant.c
+	Overlay.c
+	ProposeDisplayMode.c
+	SetDisplayMode.c
+	: libskeleton_engine.a
+;
+
+Depends skel.accelerant : skel.driver ;
+
+SubInclude HAIKU_TOP src add-ons accelerants skeleton engine ;

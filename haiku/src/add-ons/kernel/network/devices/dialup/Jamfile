@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src add-ons kernel network devices dialup ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon dialup :
+	dialup.cpp
+;
+

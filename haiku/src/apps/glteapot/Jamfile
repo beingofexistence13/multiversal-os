@@ -1,0 +1,33 @@
+SubDir HAIKU_TOP src apps glteapot ;
+UseBuildFeatureHeaders glu ;
+UseBuildFeatureHeaders mesa ;
+
+local sources =
+	FPS.cpp
+	GLObject.cpp
+	ObjectView.cpp
+	error.cpp
+	TeapotWindow.cpp
+	TeapotApp.cpp
+;
+
+Includes [ FGristFiles $(sources) ] :
+	[ BuildFeatureAttribute glu : headers ]
+	[ BuildFeatureAttribute mesa : headers ]
+	;
+
+Application GLTeapot :
+	$(sources)
+	:
+	be game localestub [ TargetLibsupc++ ]
+	[ BuildFeatureAttribute glu : library ]
+	[ BuildFeatureAttribute mesa : library ]
+	: GLTeapot.rdef
+;
+
+DoCatalogs GLTeapot :
+	x-vnd.Haiku-GLTeapot
+	:
+	TeapotApp.cpp
+	TeapotWindow.cpp
+;

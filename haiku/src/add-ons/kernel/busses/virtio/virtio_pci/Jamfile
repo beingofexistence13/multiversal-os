@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons kernel busses virtio virtio_pci ;
+
+SubDirC++Flags -fno-rtti ;
+
+UsePrivateHeaders virtio ;
+UsePrivateKernelHeaders ;
+
+KernelAddon virtio_pci :
+	virtio_pci.cpp
+;

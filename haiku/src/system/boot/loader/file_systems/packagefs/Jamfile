@@ -1,0 +1,58 @@
+SubDir HAIKU_TOP src system boot loader file_systems packagefs ;
+
+UsePrivateHeaders kernel shared storage support ;
+UseBuildFeatureHeaders zlib ;
+UseBuildFeatureHeaders zstd ;
+
+if [ FIsBuildFeatureEnabled zstd ] {
+	DEFINES += ZSTD_ENABLED ;
+}
+
+local kernelC++Header = [ FDirName $(HAIKU_TOP) headers private kernel util
+	kernel_cpp.h ] ;
+
+SubDirC++Flags -fno-rtti -include $(kernelC++Header) ;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup ] {
+	on $(platform) {
+		UsePrivateHeaders [ FDirName kernel boot platform $(TARGET_BOOT_PLATFORM) ] ;
+
+		SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package ] ;
+		SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package hpkg ] ;
+		SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits storage ] ;
+		SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits support ] ;
+
+		BootStaticLibrary [ MultiBootGristFiles boot_packagefs ] :
+			packagefs.cpp
+			PackageSettingsItem.cpp
+
+			# package kit/hpkg
+			DataReader.cpp
+			ErrorOutput.cpp
+			FDDataReader.cpp
+			PackageContentHandler.cpp
+			PackageData.cpp
+			PackageDataReader.cpp
+			PackageEntry.cpp
+			PackageEntryAttribute.cpp
+			PackageFileHeapAccessorBase.cpp
+			PackageFileHeapReader.cpp
+			PackageReaderImpl.cpp
+			ReaderImplBase.cpp
+
+			# storage kit
+			FdIO.cpp
+
+			# support kit
+			CompressionAlgorithm.cpp
+			ZlibCompressionAlgorithm.cpp
+			ZstdCompressionAlgorithm.cpp
+		;
+
+		Includes [ FGristFiles ZlibCompressionAlgorithm.cpp ]
+			: [ BuildFeatureAttribute zlib : headers ] ;
+		Includes [ FGristFiles ZstdCompressionAlgorithm.cpp ]
+			: [ BuildFeatureAttribute zstd : headers ] ;
+	}
+}

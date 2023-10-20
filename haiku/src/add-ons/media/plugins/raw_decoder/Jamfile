@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src add-ons media plugins raw_decoder ;
+
+UsePrivateHeaders media ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Addon [ MultiArchDefaultGristFiles raw_decoder ] :
+			AudioConversion.cpp
+			RawDecoderPlugin.cpp
+			: be media [ TargetLibsupc++ ]
+		;
+	}
+}
+

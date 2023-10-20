@@ -1,0 +1,80 @@
+#!/bin/sh
+
+# program
+# <- liba.so
+#    <- libb.so
+#       <- libd.so
+#
+# Expected: dlsym(RTLD_NEXT) finds symbol in order liba.so, libb.so, libd.so
+
+
+. ./test_setup
+
+
+# create libd.so
+cat > libd.c << EOI
+int a() { return 1; }
+EOI
+
+# build
+compile_lib -o libd.so libd.c
+
+
+# create libb.so
+cat > libb.c << EOI
+#define __USE_GNU
+#include <dlfcn.h>
+int
+a()
+{
+	int (*nextA)();
+	*(void**)&nextA = dlsym(RTLD_NEXT, "a");
+	return (nextA != 0 ? nextA() : 0) + 2;
+}
+EOI
+
+# build
+compile_lib_dl -o libb.so libb.c ./libd.so
+
+
+# create liba.so
+cat > liba.c << EOI
+#include <dlfcn.h>
+int
+a()
+{
+	int (*nextA)();
+	*(void**)&nextA = dlsym(RTLD_NEXT, "a");
+	return (nextA != 0 ? nextA() : 0) + 4;
+}
+EOI
+
+# build
+compile_lib_dl -o liba.so liba.c ./libb.so
+
+
+# create program
+cat > program.c << EOI
+
+#include <dlfcn.h>
+int
+a()
+{
+	int (*nextA)();
+	*(void**)&nextA = dlsym(RTLD_NEXT, "a");
+	return (nextA != 0 ? nextA() : 0) + 8;
+}
+
+int
+main()
+{
+	return a();
+}
+EOI
+
+# build
+compile_program_dl -o program program.c ./liba.so
+
+# run
+test_run_ok ./program 15
+

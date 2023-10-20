@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons kernel file_systems iso9660 ;
+
+UsePrivateKernelHeaders ;
+
+# set some additional defines
+SubDirC++Flags -fno-rtti ;
+
+KernelAddon iso9660 :
+	iso9660.cpp
+	iso9660_identify.cpp
+	kernel_interface.cpp
+	;

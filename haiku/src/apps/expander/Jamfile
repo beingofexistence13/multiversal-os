@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src apps expander ;
+
+UsePrivateHeaders shared ;
+ObjectSysHdrs DirectoryFilePanel.cpp :
+	[ FDirName $(HAIKU_TOP) headers compatibility bsd ] ;
+
+Application Expander :
+	ExpanderApp.cpp
+	ExpanderWindow.cpp
+	ExpanderThread.cpp
+	GenericThread.cpp
+	ExpanderSettings.cpp
+	ExpanderPreferences.cpp
+	DirectoryFilePanel.cpp
+	ExpanderRules.cpp
+	PasswordAlert.cpp
+	: be tracker localestub [ TargetLibsupc++ ]
+	: Expander.rdef
+;
+
+DoCatalogs Expander :
+	x-vnd.Haiku-Expander
+	:
+	ExpanderWindow.cpp
+	ExpanderPreferences.cpp
+	ExpanderSettings.cpp
+	DirectoryFilePanel.cpp
+;

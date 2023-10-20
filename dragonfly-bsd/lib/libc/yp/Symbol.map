@@ -1,0 +1,21 @@
+DF404.0 {
+    _yp_check;
+    _yp_dobind;
+    xdr_datum;
+    xdr_ypresp_all_seq;
+    yp_all;
+    yp_bind;
+    yp_first;
+    yp_get_default_domain;
+    yp_maplist;
+    yp_master;
+    yp_match;
+    yp_next;
+    yp_order;
+    yp_unbind;
+    ypbinderr_string;
+    yperr_string;
+    ypprot_err;
+    ypresp_allfn;
+    ypresp_data;
+};

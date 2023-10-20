@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src preferences media ;
+
+UsePrivateHeaders media midi shared ;
+
+Preference Media :
+	Media.cpp
+	MediaIcons.cpp
+	MediaListItem.cpp
+	MediaViews.cpp
+	MediaWindow.cpp
+	MidiSettingsView.cpp
+	: media midi be localestub [ TargetLibsupc++ ]
+	: media.rdef
+	;
+
+DoCatalogs Media
+	: x-vnd.Haiku-Media
+	: MediaViews.cpp
+	  MediaWindow.cpp
+	  MidiSettingsView.cpp
+;

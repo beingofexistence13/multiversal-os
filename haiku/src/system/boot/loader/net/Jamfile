@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src system boot loader net ;
+
+UsePrivateHeaders drivers ;
+
+SubDirC++Flags -fno-rtti ;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup ] {
+	on $(platform) {
+		UsePrivateHeaders kernel [ FDirName kernel boot platform $(TARGET_BOOT_PLATFORM) ] ;
+
+		BootStaticLibrary [ MultiBootGristFiles boot_net ] :
+			ARP.cpp
+			ChainBuffer.cpp
+			Ethernet.cpp
+			IP.cpp
+			NetDefs.cpp
+			NetStack.cpp
+			RemoteDisk.cpp
+			TCP.cpp
+			UDP.cpp
+		;
+	}
+}

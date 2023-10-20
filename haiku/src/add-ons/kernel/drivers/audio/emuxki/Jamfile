@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio emuxki ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders audio device ;
+
+KernelAddon emuxki :
+	ac97.c
+	debug.c
+	emuxki.c
+	io.c
+	midi.c
+	multi.c
+	util.c
+#	joy.c
+;

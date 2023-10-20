@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons kernel drivers graphics nvidia ;
+
+UsePrivateHeaders graphics ;
+UsePrivateSystemHeaders ;
+UsePrivateHeaders [ FDirName graphics nvidia ] ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+
+KernelAddon nvidia :
+	driver.c
+;

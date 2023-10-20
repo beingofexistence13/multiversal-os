@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src add-ons screen_savers nebula ;
+
+SubDirC++Flags -Wno-error ;
+
+AddResources Nebula : Nebula.rdef ;
+
+UsePrivateHeaders interface ;
+
+ScreenSaver Nebula :
+	Draw.c
+	DrawStars.c
+	Nebula.cpp :
+	be libscreensaver.so localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs Nebula :
+	x-vnd.Haiku-NebulaScreensaver
+	:
+	Nebula.cpp
+;

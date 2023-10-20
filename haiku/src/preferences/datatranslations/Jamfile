@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src preferences datatranslations ;
+
+UsePrivateHeaders shared ;
+
+Preference DataTranslations :
+	DataTranslations.cpp
+	DataTranslationsWindow.cpp
+	DataTranslationsSettings.cpp
+	TranslatorListView.cpp
+
+	: be translation [ TargetLibsupc++ ] localestub shared
+	: DataTranslations.rdef
+	;
+
+DoCatalogs DataTranslations :
+	x-vnd.Haiku-DataTranslations
+	:
+	DataTranslations.cpp
+	DataTranslationsWindow.cpp
+	;

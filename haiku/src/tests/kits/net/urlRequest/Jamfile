@@ -1,0 +1,6 @@
+SubDir HAIKU_TOP src tests kits net urlRequest ;
+
+Application urlProtocolListener_test
+	: urlProtocolListener_test.cpp
+	: be $(TARGET_NETWORK_LIBS) $(HAIKU_NETAPI_LIB) [ TargetLibstdc++ ]
+	;

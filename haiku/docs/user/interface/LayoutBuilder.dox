@@ -1,0 +1,135 @@
+/*
+ * Copyright 2010, 2020 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Alex Wilson, yourpalal2@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/LayoutBuilder.h	 rev 49977
+ */
+
+
+/*!
+	\file LayoutBuilder.h
+	\ingroup layout
+	\ingroup libbe
+	\brief Defines the BLayoutBuilder templates.
+*/
+
+
+/*!
+	\class BLayoutBuilder::Base<>
+	\ingroup layout
+	\brief Base for all other layout builders in the BLayoutBuilder namespace.
+
+	This class provides the stack-like semantics for its subclasses. The
+	BLayoutBuilder::Group, BLayoutBuilder::Grid and BLayoutBuilder::Split all
+	provide methods such as AddGrid() AddGroup() and AddSplit(), which
+	make a new builder, place it on top of your builder stack and return it.
+	Now you are operating on the new builder. When you call	the End() method on
+	the new builder, you are returned the one you had previously been using. At
+	any point, you are calling methods on whatever builder currently resides on
+	the top of the stack. Here's an example of how these classes work.
+
+\code
+BLayoutBuilder::Group<>(B_HORIZONTAL)
+\endcode
+
+	At this point our stack just contains a single builder, it looks like this:
+		\li Group<>
+
+\code
+	.AddGrid()
+\endcode
+
+	Now there is a Grid builder on top of the stack, so it looks like this \li Group<>::GridBuilder
+		\li Group<>
+
+	Notice that the Grid on top of the stack is not a plain Grid<>, but a nested
+	type from the Group<> class. This is an essential part of the builder
+	classes, as this is what allows you to pop builders off the stack and get
+	the correct type in return.
+
+\code
+		.AddSplit()
+\endcode
+
+	Now our stack looks like this:
+		\li Group<>::GridBuilder::SplitBuilder
+		\li Group<>::GridBuilder
+		\li Group<>
+
+	This could continue ad. nauseam, but at some point, you may finish with a
+	builder, and you might want to continue manipulating the builder below it
+	on the stack. To do this, you simply call the End() method like so:
+
+\code
+			.End()
+\endcode
+
+	And now the stack is back to this:
+		\li Group<>::GridBuilder
+		\li Group<>
+
+	So you are again working with the grid builder. You can add more
+	BLayoutItems or BViews, or even more builders. Here's how it will all look
+	together.
+
+\code
+BLayoutBuilder::Group<>(B_HORIZONTAL)
+	// working with the Group builder
+	.AddGrid()
+		// working with the Group<>::GridBuilder
+		.AddSplit()
+			// working with the Group<>::GridBuilder::SplitBuilder
+		.End()
+		// back to the Group<>::GridBuilder
+\endcode
+
+	Note that the C++ language does not impose any sequence points in such
+	method chains. This means the arguments to all calls may be evaluated in an
+	unexpected order. For exemple, the following code may not result in adding
+	the 3 views in rows 0, 1 and 2 in the target grid:
+
+\code
+	// Don't do this!
+	int row = 0;
+	BLayoutBuilder::Grid<>(target)
+		.Add(viewA, row++)
+		.Add(viewB, row++)
+		.Add(viewC, row++);
+\endcode
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutBuilder::Base<ParentBuilder>::SetParent(ParentBuilder*
+		parent)
+	\brief Internal method for use by BLayoutBuilder::Base subclasses,
+	       this is essential to the builder stack semantics.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn ParentBuilder& BLayoutBuilder::Base<ParentBuilder>::End()
+	\brief Returns this builder's parent.
+
+	\since Haiku R1
+*/
+
+
+//! \cond INTERNAL
+
+
+/*!
+	\var ParentBuilder* BLayoutBuilder::Base< ParentBuilder >::fParent
+	\brief Internal pointer to the parent of the builder.
+*/
+
+
+//! \endcond

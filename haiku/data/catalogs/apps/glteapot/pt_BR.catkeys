@@ -1,0 +1,23 @@
+1	portuguese (brazil)	x-vnd.Haiku-GLTeapot	400822745
+Right	TeapotWindow		Direito
+Backface culling	TeapotWindow		Remoção de faces posteriores
+Add a teapot	TeapotWindow		Adicionar uma chaleira
+Yellow	TeapotWindow		Amarelo
+Perspective	TeapotWindow		Perspectiva
+Off	TeapotWindow		Desligado
+Quit	TeapotWindow		Sair
+Green	TeapotWindow		Verde
+Blue	TeapotWindow		Azul
+White	TeapotWindow		Branco
+Upper center	TeapotWindow		Acima centralizado
+Filled polygons	TeapotWindow		Polígonos preenchidos
+Lower left	TeapotWindow		Esquerda inferior
+Fog	TeapotWindow		Neblina
+FPS display	TeapotWindow		Exibição de FPS
+GLTeapot	System name		Bule GL
+Settings	TeapotWindow		Configurações
+Gouraud shading	TeapotWindow		Sombreamento Gouraud
+Lighting	TeapotWindow		Iluminação
+Z-buffered	TeapotWindow		Z-buffered
+Red	TeapotWindow		Vermelho
+Lights	TeapotWindow		Luzes

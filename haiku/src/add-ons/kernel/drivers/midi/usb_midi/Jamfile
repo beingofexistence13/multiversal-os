@@ -1,0 +1,8 @@
+SubDir HAIKU_TOP src add-ons kernel drivers midi usb_midi ;
+
+UsePrivateKernelHeaders ;
+
+KernelAddon usb_midi :
+	usb_midi.cpp
+	devlist.cpp
+;

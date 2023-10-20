@@ -1,0 +1,332 @@
+/*
+ * Copyright 2007 Haiku Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *   Ingo Weinhold
+ */
+
+ /*!
+	\page fs_modules File System Modules
+
+	To support a particular file system (FS), a kernel module implementing a
+	special interface (\c file_system_module_info defined in \c <fs_interface.h>)
+	has to be provided. As for any other module the \c std_ops() hook is invoked
+	with \c B_MODULE_INIT directly after the FS module has been loaded by the
+	kernel, and with \c B_MODULE_UNINIT before it is unloaded, thus providing
+	a simple mechanism for one-time module initializations. The same module is
+	used for accessing any volume of that FS type.
+
+	\section objects File System Objects
+
+	There are several types of objects a FS module has to deal with directly or
+	indirectly:
+
+	- A \em volume is an instance of a file system. For a disk-based file
+	  system it corresponds to a disk, partition, or disk image file. When
+	  mounting a volume the virtual file system layer (VFS) assigns a unique
+	  number (ID, of type \c dev_t) to it and a handle (type \c void*) provided
+	  by the file system. The VFS creates an instance of struct \c fs_volume
+	  that stores these two, an operation vector (\c fs_volume_ops), and other
+	  volume related items.
+	  Whenever the FS is asked to perform an operation the \c fs_volume object
+	  is supplied, and whenever the FS requests a volume-related service from
+	  the kernel, it also has to pass the \c fs_volume object or, in some cases,
+	  just the volume ID.
+	  Normally the handle is a pointer to a data structure the FS allocates to
+	  associate data with the volume.
+
+	- A \em node is contained by a volume. It can be of type file, directory, or
+	  symbolic link (symlink). Just as volumes nodes are associated with an ID
+	  (type \c ino_t) and, if in use, also with a handle (type \c void*).
+	  As for volumes the VFS creates an instance of a structure (\c fs_vnode)
+	  for each node in use, storing the FS's handle for the node and an
+	  operation vector (\c fs_vnode_ops).
+	  Unlike the volume ID the node ID is defined by the FS.
+	  It often has a meaning to the FS, e.g. file systems using inodes might
+	  choose the inode number corresponding to the node. As long as the volume
+	  is mounted and the node is known to the VFS, its node ID must not change.
+	  The node handle is again a pointer to a data structure allocated by the
+	  FS.
+
+	- A \em vnode (VFS node) is the VFS representation of a node. A volume may
+	  contain a great number of nodes, but at a time only a few are represented
+	  by vnodes, usually only those that are currently in use (sometimes a few
+	  more).
+
+	- An \em entry (directory entry) belongs to a directory, has a name, and
+	  refers to a node. It is important to understand the difference between
+	  entries and nodes: A node doesn't have a name, only the entries that refer
+	  to it have. If a FS supports to have more than one entry refer to a single
+	  node, it is also said to support "hard links". It is possible that no
+	  entry refers to a node. This happens when a node (e.g. a file) is still
+	  open, but the last entry referring to it has been removed (the node will
+	  be deleted when the it is closed). While entries are to be understood as
+	  independent entities, the FS interface does not use IDs or handles to
+	  refer to them; it always uses directory and entry name pairs to do that.
+
+	- An \em attribute is a named and typed data container belonging to a node.
+	  A node may have any number of attributes; they are organized in a
+	  (depending on the FS, virtual or actually existing) attribute directory,
+	  through which one can iterate.
+
+	- An \em index is supposed to provide fast searching capabilities for
+	  attributes with a certain name. A volume's index directory allows for
+	  iterating through the indices.
+
+	- A \em query is a fully virtual object for searching for entries via an
+	  expression matching entry name, node size, node modification date, and/or
+	  node attributes. The mechanism of retrieving the entries found by a query
+	  is similar to that for reading a directory contents. A query can be live
+	  in which case the creator of the query is notified by the FS whenever an
+	  entry no longer matches the query expression or starts matching.
+
+
+	\section concepts Generic Concepts
+
+	A FS module has to (or can) provide quite a lot of hook functions. There are
+	a few concepts that apply to several groups of them:
+
+	- <em>Opening, Closing, and Cookies</em>: Many FS objects can be opened and
+	  closed, namely nodes in general, directories, attribute directories,
+	  attributes, the index directory, and queries. In each case there are three
+	  hook functions: <tt>open*()</tt>, <tt>close*()</tt>, and
+	  <tt>free*_cookie()</tt>. The <tt>open*()</tt> hook is passed all that is
+	  needed to identify the object to be opened and, in some cases, additional
+	  parameters e.g. specifying a particular opening mode. The implementation
+	  is required to return a cookie (type \c void*), usually a pointer to a
+	  data structure the FS allocates. In some cases (e.g.
+	  when an iteration state is associated with the cookie) a new cookie must
+	  be allocated for each instance of opening the object. The cookie is passed
+	  to all hooks that operate on a thusly opened object. The <tt>close*()</tt>
+	  hook is invoked to signal that the cookie is to be closed. At this point
+	  the cookie might still be in use. Blocking FS hooks (e.g. blocking
+	  read/write operations) using the same cookie have to be unblocked. When
+	  the cookie stops being in use the <tt>free*_cookie()</tt> hook is called;
+	  it has to free the cookie.
+
+	- <em>Entry Iteration</em>: For the FS objects serving as containers for
+	  other objects, i.e. directories, attribute directories, the index
+	  directory, and queries, the cookie mechanism is used for a stateful
+	  iteration through the contained objects. The <tt>read_*()</tt> hook reads
+	  the next one or more entries into a <tt>struct dirent</tt> buffer. The
+	  <tt>rewind_*()</tt> hook resets the iteration state to the first entry.
+
+	- <em>Stat Information</em>: In case of nodes, attributes, and indices
+	  detailed information about an object are requested via a
+	  <tt>read*_stat()</tt> hook and must be written into a <tt>struct stat</tt>
+	  buffer.
+
+
+	\section vnodes VNodes
+
+	A vnode is the VFS representation of a node. As soon as an access to a node
+	is requested, the VFS creates a corresponding vnode. The requesting entity
+	gets a reference to the vnode for the time it works with the vnode and
+	releases the reference when done. When the last reference to a vnode has
+	been surrendered, the vnode is unused and the VFS can decide to destroy it
+	(usually it is cached for a while longer).
+
+	When the VFS creates a vnode, it invokes the volume's
+	\link fs_volume_ops::get_vnode get_vnode() \endlink
+	hook to let it create the respective node handle (unless the FS requests the
+	creation of the vnode explicitely by calling publish_vnode()). That's the
+	only hook that specifies a node by ID; all other node-related hooks are
+	defined in the respective node's operation vector and they are passed the
+	respective \c fs_vnode object. When the VFS deletes the vnode, it invokes
+	the nodes's \link fs_vnode_ops::put_vnode put_vnode() \endlink
+	hook or, if the node was marked removed,
+	\link fs_vnode_ops::remove_vnode remove_vnode() \endlink.
+
+	There are only four FS hooks through which the VFS gains knowledge of the
+	existence of a node. The first one is the
+	\link file_system_module_info::mount mount() \endlink
+	hook. It is supposed to call \c publish_vnode() for the root node of the
+	volume and return its ID. The second one is the
+	\link fs_vnode_ops::lookup lookup() \endlink
+	hook. Given a \c fs_vnode object of a directory and an entry name, it is
+	supposed to call \c get_vnode() for the node the entry refers to and return
+	the node ID.
+	The remaining two hooks,
+	\link fs_vnode_ops::read_dir read_dir() \endlink and
+	\link fs_volume_ops::read_query read_query() \endlink,
+	both return entries in a <tt>struct dirent</tt> structure, which also
+	contains the ID of the node the entry refers to.
+
+
+	\section mandatory_hooks Mandatory Hooks
+
+	Which hooks a FS module should provide mainly depends on what functionality
+	it features. E.g. a FS without support for attribute, indices, and/or
+	queries can omit the respective hooks (i.e. set them to \c NULL in the
+	module, \c fs_volume_ops, and \c fs_vnode_ops structure). Some hooks are
+	mandatory, though. A minimal read-only FS module must implement:
+
+	- \link file_system_module_info::mount mount() \endlink and
+	  \link fs_volume_ops::unmount unmount() \endlink:
+	  Mounting and unmounting a volume is required for pretty obvious reasons.
+
+	- \link fs_vnode_ops::lookup lookup() \endlink:
+	  The VFS uses this hook to resolve path names. It is probably one of the
+	  most frequently invoked hooks.
+
+	- \link fs_volume_ops::get_vnode get_vnode() \endlink and
+	  \link fs_vnode_ops::put_vnode put_vnode() \endlink:
+	  Create respectively destroy the FS's private node handle when
+	  the VFS creates/deletes the vnode for a particular node.
+
+	- \link fs_vnode_ops::read_stat read_stat() \endlink:
+	  Return a <tt>struct stat</tt> info for the given node, consisting of the
+	  type and size of the node, its owner and access permissions, as well as
+	  certain access times.
+
+	- \link fs_vnode_ops::open open() \endlink,
+	  \link fs_vnode_ops::close close() \endlink, and
+	  \link fs_vnode_ops::free_cookie free_cookie() \endlink:
+	  Open and close a node as explained in \ref concepts.
+
+	- \link fs_vnode_ops::read read() \endlink:
+	  Read data from an opened node (file). Even if the FS does not feature
+	  files, the hook has to be present anyway; it should return an error in
+	  this case.
+
+	- \link fs_vnode_ops::open_dir open_dir() \endlink,
+	  \link fs_vnode_ops::close_dir close_dir() \endlink, and
+	  \link fs_vnode_ops::free_dir_cookie free_dir_cookie() \endlink:
+	  Open and close a directory for entry iteration as explained in
+	  \ref concepts.
+
+	- \link fs_vnode_ops::read_dir read_dir() \endlink and
+	  \link fs_vnode_ops::rewind_dir rewind_dir() \endlink:
+	  Read the next entry/entries from a directory, respectively reset the
+	  iterator to the first entry, as explained in \ref concepts.
+
+	Although not strictly mandatory, a FS should additionally implement the
+	following hooks:
+
+	- \link fs_volume_ops::read_fs_info read_fs_info() \endlink:
+	  Return general information about the volume, e.g. total and free size, and
+	  what special features (attributes, MIME types, queries) the volume/FS
+	  supports.
+
+	- \link fs_vnode_ops::read_symlink read_symlink() \endlink:
+	  Read the value of a symbolic link. Needed only, if the FS and volume
+	  support symbolic links at all. If absent symbolic links stored on the
+	  volume won't be interpreted.
+
+	- \link fs_vnode_ops::access access() \endlink:
+	  Return whether the current user has the given access permissions for a
+	  node. If the hook is absent the user is considered to have all
+	  permissions.
+
+
+	\section permissions Checking Access Permission
+
+	While there is the \link fs_vnode_ops::access access() \endlink hook
+	that explicitly checks access permission for a node, it is not used by the
+	VFS to check access permissions for the other hooks. This has two reasons:
+	It could be cheaper for the FS to do that in the respective hook (at least
+	it's not more expensive), and the FS can make sure that there are no race
+	conditions between the check and the start of the operation for the hook.
+	The downside is that in most hooks the FS has to check those permissions.
+	It is possible to simplify things a bit, though:
+
+	- For operations that require the file system object in question (node,
+	  directory, index, attribute, attribute directory, query) to be open, most
+	  of the checks can already be done in the respective <tt>open*()</tt> hook.
+	  E.g. in fs_vnode_ops::read() or fs_vnode_ops::write() one only has to
+	  check, if the file has been opened for reading/writing, not whether the
+	  current process has the respective permissions.
+
+	- The core of the fs_vnode_ops::access() hook can be moved into a private
+	  function that can be easily reused in other hooks to check the permissions
+	  for the respective operations. In most cases this will reduce permission
+	  checking to one or two additional "if"s in the hooks where it is required.
+
+
+	\section node_monitoring Node Monitoring
+
+	One of the nice features of Haiku's API is an easy way to monitor
+	directories or nodes for changes. That is one can register for watching a
+	given node for certain modification events and will get a notification
+	message whenever one of those events occurs. While other parts of the
+	operating system do the actual notification message delivery, it is the
+	responsibility of each file system to announce changes. It has to use the
+	following functions to do that:
+
+	- notify_entry_created(): A directory entry has been created.
+
+	- notify_entry_removed(): A directory entry has been removed.
+
+	- notify_entry_moved(): A directory entry has been renamed and/or moved
+	  to another directory.
+
+	- notify_stat_changed(): One or more members of the stat data for node have
+	  changed. E.g. the \c st_size member changes when the file is truncated or
+	  data have been written to it beyond its former size. The modification time
+	  (\c st_mtime) changes whenever a node is write-accessed. To avoid a flood
+	  of messages for small and frequent write operations on an open file the
+	  file system can limit the number of notifications and mark them with the
+	  B_WATCH_INTERIM_STAT flag. When closing a modified file a notification
+	  without that flag should be issued.
+
+
+	- notify_attribute_changed(): An attribute of a node has been added,
+	  removed, or changed.
+
+	If the file system supports queries, it needs to call the following
+	functions to make live queries work:
+
+	- notify_query_entry_created(): A change caused an entry that didn't match
+	  the query predicate before to match now.
+
+	- notify_query_entry_removed(): A change caused an entry that matched
+	  the query predicate before to no longer match.
+
+
+	\section caches Caches
+
+	The Haiku kernel provides three kinds of caches that can be used by a
+	file system implementation to speed up file system operations:
+
+	- <em>Block cache</em>: Interesting for disk-based file systems. The device
+	  the file system volume is located on is considered to be divided in
+	  equally-sized blocks of data that can be accessed via the block cache API
+	  (e.g. block_cache_get() and block_cache_put()). As long as the system has
+	  enough memory the block cache will keep all blocks that have been accessed
+	  in memory, thus allowing further accesses to be very fast.
+	  The block cache also has transaction support, which is of interest for
+	  journaled file systems.
+
+	- <em>File cache</em>: Stores file contents. The FS can decide to create
+	  a file cache for any of its files. The fs_vnode_ops::read() and
+	  fs_vnode_ops::write() hooks can then simply be implemented by calling the
+	  file_cache_read() respectively file_cache_write() function, which will
+	  read the data from/write the data to the file cache. For reading uncached
+	  data or writing back cached data to the file, the file cache will invoke
+	  the fs_vnode_ops::io() hook.
+	  Only files for which the file cache is used, can be memory mapped (cf.
+	  mmap())
+
+	- <em>Entry cache</em>: Can be used to speed up resolving paths. Normally
+	  the VFS will call the fs_vnode_ops::lookup() hook for each element of the
+	  path to be resolved, which, depending on the file system, can be more or
+	  less expensive. When the FS uses the entry cache, those calls will be
+	  avoided most of the time. All the file system has to do is invoke the
+	  entry_cache_add() function when it encounters an entry that might not yet
+	  be known to the entry cache and entry_cache_remove() when a directory
+	  entry has been removed.
+	  The entry cache can also be used for negative caching. If the file system
+	  determines that the requested entry is not present during a lookup, it can
+	  cache this lookup failure by calling entry_cache_add_missing(). Further
+	  calls to fs_vnode_ops::lookup() for the missing entry will then be
+	  avoided.
+	  Note that it is safe to call entry_cache_add() and
+	  entry_cache_add_missing() with the same directory/name pair previously
+	  given to either function to update a cache entry, without needing to call
+	  entry_cache_remove() first. It is also safe to call entry_cache_remove()
+	  for pairs that have never been added to the cache.
+*/
+
+// TODO:
+//	* FS layers

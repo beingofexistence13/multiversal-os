@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src tools translation bmpinfo ;
+
+BinCommand bmpinfo : bmpinfo.cpp : be libbe.so localestub translation [ TargetLibstdc++ ] [ TargetLibsupc++ ] ;
+
+AddResources bmpinfo : bmpinfo.rdef ;
+
+#DoCatalogs bmpinfo :
+#	x-vnd.Haiku-bmpsinfo
+#	:
+#	bmpinfo.cpp
+#;

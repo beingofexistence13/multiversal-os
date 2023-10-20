@@ -1,0 +1,33 @@
+SubDir HAIKU_TOP src apps serialconnect ;
+
+SubDirSysHdrs [ FDirName $(HAIKU_TOP) src apps serialconnect libvterm include ] ;
+SubDirSysHdrs [ FDirName $(HAIKU_TOP) headers private interface ] ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src apps serialconnect libvterm src ] ;
+
+Application SerialConnect :
+	CustomRateWindow.cpp
+	FileSender.cpp
+	SerialApp.cpp
+	SerialWindow.cpp
+	TermView.cpp
+	XModem.cpp
+	encoding.c
+	input.c
+	parser.c
+	pen.c
+	screen.c
+	state.c
+	unicode.c
+	vterm.c
+	: be device tracker localestub [ TargetLibsupc++ ]
+	: SerialConnect.rdef
+;
+
+DoCatalogs SerialConnect :
+	x-vnd.haiku.SerialConnect
+	:
+	CustomRateWindow.cpp
+	SerialWindow.cpp
+	XModem.cpp
+;

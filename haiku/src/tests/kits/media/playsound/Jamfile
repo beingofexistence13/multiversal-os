@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src tests kits media playsound ;
+
+BinCommand playfile :
+	playfile.cpp
+	: be bnetapi media [ TargetLibsupc++ ]
+;
+
+BinCommand playsound :
+	playsound.cpp
+	: be media game
+;
+
+BinCommand playwav :
+	playwav.cpp
+	: be media [ TargetLibsupc++ ]
+;

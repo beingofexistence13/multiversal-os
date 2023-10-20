@@ -1,0 +1,50 @@
+SubDir HAIKU_TOP src apps bootmanager ;
+
+UsePrivateHeaders shared storage tracker ;
+UsePrivateHeaders interface ;
+
+local cataloguedSources =
+	BootDrive.cpp
+	BootManager.cpp
+	BootManagerController.cpp
+	BootManagerWindow.cpp
+	DefaultPartitionPage.cpp
+	DrivesPage.cpp
+	FileSelectionPage.cpp
+	LegacyBootMenu.cpp
+	PartitionsPage.cpp
+	UninstallPage.cpp
+	WizardView.cpp
+;
+
+Application BootManager :
+	$(cataloguedSources)
+	DescriptionPage.cpp
+	WizardController.cpp
+	WizardPageView.cpp
+
+	: be textencoding tracker shared localestub [ TargetLibsupc++ ]
+	: BootManager.rdef
+;
+
+DoCatalogs BootManager : x-vnd.Haiku-BootManager : $(cataloguedSources) ;
+
+# Assemble the boot loader, and convert it into a header file
+
+# TODO: should be merged with the AssembleNasm rule
+rule AssembleNasmBin object : source
+{
+	SEARCH on $(source) = $(SUBDIR) ;
+	MakeLocateDebug $(object) ;
+	Depends $(object) : $(source) ;
+}
+
+actions AssembleNasmBin
+{
+	$(HAIKU_NASM) -f bin -o $(1) $(2)
+}
+
+AssembleNasmBin [ FGristFiles bootman.bin ] : bootman.S ;
+
+DataFileToSourceFile [ FGristFiles BootLoader.h ] : [ FGristFiles bootman.bin ]
+	: kBootLoader : kBootLoaderSize ;

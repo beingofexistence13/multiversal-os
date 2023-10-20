@@ -1,0 +1,31 @@
+SubDir HAIKU_TOP src add-ons translators ico ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources ICOTranslator : ICOTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles ICOTranslator ] :
+			# ICOTranslator classes
+			main.cpp
+			ICOTranslator.cpp
+			ConfigView.cpp
+			ICO.cpp
+			: be translation 
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ]
+			localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs ICOTranslator :
+	x-vnd.Haiku-ICOTranslator
+	:
+	main.cpp
+	ConfigView.cpp
+	ICOTranslator.cpp
+;

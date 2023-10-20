@@ -1,0 +1,30 @@
+1	portuguese	x-vnd.Haiku-Locale	1081217032
+Medium format:	TimeFormatSettings		Formato médio:
+Negative:	TimeFormatSettings		Negativo:
+Language	Locale Preflet Window		Idioma
+Short format:	TimeFormatSettings		Formato curto:
+24 hour	TimeFormatSettings		24 horas
+Locale	Locale Preflet Window		Localização
+Time	TimeFormatSettings		Hora
+Defaults	Locale Preflet Window		Predefinições
+Locale	System name		Localização
+Date	TimeFormatSettings		Data
+OK	Locale Preflet Window		OK
+Long format:	TimeFormatSettings		Formato longo:
+Numbers	TimeFormatSettings		Números
+Available languages	Locale Preflet Window		Idiomas disponíveis
+Locale	Locale Preflet		Região
+Unable to find the available languages! You can't use this preflet!	Locale Preflet Window		Não foi possível encontrar a lista de idiomas! Não pode usar este preflet!
+Formatting	Locale Preflet Window		Formatos
+Use month/day-names from preferred language	TimeFormatSettings		Usar nomes de meses e dias do idioma preferido
+already chosen	LanguageListView		escolhida
+Preferred languages	Locale Preflet Window		Idiomas preferidos
+Full format:	TimeFormatSettings		Formato completo:
+Cancel	Locale Preflet Window		Cancelar
+Revert	Locale Preflet Window		Reverter
+Translate application and folder names	TimeFormatSettings		Traduzir nomes de pastas e aplicações
+12 hour	TimeFormatSettings		12 horas
+Positive:	TimeFormatSettings		Positivo:
+Deskbar and Tracker need to be restarted for this change to take effect. Would you like to restart them now?	Locale Preflet Window		A Deskbar e o Tracker precisam de ser reiniciados para esta alteração ter efeito. Deseja reiniciá-los agora?
+Restart	Locale Preflet Window		Reiniciar
+Currency	TimeFormatSettings		Moeda

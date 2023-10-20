@@ -1,0 +1,7 @@
+SubDir HAIKU_TOP src add-ons kernel busses scsi buslogic ;
+
+SubDirCcFlags -DBUILD_LOADABLE ;
+
+KernelAddon buslogic :
+	buslogic.c
+;

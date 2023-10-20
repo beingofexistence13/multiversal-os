@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src kits package solver ;
+
+DoCatalogs libsolv :
+	x-vnd.Haiku-libsolvsolver
+	:
+	SolverProblem.cpp
+	SolverProblemSolution.cpp
+;
+
+HaikuSubInclude libsolv ;

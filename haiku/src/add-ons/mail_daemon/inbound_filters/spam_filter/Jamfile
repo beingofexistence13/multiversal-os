@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src add-ons mail_daemon inbound_filters spam_filter ;
+
+
+UsePrivateHeaders mail shared ;
+UsePublicHeaders [ FDirName add-ons mail_daemon ] ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers os add-ons mail_daemon ] ;
+
+AddResources SpamFilter : SpamFilter.rdef ;
+
+Addon SpamFilter :
+	SpamFilterConfig.cpp
+	SpamFilter.cpp
+	:
+	be libmail.so localestub [ TargetLibsupc++ ]
+	;
+
+DoCatalogs SpamFilter
+	:
+	x-vnd.Haiku-SpamFilter
+	:
+	SpamFilter.cpp
+	SpamFilterConfig.cpp
+	;

@@ -1,0 +1,39 @@
+SubDir HAIKU_TOP src apps debuganalyzer ;
+
+UsePrivateHeaders debug interface kernel shared ;
+UsePrivateSystemHeaders ;
+
+HAIKU_DEBUG_ANALYZER_HEADERS =
+	$(SUBDIR)
+	[ FDirName $(SUBDIR) gui ]
+	[ FDirName $(SUBDIR) model ]
+	[ FDirName $(SUBDIR) model_loader ]
+	[ FDirName $(SUBDIR) util ]
+;
+
+UseHeaders $(HAIKU_DEBUG_ANALYZER_HEADERS) ;
+
+CCFLAGS +=  -Werror ;
+C++FLAGS += -Werror ;
+
+
+Application DebugAnalyzer
+	:
+	DebugAnalyzer.cpp
+
+	:
+	<nogrist>DebugAnalyzer_gui.o
+	<nogrist>DebugAnalyzer_model.o
+	<nogrist>DebugAnalyzer_model_loader.o
+	<nogrist>DebugAnalyzer_util.o
+
+	libcolumnlistview.a shared libdebug.so be
+	[ TargetLibstdc++ ]
+	:
+	DebugAnalyzer.rdef
+;
+
+HaikuSubInclude gui ;
+HaikuSubInclude model ;
+HaikuSubInclude model_loader ;
+HaikuSubInclude util ;

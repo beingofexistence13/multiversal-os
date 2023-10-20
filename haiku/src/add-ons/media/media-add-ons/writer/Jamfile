@@ -1,0 +1,19 @@
+SubDir HAIKU_TOP src add-ons media media-add-ons writer ;
+
+UsePrivateHeaders media ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src add-ons media media-add-ons ] ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Application [ MultiArchDefaultGristFiles writer.media_addon ] :
+			../AbstractFileInterfaceNode.cpp
+			../AbstractFileInterfaceAddOn.cpp
+			MediaWriter.cpp
+			MediaWriterAddOn.cpp
+			../misc.cpp
+			: be media [ TargetLibsupc++ ]
+		;
+	}
+}

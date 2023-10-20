@@ -1,0 +1,383 @@
+.\" Copyright (c) 2001-2008, Intel Corporation
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice,
+.\"    this list of conditions and the following disclaimer.
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" 3. Neither the name of the Intel Corporation nor the names of its
+.\"    contributors may be used to endorse or promote products derived from
+.\"    this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" * Other names and brands may be claimed as the property of others.
+.\"
+.\" $FreeBSD: src/share/man/man4/ixgbe.4,v 1.2 2008/06/17 21:14:02 brueffer Exp $
+.\"
+.Dd December 17, 2017
+.Dt IX 4
+.Os
+.Sh NAME
+.Nm ix
+.Nd "Intel(R) 10Gb Ethernet driver"
+.Sh SYNOPSIS
+To compile this driver into the kernel,
+place the following line in your
+kernel configuration file:
+.Bd -ragged -offset indent
+.Cd "device ix"
+.Ed
+.Pp
+Alternatively, to load the driver as a
+module at boot time, place the following line in
+.Xr loader.conf 5 :
+.Bd -literal -offset indent
+if_ix_load="YES"
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+driver provides support for PCI Express 10Gb Ethernet adapters based on
+the Intel
+82598,
+82599,
+and
+X540
+Ethernet controller chips.
+The
+.Nm
+driver supports:
+.Pp
+.Bl -item -offset indent -compact
+.It
+Transmit/Receive checksum offload for IP/UDP/TCP.
+.\"Jumbo Frames.
+.It
+Interrupt moderation
+.It
+TCP segmentation offload (TSO)
+.It
+Receive side scaling (RSS)
+.It
+Multiple tranmission queues
+.It
+Multiple vector MSI-X
+.It
+VLAN tag stripping and inserting
+.El
+.Pp
+If
+.Xr polling 4
+or MSI-X is used,
+by default,
+the
+.Nm
+driver will try enabling as many reception queues and transmission queues
+as are allowed by the number of CPUs in the system.
+.Pp
+If multiple transmission queues are used,
+the round-robin arbitration is performed among the transmission queues.
+And if both TSO and multiple tranmission queues are used,
+the round-robin arbitration between transmission queues is done at the
+TCP segment boundary after the hardware segmentation is performed.
+.Pp
+82598 supports 16 reception queues and 32 transmission queues.
+MSI-X is not enabled due to hardware errata.
+Under MSI or legacy interrupt mode,
+2 reception queues are enabled for hardware RSS hash
+and only 1 transmission queue is enable.
+.Pp
+82599 and X540 supports 16 reception queues and 64 transmission queues.
+MSI-X is enable by default.
+However,
+due to the number of MSI-X vectors is 64,
+at most 16 reception queues and 32 transmission queues will be enabled
+under MSI-X mode.
+.Pp
+The
+.Nm
+driver supports the following media types:
+.Bl -tag -width ".Cm autoselect"
+.It Cm autoselect
+Enables auto-negotiation for speed and duplex.
+.El
+.Pp
+The
+.Nm
+driver supports the following media options:
+.Bl -tag -width ".Cm forcepause"
+.It Cm rxpause
+Enable flow control PAUSE reception.
+.It Cm txpause
+Enable flow control PAUSE transmission.
+.It Cm forcepause
+Force flow control PAUSE operation as configured by
+.Cm rxpause
+and
+.Cm txpause
+media options.
+.El
+.Pp
+For more information on configuring this device, see
+.Xr ifconfig 8 .
+The
+.Nm
+driver supports
+.Xr polling 4 .
+.Sh HARDWARE
+The
+.Nm
+driver supports Gigabit Ethernet adapters based on the Intel
+82598,
+82599,
+and
+X540
+controller chips:
+.Pp
+.Bl -bullet -compact
+.It
+Intel 10 Gigabit AT Server Adapter
+.It
+Intel 82598EB 10 Gigabit Ethernet Controller
+.It
+Intel 82599EB 10 Gigabit Ethernet Controller
+.It
+Intel 82599EN 10 Gigabit Ethernet Controller
+.It
+Intel 82599ES 10 Gigabit Ethernet Controller
+.It
+Intel Ethernet Controller X540-AT2
+.It
+Intel Ethernet Controller X550-AT
+.It
+Intel Ethernet Controller X550-AT2
+.It
+Intel Ethernet Controller X550-BT2
+.It
+Intel Ethernet Connection X557-AT
+.It
+Intel Ethernet Connection X557-AT2
+.It
+Intel Ethernet Connection X557-AT4
+.It
+Intel Ethernet Controller X710-AM2
+.It
+Intel Ethernet Converged Network Adapter X520-DA1
+.It
+Intel Ethernet Converged Network Adapter X520-DA2
+.It
+Intel Ethernet Converged Network Adapter X520-LR1
+.It
+Intel Ethernet Converged Network Adapter X520-QDA1
+.It
+Intel Ethernet Converged Network Adapter X520-SR1
+.It
+Intel Ethernet Converged Network Adapter X520-SR2
+.It
+Intel Ethernet Converged Network Adapter X540-T1
+.It
+Intel Ethernet Converged Network Adapter X540-T2
+.It
+Intel Ethernet Converged Network Adapter X550-T1
+.It
+Intel Ethernet Converged Network Adapter X550-T2
+.It
+Intel Ethernet Converged Network Adapter X710-DA2
+.It
+Intel Ethernet Converged Network Adapter X710-DA4
+.El
+.Sh TUNABLES
+Tunables can be set at the
+.Xr loader 8
+prompt before booting the kernel or stored in
+.Xr loader.conf 5 .
+.Em Y
+is the device unit number.
+.Bl -tag -width ".Va hw.ixY.unsupported_sfp"
+.It Va hw.ix.rxd Va hw.ixY.rxd
+Number of receive descriptors allocated by the driver.
+The default value is 2048.
+The minimum is 64,
+and the maximum is 4096.
+.It Va hw.ix.txd Va hw.ixY.txd
+Number of transmit descriptors allocated by the driver.
+The default value is 2048.
+The minimum is 64,
+and the maximum is 4096.
+.It Va hw.ix.rxr Va hw.ixY.rxr
+This tunable specifies the number of reception queues could be enabled.
+Maximum allowed value for these tunables is device specific
+and it must be power of 2 aligned.
+Setting these tunables to 0 allows the driver to make
+as many reception queues ready-for-use as allowed by the number of CPUs.
+.It Va hw.ix.txr Va hw.ixY.txr
+This tunable specifies the number of transmission queues could be enabled.
+Maximum allowed value for these tunables is device specific
+and it must be power of 2 aligned.
+Setting these tunables to 0 allows the driver to make
+as many transmission queues ready-for-use as allowed by the number of CPUs.
+.It Va hw.ix.msix.enable Va hw.ixY.msix.enable
+By default,
+the driver will use MSI-X if it is supported.
+This behaviour can be turned off by setting this tunable to 0.
+.It Va hw.ix.msi.enable Va hw.ixY.msi.enable
+If MSI-X is disabled and MSI is supported,
+the driver will use MSI.
+This behavior can be turned off by setting this tunable to 0.
+.It Va hw.ixY.msi.cpu
+If MSI is used,
+it specifies the MSI's target CPU.
+.It Va hw.ix.unsupported_sfp
+By default,
+this driver does not allow "unsupported" SFP modules.
+This behavior can be changed by setting this tunable to 1.
+.It Va hw.ix.flow_ctrl Va hw.ixY.flow_ctrl
+The default flow control settings.
+Supported values are:
+rxpause (only enable PAUSE reception),
+txpause (only enable PAUSE transmission),
+full (enable PAUSE reception and transmission),
+none (disable flow control PAUSE operation),
+force-rxpause (force PAUSE reception),
+force-txpause (force PAUSE transmission),
+force-full (forcefully enable PAUSE reception and transmission),
+force-none (forcefully disable flow control PAUSE operation).
+Default is none.
+.It Va hw.ix.direct_input
+By default,
+if the
+.Xr polling 4
+is enabled,
+the driver will handle input packets directly,
+instead of queuing input packets for further processing.
+The direct input packets handling improves performance and
+stablize latency.
+.El
+.Sh MIB Variables
+A number of per-interface variables are implemented in the
+.Va dev.ix. Ns Em Y
+branch of the
+.Xr sysctl 3
+MIB.
+.Bl -tag -width "rxtx_intr_rate"
+.It Va rxr
+Number of reception queues could be enabled (read-only).
+Use the tunable
+.Va hw.ix.rxr
+or
+.Va hw.ixY.rxr
+to configure it.
+.It Va rxr_inuse
+Number of reception queues being used (read-only).
+.It Va txr
+Number of transmission queues could be enabled (read-only).
+Use the tunable
+.Va hw.ix.txr
+or
+.Va hw.ixY.txr
+to configure it.
+.It Va txr_inuse
+Number of transmission queues being used (read-only).
+.It Va rxd
+Number of descriptors per reception queue (read-only).
+Use the tunable
+.Va hw.ix.rxd
+or
+.Va hw.ixY.rxd
+to configure it.
+.It Va txd
+Number of descriptors per transmission queue (read-only).
+Use the tunable
+.Va hw.ix.txd
+or
+.Va hw.ixY.txd
+to configure it.
+.It Va rxtx_intr_rate
+If MSI or legacy interrupt is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the device.
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which aggregate transmission queue and reception queue procecssing.
+It is 8000 by default (125us).
+.It Va rx_intr_rate
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which only process reception queue.
+It is 8000 by default (125us).
+.It Va tx_intr_rate
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which only process transmission queue.
+It is 6000 by default (~150us).
+.It Va sts_intr_rate
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which only process chip status changes.
+It is 8000 by default (125us).
+.It Va tx_intr_nsegs
+Transmission interrupt is asked to be generated upon every
+.Va tx_intr_nsegs
+transmission descritors having been setup.
+The default value is 1/16 of the number of transmission descriptors per queue.
+.It Va tx_wreg_nsegs
+The number of transmission descriptors should be setup
+before the hardware register is written.
+Setting this value too high will have negative effect
+on transmission timeliness.
+Setting this value too low will hurt overall transmission performance
+due to the frequent hardware register writing.
+The default value is 8.
+.It Va rx_wreg_nsegs
+The number of reception descriptors should be setup
+before the hardware register is written.
+Setting this value too high will make device drop incoming packets.
+Setting this value too low will hurt overall reception performance
+due to the frequent hardware register writing.
+The default value is 32.
+.It Va direct_input
+See
+.Va hw.ix.direct_input .
+.Xr polling 4
+needs to be turned off and turned on again to make this variable take effect.
+.El
+.Sh SEE ALSO
+.Xr altq 4 ,
+.Xr arp 4 ,
+.Xr ifmedia 4 ,
+.Xr netintro 4 ,
+.Xr ng_ether 4 ,
+.Xr polling 4 ,
+.Xr vlan 4 ,
+.Xr ifconfig 8
+.Sh HISTORY
+The
+.Nm
+device driver first appeared in
+.Dx 3.1 .
+.Sh AUTHORS
+The
+.Nm
+driver was written by
+.An Intel Corporation Aq Mt freebsdnic@mailbox.intel.com .

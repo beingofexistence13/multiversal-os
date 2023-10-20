@@ -1,0 +1,32 @@
+SubDir HAIKU_TOP src preferences bluetooth ;
+
+UsePrivateHeaders bluetooth ;
+UsePrivateHeaders shared ;
+
+AddResources Bluetooth : Bluetooth.rdef ;
+
+Preference Bluetooth :
+	BluetoothDeviceView.cpp
+	BluetoothMain.cpp
+	BluetoothSettings.cpp
+	BluetoothSettingsView.cpp
+	BluetoothWindow.cpp
+	DeviceListItem.cpp
+	ExtendedLocalDeviceView.cpp
+	InquiryPanel.cpp
+	RemoteDevicesView.cpp
+	: be shared libbluetooth.so [ TargetLibsupc++ ] localestub
+	;
+
+DoCatalogs Bluetooth :
+	x-vnd.Haiku-BluetoothPrefs
+	:
+	BluetoothDeviceView.cpp
+	BluetoothMain.cpp
+	BluetoothSettingsView.cpp
+	BluetoothWindow.cpp
+	ExtendedLocalDeviceView.cpp
+	InquiryPanel.cpp
+	RemoteDevicesView.cpp
+;
+

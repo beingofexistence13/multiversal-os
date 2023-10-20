@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src add-ons tracker mark_as ;
+
+UsePrivateHeaders mail ;
+
+AddResources Mark\ as… : MarkAs.rdef ;
+AddResources Mark\ as\ Read : MarkAsRead.rdef ;
+
+Addon Mark\ as… :
+	MarkAs.cpp
+	: be tracker [ TargetLibsupc++ ] libmail.so
+;
+
+Addon Mark\ as\ Read :
+	MarkAsRead.cpp
+	: be tracker [ TargetLibsupc++ ] libmail.so
+;

@@ -1,0 +1,235 @@
+SubDir HAIKU_TOP src add-ons kernel bus_managers acpi ;
+
+UsePrivateKernelHeaders ;
+SubDirHdrs [ FDirName $(SUBDIR) acpica include ] ;
+SubDirHdrs [ FDirName $(SUBDIR) acpica include platform ] ;
+SubDirHdrs [ FDirName $(SUBDIR) arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) pci ] ;
+SubDirCcFlags -D_KERNEL_MODE ;
+
+
+local arch_src =
+	arch_init.cpp
+	;
+
+local dispatcher_src =
+	dsargs.c
+	dscontrol.c
+	dsdebug.c
+	dsfield.c
+	dsinit.c
+	dsmethod.c
+	dsmthdat.c
+	dsobject.c
+	dsopcode.c
+	dspkginit.c
+	dsutils.c
+	dswexec.c
+	dswload.c
+	dswload2.c
+	dswscope.c
+	dswstate.c
+	;
+
+local events_src =
+	evevent.c
+	evglock.c
+	evgpe.c
+	evgpeblk.c
+	evgpeinit.c
+	evgpeutil.c
+	evhandler.c
+	evmisc.c
+	evregion.c
+	evrgnini.c
+	evsci.c
+	evxface.c
+	evxfevnt.c
+	evxfgpe.c
+	evxfregn.c
+	;
+
+local executer_src =
+	exconcat.c
+	exconfig.c
+	exconvrt.c
+	excreate.c
+	exdebug.c
+	exdump.c
+	exfield.c
+	exfldio.c
+	exmisc.c
+	exmutex.c
+	exnames.c
+	exoparg1.c
+	exoparg2.c
+	exoparg3.c
+	exoparg6.c
+	exprep.c
+	exregion.c
+	exresnte.c
+	exresolv.c
+	exresop.c
+	exserial.c
+	exstore.c
+	exstoren.c
+	exstorob.c
+	exsystem.c
+	extrace.c
+	exutils.c
+	;
+
+local hardware_src =
+	hwacpi.c
+	hwesleep.c
+	hwgpe.c
+	hwpci.c
+	hwregs.c
+	hwsleep.c
+	hwtimer.c
+	hwvalid.c
+	hwxface.c
+	hwxfsleep.c
+	;
+
+local namespace_src =
+	nsaccess.c
+	nsalloc.c
+	nsarguments.c
+	nsconvert.c
+	nsdump.c
+	nsdumpdv.c
+	nseval.c
+	nsinit.c
+	nsload.c
+	nsnames.c
+	nsobject.c
+	nsparse.c
+	nspredef.c
+	nsprepkg.c
+	nsrepair.c
+	nsrepair2.c
+	nssearch.c
+	nsutils.c
+	nswalk.c
+	nsxfeval.c
+	nsxfname.c
+	nsxfobj.c
+	;
+
+local parser_src =
+	psargs.c
+	psloop.c
+	psobject.c
+	psopcode.c
+	psopinfo.c
+	psparse.c
+	psscope.c
+	pstree.c
+	psutils.c
+	pswalk.c
+	psxface.c
+	;
+
+local resources_src =
+	rsaddr.c
+	rscalc.c
+	rscreate.c
+	rsinfo.c
+	rsio.c
+	rsirq.c
+	rslist.c
+	rsmemory.c
+	rsmisc.c
+	rsserial.c
+	rsutils.c
+	rsxface.c
+	;
+
+local tables_src =
+	tbdata.c
+	tbfadt.c
+	tbfind.c
+	tbinstal.c
+	tbprint.c
+	tbutils.c
+	tbxface.c
+	tbxfload.c
+	tbxfroot.c
+	;
+
+local utilities_src =
+	utaddress.c
+	utalloc.c
+	utascii.c
+	utbuffer.c
+	utcache.c
+	utcopy.c
+	utdecode.c
+	utdebug.c
+	utdelete.c
+	uterror.c
+	uteval.c
+	utexcep.c
+	utglobal.c
+	uthex.c
+	utids.c
+	utinit.c
+	utlock.c
+	utmath.c
+	utmisc.c
+	utmutex.c
+	utnonansi.c
+	utobject.c
+	utosi.c
+	utownerid.c
+	utpredef.c
+	utresrc.c
+	utstate.c
+	utstring.c
+	utstrsuppt.c
+	utstrtoul64.c
+	uttrack.c
+	utuuid.c
+	utxface.c
+	utxferror.c
+	utxfinit.c
+	utxfmutex.c
+	;
+
+StaticLibrary libacpi_ca.a :
+	$(dispatcher_src)
+	$(events_src)
+	$(executer_src)
+	$(hardware_src)
+	$(namespace_src)
+	$(parser_src)
+	$(resources_src)
+	$(tables_src)
+	$(utilities_src)
+	;
+
+KernelAddon acpi :
+	ACPICAHaiku.cpp
+	BusManager.cpp
+	Module.cpp
+	Device.cpp
+	NamespaceDump.cpp
+	EmbeddedController.cpp
+	Call.cpp
+
+	$(arch_src)
+	:
+	libacpi_ca.a
+	;
+
+SEARCH on [ FGristFiles $(arch_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+SEARCH on [ FGristFiles $(dispatcher_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components dispatcher ] ;
+SEARCH on [ FGristFiles $(events_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components events ] ;
+SEARCH on [ FGristFiles $(executer_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components executer ] ;
+SEARCH on [ FGristFiles $(hardware_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components hardware ] ;
+SEARCH on [ FGristFiles $(namespace_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components namespace ] ;
+SEARCH on [ FGristFiles $(parser_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components parser ] ;
+SEARCH on [ FGristFiles $(resources_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components resources ] ;
+SEARCH on [ FGristFiles $(tables_src) ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components tables ] ;
+SEARCH on [ FGristFiles $(utilities_src)  ] = [ FDirName $(HAIKU_TOP) src add-ons kernel bus_managers acpi acpica components utilities ] ;

@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons locale catalogs ;
+
+# Pseudo target to build all collator addons
+NotFile LocaleKitCatalogAddons ;
+Depends LocaleKitCatalogAddons
+	:
+	<catalog-addon>plaintext
+	;
+
+SubInclude HAIKU_TOP src add-ons locale catalogs plaintext ;

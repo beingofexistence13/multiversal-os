@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src add-ons translators ppm ;
+
+AddResources PPMTranslator : PPMTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles PPMTranslator ]
+			: PPMMain.cpp PPMTranslator.cpp colorspace.cpp
+			: be translation [ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs PPMTranslator :
+	x-vnd.Haiku-PPMTranslator
+	:
+	PPMMain.cpp
+	PPMTranslator.cpp
+;

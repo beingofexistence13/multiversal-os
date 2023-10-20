@@ -1,0 +1,29 @@
+OPENRESOLV
+==========
+
+Original source can be downloaded from:
+https://github.com/NetworkConfiguration/openresolv
+
+file = openresolv-3.13.2.tar.gz
+date = 2023 June 27
+size = 21540
+SHA256 = 36b5bcbe257a940c884f0d74321a47407baabab9e265e38859851c8311f6f0b0
+
+The source is imported via a Makefile target rather than by hand.
+There is no README.DELETED for this import as it's all automated.
+
+Use "git diff vendor/OPENRESOLV contrib/openresolv" to see local modifications.
+
+The program and hook scripts are installed by 'sbin/resolvconf', and the
+configuration file is installed by 'etc/Makefile'.
+
+Upgrade notes
+-------------
+
+1. Configure
+2. Import
+4. Tailor Makefile in sbin/resolvconf to import
+
+$ ./configure
+$ make import-src DESTDIR=/usr/src/contrib/openresolv
+$ vi /usr/src/sbin/resolvconf/Makefile

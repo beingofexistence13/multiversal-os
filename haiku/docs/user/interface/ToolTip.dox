@@ -1,0 +1,276 @@
+/*
+ * Copyright 2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Adrien Destugues, pulkomandy@pulkomandy.ath.cx
+ *		Axel Dörfler, axeld@pinc-software.de
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/private/interface/ToolTip.h	hrev48560
+ *		src/kits/interface/ToolTip.cpp	hrev48560
+ */
+
+
+//! \cond INTERNAL
+
+
+/*!
+	\file ToolTip.h
+	\ingroup interface
+	\ingroup libbe
+	\brief Provides the BToolTip class.
+*/
+
+
+/*!
+	\class BToolTip
+	\ingroup interface
+	\ingroup libbe
+	\brief Displays help text on hover.
+
+	\attention Use at your own risk! This class is private and may change
+	           before release.
+
+	This class is for advanced uses of tool tips with custom contents or
+	behavior. The simple way to use tooltips is via BView::SetToolTip().
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BToolTip::BToolTip()
+	\brief Creates a new BToolTip object.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BToolTip::BToolTip(BMessage* archive)
+	\brief Creates a BToolTip object from the passed in \a archive.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BToolTip::~BToolTip()
+	\brief Frees the memory allocated and destroys the object.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BToolTip::Archive(BMessage* archive, bool deep) const
+	\brief Archives the object into the \a data message.
+
+	Saves the tool tip's sticky flag.
+
+	\param archive A pointer to the BMessage object to archive the object into.
+	\param deep Whether or not to archive child views as well.
+
+	\return A status code, \c B_OK if everything went well or an error code
+	        otherwise.
+	\retval B_OK The object was archived.
+	\retval B_NO_MEMORY Ran out of memory while archiving the object.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BToolTip::SetSticky(bool enable)
+	\brief Turns sticky flag on or off which determines whether or not the
+	       tool tip stays visible when the mouse moves.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BToolTip::IsSticky() const
+	\brief Returns whether or not the sticky flag is set.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BToolTip::SetMouseRelativeLocation(BPoint location)
+	\brief Set the location of the tooltip relative to the current mouse position.
+
+	The position is relative to the mouse cursor location at the time the
+	tool tip is shown. It should be as close as possible to the mouse cursor
+	without hiding important parts of the UI near the cursor while the parent
+	view remains visible and reachable.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BPoint BToolTip::MouseRelativeLocation() const
+	\brief Returns the tool tip's relative mouse location.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BToolTip::SetAlignment(BAlignment alignment)
+	\brief Set the alignment of the tool tip which determines where the tool
+	       tip should appear i.e. left or right from the current mouse cursor
+	       position, etc.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BAlignment BToolTip::Alignment() const
+	\brief Returns the tool tip's alignment.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BToolTip::Lock()
+	\brief Allows derived classes to lock the tool tip while modifying it.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BToolTip::Unlock()
+	\brief Allows derived classes to unlock the tool tip.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual void BToolTip::AttachedToWindow()
+	\brief Undocumented public method
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual void BToolTip::DetachedFromWindow()
+	\brief Undocumented public method
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual BView* BToolTip::View() const =0
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\class BTextToolTip
+	\ingroup interface
+	\ingroup libbe
+	\brief Undocumented class.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BTextToolTip::BTextToolTip(BMessage *archive)
+	\brief Undocumented public method
+
+	\param archive Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BTextToolTip::BTextToolTip(const char *text)
+	\brief Undocumented public method
+
+	\param text Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual BTextToolTip::~BTextToolTip()
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BTextToolTip::SetText(const char *text)
+	\brief Undocumented public method
+
+	\param text Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn const char* BTextToolTip::Text() const
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn virtual BView* BTextToolTip::View() const
+	\brief Undocumented public method
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static BTextToolTip* BTextToolTip::Instantiate(BMessage *archive)
+	\brief Undocumented public method
+
+	\param archive Undocumented
+
+	\return Undocumented
+	\retval <value> Undocumented
+
+	\since Haiku R1
+*/
+
+
+//! \endcond INTERNAL

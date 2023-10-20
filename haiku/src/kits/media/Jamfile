@@ -1,0 +1,113 @@
+SubDir HAIKU_TOP src kits media ;
+
+AddResources libmedia.so : libmedia.rdef ;
+
+UsePrivateHeaders app media shared ;
+UsePrivateHeaders [ FDirName media experimental ] ;
+UsePrivateHeaders [ FDirName interface ] ;
+
+if $(CHECK_MALLOC) {
+	SubDirC++Flags -D_NO_INLINE_ASM -fcheck-memory-usage ;
+}
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+
+		SEARCH_SOURCE += [ FDirName $(SUBDIR) experimental ] ;
+		SEARCH_SOURCE += [ FDirName $(SUBDIR) legacy ] ;
+
+		SharedLibrary [ MultiArchDefaultGristFiles libmedia.so ] :
+			# Public Media Kit
+			Buffer.cpp
+			BufferConsumer.cpp
+			BufferGroup.cpp
+			BufferProducer.cpp
+			Controllable.cpp
+			FileInterface.cpp
+			MediaAddOn.cpp
+			MediaDecoder.cpp
+			MediaDefs.cpp
+			MediaEncoder.cpp
+			MediaEventLooper.cpp
+			MediaFile.cpp
+			MediaFiles.cpp
+			MediaFormats.cpp
+			MediaNode.cpp
+			MediaRecorder.cpp
+			MediaRoster.cpp
+			MediaTheme.cpp
+			MediaTrack.cpp
+			ParameterWeb.cpp
+			PlaySound.cpp
+			RealtimeAlloc.cpp
+			Sound.cpp
+			SoundFile.cpp
+			SoundPlayer.cpp
+			TimeCode.cpp
+			TimedEventQueue.cpp
+			TimeSource.cpp
+
+			# Experimental Media Kit
+			AdapterIO.cpp
+			MediaClient.cpp
+			MediaClientDefs.cpp
+			MediaClientNode.cpp
+			MediaConnection.cpp
+			MediaIO.cpp
+			SimpleMediaClient.cpp
+
+			# Internal Functionality
+			AddOnManager.cpp
+			BufferCache.cpp
+			DataExchange.cpp
+			DefaultMediaTheme.cpp
+			DormantNodeManager.cpp
+			FormatManager.cpp
+			MediaRecorderNode.cpp
+			Notifications.cpp
+			PortPool.cpp
+			request_data.cpp
+			SharedBufferList.cpp
+			TrackReader.cpp
+			TimedEventQueuePrivate.cpp
+			TimeSourceObject.cpp
+			TimeSourceObjectManager.cpp
+			SoundPlayNode.cpp
+
+			# Old (R3) Media Kit (built only for GCC2)
+			OldAudioModule.cpp
+			OldAudioStream.cpp
+			OldBufferStream.cpp
+			OldBufferStreamManager.cpp
+			OldMediaModule.cpp
+			OldSubscriber.cpp
+
+			# Codec Plugin API
+			ChunkCache.cpp
+			DecoderPlugin.cpp
+			EncoderPlugin.cpp
+			MediaExtractor.cpp
+			MediaPlugin.cpp
+			MediaStreamer.cpp
+			MediaWriter.cpp
+			PluginManager.cpp
+			ReaderPlugin.cpp
+			StreamerPlugin.cpp
+			WriterPlugin.cpp
+
+			# Compat Media Kit
+			!missing_symbols.cpp
+			Deprecated.cpp
+			:
+			be localestub shared
+			[ TargetLibsupc++ ] [ TargetLibstdc++ ]
+			;
+	}
+}
+
+DoCatalogs libmedia.so
+	: x-vnd.Haiku-libmedia
+	:
+	MediaDefs.cpp
+	;

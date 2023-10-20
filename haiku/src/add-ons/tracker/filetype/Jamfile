@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src add-ons tracker filetype ;
+
+AddResources FileType : FileType.rdef ;
+
+Addon FileType :
+	FileType.cpp
+
+	: be tracker
+;

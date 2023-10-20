@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons media media-add-ons tone_producer_demo ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Addon [ MultiArchDefaultGristFiles tone_producer_demo.media_addon ] :
+			ToneProducerAddOn.cpp
+			ToneProducer.cpp
+			: be media [ TargetLibsupc++ ]
+		;
+	}
+}

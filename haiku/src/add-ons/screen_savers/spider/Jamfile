@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src add-ons screen_savers spider ;
+
+AddResources Spider : Spider.rdef ;
+
+UsePrivateHeaders interface ;
+
+ScreenSaver Spider :
+	Polygon.cpp
+	PolygonQueue.cpp
+	SpiderSaver.cpp
+	SpiderView.cpp
+
+	: be libscreensaver.so localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs Spider :
+	x-vnd.Haiku-SpiderScreensaver
+	:
+	SpiderSaver.cpp	
+	SpiderView.cpp
+;

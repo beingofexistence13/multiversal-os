@@ -1,0 +1,56 @@
+1	slovak	x-vnd.Haiku-Installer	3125198243
+Performing installation.	InstallProgress		Prebieha inštalácia.
+Please close the DriveSetup window before closing the Installer window.	InstallerWindow		Prosím, zatvorte okno Nastavenie diskových oblastí pred zatvorením okna Inštalátora.
+No optional packages available.	PackagesView		Nie sú dostupné žiadne voliteľné balíky.
+The mount point could not be retrieved.	InstallProgress		Nie je možné ziskať prípojný bod.
+<none>	InstallerWindow	No partition available	<žiadna>
+Please choose target	InstallerWindow		Prosím, vyberte cieľ
+Cancel	InstallProgress		Zrušiť
+Are you sure you want to to stop the installation?	InstallerWindow		Ste si istí, že chcete zastaviť inštaláciu?
+Installer	System name		Inštalátor
+Unknown Type	InstallProgress	Partition content type	Neznámy typ
+README	InstallerApp		README
+Quit	InstallerWindow		Ukončiť
+Write boot sector to '%s'	InstallerWindow		Zapísať zavádzací sektor na „%s“
+Boot sector not written because of an internal error.	InstallProgress		Zavádzací sektor nebol zapísaný z dôvodu vnútornej chyby.
+Welcome to the Haiku Installer!\n\n	InstallerApp		Vitajte v Inštalátore Haiku!\n\n
+?? of ??	InstallerWindow	Unknown progress	?? z ??
+DriveSetup, the application to configure disk partitions, could not be launched.	InstallerWindow		Nastavenie diskových oblastí, aplikáciu na konfiguráciu diskových oblastí, nebolo možné spustiť.
+Quit DriveSetup	InstallerWindow		Ukončiť Nastavenie diskových oblastí
+Write boot sector	InstallerWindow		Zapísať zavádzací sektor
+%1ld of %2ld	InstallerWindow	number of files copied	%1ld z %2ld
+Install from:	InstallerWindow		Inštalovať z:
+Additional disk space required: 0.0 KiB	InstallerWindow		Je potrebných ešte 0.0 KiB miesta.
+???	InstallerWindow	Unknown currently copied item	???
+Hide optional packages	InstallerWindow		Skryť voliteľné balíky
+???	InstallerWindow	Unknown partition name	???
+Quit	InstallerApp		Ukončiť
+OK	InstallerWindow		OK
+Try installing anyway	InstallProgress		Skúsiť inštalovať napriek tomu
+IMPORTANT INFORMATION BEFORE INSTALLING HAIKU\n\n	InstallerApp		DÔLEŽITÉ INFORMÁCIE PRED INŠTALÁCIOU HAIKU\n\n
+Additional disk space required: %s	InstallerWindow		Je potrebných ešte %s miesta.
+Stop	InstallerWindow	In alert after pressing Stop	Zastaviť
+Boot sector successfully written.	InstallProgress		Zavádzací sektor úspešne zapísaný.
+An error was encountered and the installation was not completed:\n\nError:  %s	InstallerWindow		Vyskytla sa chyba a inštalácia nebola dokončená:\n\nError:  %s
+Restart	InstallerWindow		Reštartovať
+The disk can't be mounted. Please choose a different disk.	InstallProgress		Disk nie je možné pripojiť. Prosím, zvoľte iný disk.
+Begin	InstallerWindow		Začať
+Collecting copy information.	InstallProgress		Zhromažďujú sa informácie o kopírovaní.
+Show optional packages	InstallerWindow		Zobraziť voliteľné balíky
+The destination disk may not have enough space. Try choosing a different disk or choose to not install optional items.	InstallProgress		Cieľový disk nemusí mať dostatok miesta. Skúste zvoliť iný disk alebo zvoľte neinštalovať voliteľné položky.
+Installation canceled.	InstallProgress		Inštalácia zrušená.
+Stop	InstallerWindow		Zastaviť
+Cancel	InstallerWindow		Zrušiť
+Continue	InstallerWindow	In alert after pressing Stop	Pokračovať
+Scanning for disks…	InstallerWindow		Zisťujú sa disky…
+Running DriveSetup…\n\nClose DriveSetup to continue with the installation.	InstallerWindow		Spúšťa sa Nastavenie diskových oblastí…\n\nInštalácia bude pokračovať, keď zatvoríte Nastavenie diskových oblastí.
+The partition can't be mounted. Please choose a different partition.	InstallProgress		Oblasť nie je možné pripojiť. Prosím, zvoľte inú oblasť.
+Set up partitions…	InstallerWindow		Nastaviť oblasti…
+Install progress:  	InstallerWindow		Priebeh inštalácie:  
+You can't install the contents of a disk onto itself. Please choose a different disk.	InstallProgress		Nemôžete inštalovať obsah disku na rovnaký disk. Prosím, zvoľte iný disk.
+OK	InstallProgress		OK
+Are you sure you want to install onto the current boot disk? The Installer will have to reboot your machine if you proceed.	InstallProgress		Ste si istí, že chcete vykonať inštaláciu na disk, z ktorého sa v súčasnosti zavádza systém? Ak budete pokračovať Inštalátor bude musieť reštartovať počítač.
+Onto:	InstallerWindow		Na:
+Tools	InstallerWindow		Nástroje
+scanning…	InstallerWindow		zisťuje sa…
+Continue	InstallerApp		Pokračovať

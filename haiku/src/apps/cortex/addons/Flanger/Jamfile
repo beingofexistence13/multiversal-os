@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src apps cortex addons Flanger ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps cortex addons common ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src apps cortex addons common ] ;
+
+AddResources cortex_flanger.media_addon : Resource.rdef ;
+
+Addon cortex_flanger.media_addon :
+	FlangerApp.cpp
+	FlangerAddOn.cpp
+	FlangerNode.cpp
+	AudioBuffer.cpp
+	MediaNodeControlApp.cpp
+	RawBuffer.cpp
+	SoundUtils.cpp
+	: be media localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs cortex_flanger.media_addon
+	: x-vnd.moon-Flanger.media_addon
+	:
+	FlangerAddOn.cpp
+	FlangerNode.cpp
+
+	../common/MediaNodeControlApp.cpp
+;

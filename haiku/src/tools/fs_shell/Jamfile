@@ -1,0 +1,93 @@
+SubDir HAIKU_TOP src tools fs_shell ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) headers build ] : true ;
+
+if ! $(HOST_PLATFORM_HAIKU_COMPATIBLE) {
+	UseHeaders [ FDirName $(HAIKU_TOP) headers build os ] : true ;
+	UseHeaders [ FDirName $(HAIKU_TOP) headers build os kernel ] : true ;
+	UseHeaders [ FDirName $(HAIKU_TOP) headers build os storage ] : true ;
+	UseHeaders [ FDirName $(HAIKU_TOP) headers build os support ] : true ;
+}
+
+UsePrivateHeaders fs_shell shared file_systems ;
+
+DEFINES += FS_SHELL=1 ;
+
+# prevent inclusion of HaikuBuildCompatibility.h and _BSD_SOURCE headers
+DEFINES += HAIKU_BUILD_COMPATIBILITY_H __STRICT_ANSI__ ;
+
+# platform specific sources/libraries
+local fsShellCommandSources ;
+local externalCommandsSources ;
+local fsShellCommandLibs ;
+if $(HOST_PLATFORM_HAIKU_COMPATIBLE) && $(HOST_PLATFORM) != haiku_host {
+	# BeOS compatible, but not Haiku -- use BeOS ports for communication
+	fsShellCommandSources = fs_shell_command_beos.cpp ;
+	externalCommandsSources = external_commands_beos.cpp ;
+} else {
+	# Unix or Haiku -- use FIFOs for communication
+	fsShellCommandSources = fs_shell_command_unix.cpp ;
+	externalCommandsSources = external_commands_unix.cpp ;
+}
+
+local kernelEmulationSources =
+	atomic.cpp
+	block_cache.cpp
+	byte_order.cpp
+	command_cp.cpp
+	disk_device_manager.cpp
+	driver_settings.cpp
+	errno.cpp
+	fcntl.cpp
+	fd.cpp
+	file_cache.cpp
+	file_map.cpp
+	kernel_export.cpp
+	KPath.cpp
+	hash.cpp
+	list.cpp
+	lock.cpp
+	module.cpp
+	node_monitor.cpp
+	partition_support.cpp
+	path_util.cpp
+	rootfs.cpp
+	sem.cpp
+	stat.cpp
+	stat_util.cpp
+	stdio.cpp
+	string.cpp
+	thread.cpp
+	time.cpp
+	uio.cpp
+	unistd.cpp
+	vfs.cpp
+;
+
+BuildPlatformMergeObject <build>fs_shell_kernel.o : $(kernelEmulationSources) ;
+
+BuildPlatformStaticLibrary <build>fuse_module.a :
+	$(externalCommandsSources)
+
+	fuse.cpp
+	: <build>fs_shell_kernel.o
+;
+
+BuildPlatformStaticLibrary <build>fs_shell.a :
+	$(externalCommandsSources)
+
+	fssh.cpp
+	fssh_additional_commands.cpp
+
+	: <build>fs_shell_kernel.o
+;
+
+SEARCH on [ FGristFiles rootfs.cpp ]
+	= [ FDirName $(HAIKU_TOP) src system kernel fs ] ;
+SEARCH on [ FGristFiles file_map.cpp ]
+	= [ FDirName $(HAIKU_TOP) src system kernel cache ] ;
+
+BuildPlatformMain <build>fs_shell_command
+	: fs_shell_command.cpp $(fsShellCommandSources)
+	: $(HOST_LIBSTDC++) $(HOST_LIBSUPC++) $(fsShellCommandLibs) ;
+

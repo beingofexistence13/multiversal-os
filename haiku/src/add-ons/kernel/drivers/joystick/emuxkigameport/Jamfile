@@ -1,0 +1,7 @@
+SubDir HAIKU_TOP src add-ons kernel drivers joystick emuxkigameport ;
+
+UsePrivateHeaders device ;
+
+KernelAddon emuxkigameport :
+	driver.cpp
+;

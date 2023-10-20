@@ -1,0 +1,46 @@
+SubDir HAIKU_TOP src tests add-ons kernel file_systems userlandfs bfs ;
+
+local bfsTop = [ FDirName $(HAIKU_TOP) src add-ons kernel file_systems bfs ] ;
+
+SEARCH_SOURCE += $(bfsTop) ;
+
+# set some additional defines
+{
+	local defines =
+		#BFS_BIG_ENDIAN_ONLY
+		USER=1
+	;
+
+	if $(TARGET_PACKAGING_ARCH) = x86_gcc2 {
+		# GCC2 doesn't compile BFS correctly with -O2 or more
+		OPTIM = -O1 ;
+	}
+
+	defines = [ FDefines $(defines) ] ;
+	SubDirCcFlags $(defines) ;
+	SubDirC++Flags $(defines) -fno-rtti ;
+}
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders shared ;
+#UsePrivateHeaders [ FDirName kernel disk_device_manager ] ;
+#UsePrivateHeaders [ FDirName storage ] ;
+
+Addon <userland>bfs
+	:
+	bfs_disk_system.cpp
+	BlockAllocator.cpp
+	BPlusTree.cpp
+	Attribute.cpp
+	Debug.cpp
+	Index.cpp
+	Inode.cpp
+	Journal.cpp
+	Query.cpp
+	Utility.cpp
+	Volume.cpp
+
+	kernel_interface.cpp
+
+	: libuserlandfs_haiku_kernel.so [ TargetLibsupc++ ]
+;

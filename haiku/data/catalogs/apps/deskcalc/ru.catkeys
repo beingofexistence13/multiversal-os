@@ -1,0 +1,11 @@
+1	russian	x-vnd.Haiku-DeskCalc	3258556304
+tanh	CalcView		tanh
++	CalcView		+
+Compact	CalcView		Компактный
+Calculating	CalcView		Вычисление
+Enable Num Lock on startup	CalcView		Включать Num Lock при запуске
+Scientific	CalcView		Научный
+Radians	CalcView		Радианы
+DeskCalc	System name		Калькулятор
+Degrees	CalcView		Градусы
+Basic	CalcView		Простой

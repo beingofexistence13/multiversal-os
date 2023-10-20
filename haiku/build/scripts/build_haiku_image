@@ -1,0 +1,410 @@
+#!/bin/sh
+set -o errexit
+
+# The first argument is the shell script that initializes the variables:
+# sourceDir
+# outputDir
+# tmpDir
+# addBuildCompatibilityLibDir
+# systemPackages - lists of the hpkg packages copied/updated into /system/packages
+# otherPackages - lists of the hpkg packages copied/updated into other (optional) places
+# repositories - all repository files
+# downloadDir
+# The following are only for image types:
+# installDir
+# isImage
+# imagePath
+# imageSize
+# imageLabel
+# resolvePackageDependencies
+# noDownloads
+# updateAllPackages
+# updateOnly
+# dontClearImage
+# isVMwareImage
+#
+# addattr
+# copyattr
+# getPackageDependencies
+# package
+# rc
+# rmAttrs
+# unzip
+# The following are only for image types:
+# bfsShell
+# fsShellCommand
+# makebootable
+# resattr
+# vmdkimage
+# The following is only for cd types:
+# generate_attribute_stores
+# isCD
+#
+if [ $# -gt 0 ]; then
+	. $1
+	shift
+fi
+
+if [ ! $isCD ]; then
+	# If the haiku image path is a symlink resolve it now (makebootable needs the
+	# path of the actual device path under Linux).
+	normalizedImagePath=''
+	if readlink -f "$imagePath" > /dev/null 2>&1 ; then
+		normalizedImagePath=$(readlink -f "$imagePath")
+	elif realpath "$imagePath" > /dev/null 2>&1 ; then
+		normalizedImagePath=$(realpath "$imagePath")
+	elif greadlink -f "$imagePath" > /dev/null 2>&1 ; then
+		normalizedImagePath=$(greadlink -f "$imagePath")
+	fi
+	if [ -n "$normalizedImagePath" ]; then
+		imagePath="$normalizedImagePath"
+	fi
+fi
+
+# this adds the build library dir to LD_LIBRARY_PATH
+eval "$addBuildCompatibilityLibDir"
+
+# map the shell commands
+if [ $isCD ]; then
+	outputDir=$tmpDir/cdsource
+
+	sPrefix=
+	tPrefix="$outputDir/"
+	cd=cd
+	scd=:
+	cp="$copyattr -d"
+	copyAttrs="$copyattr"
+	ln=ln
+	mkdir=mkdir
+	rm=rm
+	mkindex="mkindex -d $tPrefix"
+elif [ $isImage ]; then
+	# If FIFOs are used for the communication with the FS shell, prepare them.
+	if $fsShellCommand --uses-fifos; then
+		fifoBasePath=/tmp/build_haiku_image-$$-fifo
+		toFSShellFifo=${fifoBasePath}-to-shell
+		fromFSShellFifo=${fifoBasePath}-from-shell
+
+		rm -f $toFSShellFifo $fromFSShellFifo
+		mkfifo $toFSShellFifo $fromFSShellFifo
+
+		# Open the FIFOs such that they are ready for the fsShellCommand. This
+		# also makes sure that they remain open until this script exits. When we
+		# exit while the FS shell is still running and waiting for commands,
+		# closing of our file descriptors will break the FIFOs and the FS shell
+		# will exit, too.
+		# Note: A bit of trickery is needed since opening one end blocks until
+		# someone opens the other end.
+		sleep 3<$fromFSShellFifo 1 &
+		exec 6>$fromFSShellFifo 3<$fromFSShellFifo
+		sleep 5<$toFSShellFifo 1 &
+		exec 4>$toFSShellFifo 5<$toFSShellFifo
+
+		# Remove the FIFO files again -- we have the open FDs, so they can
+		# still be used and this makes sure they won't hang around any further.
+		rm -f $toFSShellFifo $fromFSShellFifo
+
+		# Remap the fsShellCommand and bfsShell such that they don't inherit the
+		# wrong FDs. For both fsShellCommand and bfsShell FD 3 is the input from
+		# the respectively other program, FD 4 is the output to it.
+		actualFSShellCommand="$fsShellCommand"
+		actualBFSShell="$bfsShell"
+
+		fsShellCommandWrapper()
+		{
+			$actualFSShellCommand 5>&- 6>&- "$@"
+		}
+
+		bfsShellWrapper()
+		{
+			$actualBFSShell 3>&5 4<&6 "$@"
+		}
+
+		fsShellCommand=fsShellCommandWrapper
+		bfsShell=bfsShellWrapper
+	fi
+
+	# set up the other commands
+	sPrefix=:
+	tPrefix=/myfs/
+	cd="$fsShellCommand cd"
+	scd="$fsShellCommand cd"
+	cp="$fsShellCommand cp -f"
+	copyAttrs="$fsShellCommand cp -a"
+	ln="$fsShellCommand ln"
+	mkdir="$fsShellCommand mkdir"
+	rm="$fsShellCommand rm"
+	mkindex="$fsShellCommand mkindex"
+else
+	sPrefix=
+	# TODO: This should come from the environment.
+	tPrefix="$installDir/"
+	cd=cd
+	scd=:
+	cp="$copyattr -d"
+	copyAttrs="$copyattr"
+	ln=ln
+	mkdir=mkdir
+	rm=rm
+	mkindex="mkindex -d $tPrefix"
+fi
+
+
+is_in_list()
+{
+	local element
+	for element in $2; do
+		if [ "$1" = "$element" ]; then
+			return 0
+		fi
+	done
+	return 1
+}
+
+
+extractFile()
+{
+	# extractFile <archive> <directory> <extractedSubDir>
+	archiveFile=$1
+	targetExtractedDir=$2
+	extractedSubDir=$3
+
+	extractDir=$tmpDir/extract
+	$rmAttrs -rf "$extractDir"
+	mkdir -p "$extractDir"
+
+	case "$archiveFile" in
+		*.zip)
+			echo "Extracting $archiveFile ..."
+			$unzip -q -d "$extractDir" "$archiveFile"
+			;;
+		*.tgz|*.tar.gz)
+			echo "Extracting $archiveFile ..."
+			tar -C "$extractDir" -xf "$archiveFile"
+			;;
+		*.hpkg)
+			echo "Extracting $archiveFile ..."
+			if [ -n "$extractedSubDir" ]; then
+				$package extract -C "$extractDir" "$archiveFile" \
+					"$extractedSubDir"
+			else
+				$package extract -C "$extractDir" "$archiveFile"
+			fi
+			;;
+		*)
+			echo "Unhandled archive extension in build_haiku_image" \
+				"extractFile()"
+			exit 1
+			;;
+	esac
+
+	if [ -f $extractDir/.OptionalPackageDescription ]; then
+		cat $extractDir/.OptionalPackageDescription >> $copyrightsFile
+		echo >> $copyrightsFile
+		rm $extractDir/.OptionalPackageDescription
+	fi
+
+	$cp -r "${sPrefix}$extractDir/$extractedSubDir/." \
+		"${tPrefix}$targetExtractedDir"
+
+	$rmAttrs -rf "$extractDir"
+}
+
+
+downloadFile()
+{
+	url=$1
+	path=$2
+
+	if [ ! -f "$path" ]; then
+		if [ "$noDownloads" = "1" ]; then
+			echo "ERROR: Would need to download $url, but HAIKU_NO_DOWNLOADS "
+				"is set!"
+			exit 1
+		fi
+		wget -O "$path" "$url"
+	fi
+}
+
+
+packageFileName()
+{
+	$package info -f "%fileName%" "$1"
+}
+
+
+mkdir -p $tmpDir
+copyrightsFile=$tmpDir/copyrights
+$rmAttrs -f $copyrightsFile
+
+if [ $isCD ]; then
+	# setup output dir
+	$rmAttrs -rf "$outputDir"
+	mkdir -p "$outputDir"
+fi
+
+# create the image and mount it
+if [ $isImage ]; then
+	echo
+
+	imageOffsetFlags=
+	if [ $isVMwareImage ]; then
+		imageOffsetFlags="--start-offset 65536"
+	fi
+
+	if [ ! $updateOnly ]; then
+		echo "Creating image ..."
+
+		imageFlags="-i${imageSize}M"
+		if [ ! "$dontClearImage" ]; then
+			imageFlags="$imageFlags -c"
+		fi
+
+		if [ $isVMwareImage ]; then
+			$vmdkimage -h 64k $imageFlags "$imagePath"
+		else
+			$createImage $imageFlags "$imagePath"
+		fi
+
+		$bfsShell --initialize $imageOffsetFlags "$imagePath" \
+			"$imageLabel" "block_size 2048"
+		$makebootable $imageOffsetFlags "$imagePath"
+	fi
+
+	$bfsShell -n $imageOffsetFlags "$imagePath" > /dev/null &
+	sleep 1
+
+	# Close FDs 5 and 6. Those represent the pipe ends that are used by the
+	# FS shell. Closing them in the shell process makes sure an unexpected death
+	# of the FS shell causes writing to/reading from the other ends to fail
+	# immediately.
+	exec 5>&- 6>&-
+
+	# bail out, if mounting fails
+	$cd .
+fi
+
+
+# Clean out the old packages directory, if updating all packages.
+if [ -n "$updateAllPackages" ]; then
+	echo "Removing old packages ..."
+	$rm -rf "${tPrefix}system/packages"
+	$mkdir -p "${tPrefix}system/packages"
+fi
+
+if [ ! $updateOnly ] && [ ! $isCD ]; then
+echo "Creating filesystem indices..."
+	$mkindex -t string Audio:Album
+	$mkindex -t string Audio:Artist
+	$mkindex -t string Media:Genre
+	$mkindex -t string Media:Title
+	$mkindex -t string MAIL:account
+	$mkindex -t string MAIL:cc
+	$mkindex -t string MAIL:chain
+	$mkindex -t string MAIL:from
+	$mkindex -t string MAIL:name
+	$mkindex -t string MAIL:pending_chain
+	$mkindex -t string MAIL:priority
+	$mkindex -t string MAIL:reply
+	$mkindex -t string MAIL:status
+	$mkindex -t string MAIL:subject
+	$mkindex -t string MAIL:thread
+	$mkindex -t string MAIL:to
+	$mkindex -t string META:address
+	$mkindex -t string META:city
+	$mkindex -t string META:company
+	$mkindex -t string META:county
+	$mkindex -t string META:email
+	$mkindex -t string META:fax
+	$mkindex -t string META:group
+	$mkindex -t string META:hphone
+	$mkindex -t string META:name
+	$mkindex -t string META:nickname
+	$mkindex -t string META:state
+	$mkindex -t string META:url
+	$mkindex -t string META:wphone
+	$mkindex -t string META:zip
+
+	$mkindex -t int32 Media:Rating
+	$mkindex -t int32 Media:Year
+	$mkindex -t int32 MAIL:account_id
+	$mkindex -t int32 MAIL:read
+	$mkindex -t int32 MAIL:when
+	$mkindex -t int32 MAIL:draft
+	$mkindex -t int32 MAIL:flags
+fi
+
+echo "Populating image ..."
+while [ $# -gt 0 ]; do
+	. $1
+	shift
+done
+
+
+# resolve package dependencies
+if [ -n "$resolvePackageDependencies" ]; then
+	echo "Resolving package dependencies ..."
+
+	packageUrls=`$getPackageDependencies $repositories -- $systemPackages`
+	for packageUrl in $packageUrls; do
+		packageFileName=`basename $packageUrl`
+		if [ "$otherPackages" != "${otherPackages#*$packageFileName}" ]; then
+			echo "ERROR: $packageFileName is a dependency of a package installed in /system/packages," \
+				"but it is in another (i.e. unactivated) package directory!"
+			exit 1
+		fi
+		packageFilePath="$downloadDir/$packageFileName"
+		downloadFile $packageUrl "$packageFilePath"
+		$cp "${sPrefix}$packageFilePath" "${tPrefix}system/packages"
+		systemPackages="$systemPackages $packageFilePath"
+	done
+
+	# validate dependencies of optional packages
+	packageUrls=`$getPackageDependencies $repositories -- $systemPackages $otherPackages`
+	packageFileNames=""
+	for packageUrl in $packageUrls; do
+		packageFileNames="$packageFileNames `basename $packageUrl`"
+	done
+	if [ ! -z "$packageFileNames" ]; then
+		echo "ERROR: Some of the unactivated (i.e. optional) packages have the following unmet dependencies:"
+		echo $packageFileNames
+		exit 1
+	fi
+fi
+
+# install default settings for packages
+for packageFile in $systemPackages; do
+	if $package list -p $packageFile | grep -E '^settings/' > /dev/null; then
+		extractFile $packageFile system/settings settings
+	fi
+done
+
+
+if [ $isCD ]; then
+	# generate the attribute stores
+	echo "Generating attribute stores ..."
+	$generate_attribute_stores "$tPrefix"
+
+	echo "Copying boot image ..."
+	$cp "$cdBootFloppy" "$outputDir"
+
+	if [ $(which xorriso) ]; then
+		# build the iso image using xorriso
+		echo "Building CD image..."
+		xorriso -as mkisofs -r -b `basename $cdBootFloppy` \
+			-V "$cdLabel" -o "$cdImagePath" "$tPrefix"
+	else
+		echo "you need xorriso to create a CD image."
+		exit 1
+	fi
+
+	# cleanup output dir
+	$rmAttrs -rf "$outputDir"
+fi
+
+# unmount
+if [ $isImage ]; then
+	echo "Unmounting ..."
+	$fsShellCommand sync
+	$fsShellCommand quit
+fi

@@ -1,0 +1,27 @@
+SubDir HAIKU_TOP src preferences shortcuts ;
+
+UsePrivateHeaders interface ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons input_server filters shortcut_catcher ] ;
+
+Preference Shortcuts :
+	main.cpp
+	MetaKeyStateMap.cpp
+	ShortcutsApp.cpp
+	ShortcutsWindow.cpp
+	ShortcutsSpec.cpp
+	PopUpColumn.cpp
+	EditWindow.cpp
+
+	: be localestub tracker libshortcuts_shared.a libcolumnlistview.a [ TargetLibstdc++ ]
+	: Shortcuts.rdef
+;
+
+
+DoCatalogs Shortcuts :
+	x-vnd.Haiku-Shortcuts
+	:
+	ShortcutsApp.cpp
+	ShortcutsWindow.cpp
+	ShortcutsSpec.cpp
+;
+

@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols tcp ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon tcp :
+	tcp.cpp
+	TCPEndpoint.cpp
+	BufferQueue.cpp
+	EndpointManager.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network/protocols
+	: tcp ;

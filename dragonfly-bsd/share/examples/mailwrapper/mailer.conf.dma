@@ -1,0 +1,9 @@
+#
+# Set the Mail Transfer Agent to DragonFly Mail Agent
+#
+
+sendmail	/usr/libexec/dma
+mailq		/usr/libexec/dma
+newaliases	/usr/libexec/dma
+hoststat	/usr/libexec/dma
+purgestat	/usr/libexec/dma

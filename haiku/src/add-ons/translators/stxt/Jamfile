@@ -1,0 +1,33 @@
+SubDir HAIKU_TOP src add-ons translators stxt ;
+
+UsePrivateHeaders textencoding ;
+UseHeaders [ FDirName $(HAIKU_TOP) src kits storage mime ] ;
+	# for the text identification
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources STXTTranslator : STXTTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles STXTTranslator ] :
+			STXTMain.cpp
+			STXTTranslator.cpp
+			STXTView.cpp
+			: be translation textencoding
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs STXTTranslator :
+	x-vnd.Haiku-STXTTranslator
+	:
+	STXTMain.cpp
+	STXTTranslator.cpp
+	STXTView.cpp
+;
+

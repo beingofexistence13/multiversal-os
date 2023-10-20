@@ -1,0 +1,41 @@
+SubDir HAIKU_TOP src apps installer ;
+
+UsePrivateHeaders shared storage tracker ;
+UsePrivateSystemHeaders ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) src kits tracker ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src servers launch ] ;
+
+Application Installer :
+	CopyEngine.cpp
+	EULAWindow.cpp
+	InstallerApp.cpp
+	InstallerDefs.cpp
+	InstallerWindow.cpp
+	PackageViews.cpp
+	PartitionMenuItem.cpp
+	ProgressReporter.cpp
+	UnzipEngine.cpp
+	WorkerThread.cpp
+
+	# From launch_daemon
+	Utility.cpp
+
+	: be tracker translation shared [ TargetLibstdc++ ]
+		localestub package
+	: Installer.rdef
+;
+
+SEARCH on <src!apps!installer>Utility.cpp = [
+	FDirName $(HAIKU_TOP) src servers launch ] ;
+
+DoCatalogs Installer :
+	x-vnd.Haiku-Installer
+	:
+	EULAWindow.cpp
+	InstallerApp.cpp
+	InstallerWindow.cpp
+	PackageViews.cpp
+	ProgressReporter.cpp
+	WorkerThread.cpp
+;

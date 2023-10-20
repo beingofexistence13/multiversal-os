@@ -1,0 +1,21 @@
+#!/bin/sh
+
+if [ ! -x /sbin/lvm ]; then
+	echo "ERROR: /sbin/lvm not exists or executable"
+	return 1
+fi
+
+echo "Configuring LVM volumes ..."
+
+export LVM_SYSTEM_DIR=/var/tmp/lvm2
+[ -d "$LVM_SYSTEM_DIR" ] || mkdir $LVM_SYSTEM_DIR
+
+# Scan for volume groups
+/sbin/lvm vgscan --mknodes --ignorelockingfailure &> /dev/null
+
+# Change volume availability to yes
+/sbin/lvm vgchange --ignorelockingfailure -a y > /dev/null
+
+# Get a list of volumes and display it
+LV_LIST=$( /sbin/lvm vgdisplay -C -o vg_name --noheadings 2> /dev/null )
+echo " Activated Volume Groups: $LV_LIST"

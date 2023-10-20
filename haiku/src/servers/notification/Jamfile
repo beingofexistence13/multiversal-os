@@ -1,0 +1,29 @@
+SubDir HAIKU_TOP src servers notification ;
+
+UsePrivateHeaders app notification ;
+
+Server notification_server :
+	AppGroupView.cpp
+	NotificationServer.cpp
+	NotificationView.cpp
+	NotificationWindow.cpp
+	: be translation [ TargetLibstdc++ ] libnotification.a localestub
+	: notification_server.rdef
+;
+
+DoCatalogs notification_server :
+	x-vnd.Haiku-notification_server
+	:
+	NotificationServer.cpp
+	NotificationView.cpp
+	NotificationWindow.cpp
+;
+
+# Stuff shared with the preflet
+StaticLibrary libnotification.a :
+	AppUsage.cpp
+	NotificationReceived.cpp
+	Notifications.cpp
+;
+
+Depends notification_server : libnotification.a ;

@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src tests servers app transformation ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UseHeaders [ FDirName os app ] ;
+UseHeaders [ FDirName os interface ] ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src tests servers app harness ] ;
+
+SimpleTest Transformation :
+	harness.cpp
+	main.cpp
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+	: Transformation.rdef
+	;
+
+if ( $(TARGET_PLATFORM) = libbe_test ) {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : Transformation
+		: tests!apps ;
+}

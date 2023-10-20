@@ -1,0 +1,73 @@
+# This file tells config what files go into building a kernel,
+# files marked standard are always included.
+#
+crypto/blowfish/bf_enc.c		optional	crypto
+crypto/des/des_enc.c			optional	crypto
+crypto/des/des_ecb.c			optional	crypto
+crypto/des/des_setkey.c			optional	crypto
+kern/link_elf_obj.c		standard
+vfs/smbfs/smbfs_io.c		optional	smbfs
+vfs/smbfs/smbfs_node.c		optional	smbfs
+vfs/smbfs/smbfs_smb.c		optional	smbfs
+vfs/smbfs/smbfs_subr.c		optional	smbfs
+vfs/smbfs/smbfs_vfsops.c	optional	smbfs
+vfs/smbfs/smbfs_vnops.c		optional	smbfs
+cpu/x86_64/misc/cputimer_tsc.c	standard
+platform/vkernel64/x86_64/autoconf.c	standard
+platform/vkernel64/x86_64/mp.c		standard			\
+	compile-with	"${NORMAL_C} -pthread -I/usr/include ${WERROR}"
+#
+# DDB XXX
+cpu/x86_64/misc/elf_machdep.c		standard
+cpu/x86_64/misc/lwbuf.c			standard
+cpu/x86_64/misc/in_cksum2.s		optional	inet
+cpu/x86_64/misc/in_cksum2.s		optional	inet6
+cpu/x86_64/misc/monitor.s		standard
+cpu/x86_64/misc/ktr.c			optional	ktr
+cpu/x86_64/misc/db_disasm.c		optional	ddb
+cpu/x86_64/misc/x86_64-gdbstub.c	optional	ddb
+cpu/x86_64/misc/bzeront.s		standard
+
+#
+# DOS mbr and gpt
+kern/subr_diskmbr.c			standard
+kern/subr_diskgpt.c			standard
+
+# DEVICES
+#
+dev/virtual/vkernel/cdrom/vcd.c		optional	vcd
+dev/virtual/vkernel/disk/vdisk.c	optional	vkd
+dev/virtual/vkernel/net/if_vke.c	optional	vke
+vfs/dirfs/dirfs_vnops.c			optional        dirfs
+vfs/dirfs/dirfs_vfsops.c		optional        dirfs
+vfs/dirfs/dirfs_subr.c		optional        dirfs
+
+# PLATFORM FILES
+#
+platform/vkernel64/x86_64/global.s		standard
+platform/vkernel64/x86_64/swtch.s		standard
+platform/vkernel64/x86_64/npx.c		standard
+platform/vkernel64/x86_64/db_interface.c	optional	ddb
+platform/vkernel64/x86_64/db_trace.c	optional	ddb
+platform/vkernel64/x86_64/vm_machdep.c	standard
+platform/vkernel64/x86_64/cpu_regs.c	standard
+platform/vkernel64/x86_64/userldt.c		standard
+platform/vkernel64/x86_64/tls.c		standard
+platform/vkernel64/x86_64/trap.c	standard
+platform/vkernel64/x86_64/exception.c	standard
+platform/vkernel64/x86_64/procfs_machdep.c	standard
+platform/vkernel64/x86_64/fork_tramp.s	standard
+platform/vkernel64/platform/init.c	standard
+platform/vkernel64/platform/globaldata.c	standard
+platform/vkernel64/platform/kqueue.c	standard
+platform/vkernel64/platform/shutdown.c	standard
+platform/vkernel64/platform/machintr.c	standard
+platform/vkernel64/platform/copyio.c	standard
+platform/vkernel64/platform/pmap.c	standard
+platform/vkernel64/platform/pmap_inval.c	standard
+platform/vkernel64/platform/busdma_machdep.c standard
+platform/vkernel64/platform/sysarch.c	standard
+platform/vkernel64/platform/systimer.c	standard
+platform/vkernel64/platform/console.c	standard
+platform/vkernel64/platform/ipl_funcs.c	standard
+platform/vkernel64/platform/cothread.c	standard

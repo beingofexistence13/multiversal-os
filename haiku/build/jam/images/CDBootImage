@@ -1,0 +1,51 @@
+# This file defines what ends up in the CD boot image and it executes the
+# rules building the image.
+
+#HAIKU_BOOT_FLOPPY = haiku-boot-floppy.image ;
+#MakeLocate $(HAIKU_BOOT_FLOPPY) : $(HAIKU_OUTPUT_DIR) ;
+
+# CD image target
+HAIKU_CD_BOOT_IMAGE = haiku-boot-cd.iso ;
+MakeLocate $(HAIKU_CD_BOOT_IMAGE) : $(HAIKU_OUTPUT_DIR) ;
+
+# the pseudo target all archive contents is attached to
+NotFile $(HAIKU_CD_BOOT_IMAGE_CONTAINER_NAME) ;
+
+# common extra files to put on the boot iso
+local extras = README.html ;
+SEARCH on $(extras) = [ FDirName $(HAIKU_TOP) data boot extras ] ;
+
+if $(TARGET_ARCH) = ppc {
+	local elfloader = boot_loader_openfirmware ;
+	local coffloader = haiku_loader.openfirmware ;
+
+	# OpenFirmware / Mac boot support files:
+	# CHRP script
+	local chrpscript = ofboot.chrp ;
+	# HFS creator and application type mapping for mkisofs
+	local hfsmaps = hfs.map ;
+	SEARCH on $(chrpscript) = [ FDirName $(HAIKU_TOP) data boot openfirmware ] ;
+	SEARCH on $(hfsmaps) = [ FDirName $(HAIKU_TOP) data boot openfirmware ] ;
+
+	BuildCDBootPPCImage $(HAIKU_CD_BOOT_IMAGE) : $(hfsmaps)
+		: $(elfloader) : $(coffloader) : $(chrpscript) : $(extras) ;
+} else {
+	# For other platforms, we have to check which bootloader is used. There
+	# can be multiple ones, making this a bit confusing.
+	for platform in [ MultiBootSubDirSetup ] {
+		on $(platform) {
+			if $(TARGET_BOOT_PLATFORM) = efi {
+				local efiLoader = haiku_loader.efi ;
+				local efiPartition = esp.image ;
+				MakeLocateDebug $(efiPartition) : system boot ;
+				BuildEfiSystemPartition $(efiPartition) : $(efiLoader) ;
+
+				BuildCDBootImageEFI $(HAIKU_CD_BOOT_IMAGE) : $(HAIKU_BOOT_FLOPPY)
+					: $(efiPartition) : $(extras) ;
+			}
+		}
+	}
+}
+
+NotFile haiku-boot-cd ;
+Depends haiku-boot-cd : $(HAIKU_CD_BOOT_IMAGE) ;

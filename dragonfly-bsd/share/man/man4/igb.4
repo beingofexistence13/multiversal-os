@@ -1,0 +1,462 @@
+.\" Copyright (c) 2001-2003, Intel Corporation
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright notice,
+.\"    this list of conditions and the following disclaimer.
+.\"
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" 3. Neither the name of the Intel Corporation nor the names of its
+.\"    contributors may be used to endorse or promote products derived from
+.\"    this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+.\" LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" * Other names and brands may be claimed as the property of others.
+.\"
+.\" $FreeBSD: src/share/man/man4/igb.4,v 1.2 2010/05/14 20:11:30 marius Exp $
+.\"
+.Dd December 17, 2017
+.Dt IGB 4
+.Os
+.Sh NAME
+.Nm igb
+.Nd "Intel(R) PRO/1000 PCI Express Gigabit Ethernet adapter driver"
+.Sh SYNOPSIS
+To compile this driver into the kernel,
+place the following line in your
+kernel configuration file:
+.Bd -ragged -offset indent
+.Cd "device ig_hal"
+.Cd "device igb"
+.Ed
+.Pp
+Alternatively, to load the driver as a
+module at boot time, place the following line in
+.Xr loader.conf 5 :
+.Bd -literal -offset indent
+ig_hal_load="YES"
+if_igb_load="YES"
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+driver provides support for PCI Express Gigabit Ethernet adapters based on
+the Intel
+82575,
+82576,
+82580,
+I210,
+I211,
+I350 and I354
+Ethernet controller chips.
+The
+.Nm
+driver supports:
+.Pp
+.Bl -item -offset indent -compact
+.It
+Transmit/Receive checksum offload for IP/UDP/TCP.
+.\"Jumbo Frames.
+.It
+Interrupt moderation
+.It
+TCP segmentation offload (TSO)
+.It
+Receive side scaling (RSS)
+.It
+Multiple tranmission queues
+.It
+Multiple vector MSI-X
+.It
+VLAN tag stripping and inserting
+.El
+.Pp
+If
+.Xr polling 4
+or MSI-X is used,
+by default,
+the
+.Nm
+driver will try enabling as many reception queues and transmission queues
+as are allowed by the number of CPUs in the system.
+.Pp
+If multiple transmission queues are used,
+the round-robin arbitration is performed among the transmission queues.
+It should be noted that
+if both TSO and multiple transmission queues are used,
+for 82575, the round-robin arbitration between transmission queues is done
+at the TSO packet boundary;
+for the reset of the hardware, the round-robin arbitration
+between transmission queues is done at the TCP segment boundary after
+the hardware segmentation is performed.
+.Pp
+82575 supports 4 reception queues and 4 transmission queues.
+MSI-X is not enabled due to hardware errata.
+Under MSI or legacy interrupt mode,
+2 reception queues are enabled for hardware RSS hash
+and only 1 transmission queue is enable.
+.Pp
+82576 supports 16 reception queues and 16 transmission queues.
+MSI-X is enable by default.
+However,
+due to the number of MSI-X vectors is 10,
+at most 8 reception queues and 8 transmission queues will be enabled
+under MSI-X mode.
+When
+.Xr polling 4
+is enabled on the devices,
+at most 16 reception queues and 16 transmission queues will be enabled.
+.Pp
+82580,
+I350 and I354 support 8 reception queues and 8 transmission queues.
+MSI-X is enabled by default.
+.Pp
+I210 supports 4 reception queues and 4 transmission queues.
+MSI-X is enabled by default.
+.Pp
+I211 supports 2 reception queues and 2 transmission queues.
+MSI-X is enabled by default.
+.Pp
+.\"For questions related to hardware requirements, refer to the
+.\"documentation supplied with your Intel PRO/1000 adapter.
+.\"All hardware requirements listed apply to use with
+.\".Dx .
+.\".Pp
+.\"Support for Jumbo Frames is provided via the interface MTU setting.
+.\"Selecting an MTU larger than 1500 bytes with the
+.\".Xr ifconfig 8
+.\"utility configures the adapter to receive and transmit Jumbo Frames.
+.\"The maximum MTU size for Jumbo Frames is 9216.
+.\".Pp
+The
+.Nm
+driver supports the following media types:
+.Bl -tag -width ".Cm 10baseT/UTP"
+.It Cm autoselect
+Enables auto-negotiation for speed and duplex.
+.It Cm 10baseT/UTP
+Sets 10Mbps operation.
+Use the
+.Cm mediaopt
+option to select
+.Cm full-duplex
+mode.
+.It Cm 100baseTX
+Sets 100Mbps operation.
+Use the
+.Cm mediaopt
+option to select
+.Cm full-duplex
+mode.
+.It Cm 1000baseSX
+Sets 1000Mbps operation.
+Only
+.Cm full-duplex
+mode is supported at this speed.
+.It Cm 1000baseT
+Sets 1000Mbps operation.
+Only
+.Cm full-duplex
+mode is supported at this speed.
+.El
+.Pp
+The
+.Nm
+driver supports the following media options:
+.Bl -tag -width ".Cm full-duplex"
+.It Cm full-duplex
+Forces full-duplex operation
+.It Cm half-duplex
+Forces half-duplex operation.
+.It Cm rxpause
+Enable flow control PAUSE reception.
+This is only supported by
+.Cm autoselect
+and
+.Cm full-duplex
+mode.
+.It Cm txpause
+Enable flow control PAUSE transmission.
+This is only supported by
+.Cm autoselect
+and
+.Cm full-duplex
+mode.
+.It Cm forcepause
+Force flow control PAUSE operation as configured by
+.Cm rxpause
+and
+.Cm txpause
+media options.
+.El
+.Pp
+Only use
+.Cm mediaopt
+to set the driver to
+.Cm full-duplex .
+If
+.Cm mediaopt
+is not specified, the driver defaults to
+.Cm half-duplex .
+.Pp
+For more information on configuring this device, see
+.Xr ifconfig 8 .
+The
+.Nm
+driver supports
+.Xr polling 4 .
+.Sh HARDWARE
+The
+.Nm
+driver supports Gigabit Ethernet adapters based on the Intel
+82575,
+82576,
+82580,
+I210,
+I211,
+I350 and I354
+controller chips:
+.Pp
+.Bl -bullet -compact
+.It
+Intel 82575EB Gigabit Ethernet Controller
+.It
+Intel 82576EB Gigabit Ethernet Controller
+.It
+Intel 82576NS Gigabit Ethernet Controller
+.It
+Intel 82580EB Gigabit Ethernet Controller
+.It
+Intel Ethernet Controller I350-AM2
+.It
+Intel Ethernet Controller I350-AM4
+.It
+Intel Ethernet Controller I350-BT2
+.It
+Intel Ethernet Controller I210-AS
+.It
+Intel Ethernet Controller I210-AT
+.It
+Intel Ethernet Controller I210-CS
+.It
+Intel Ethernet Controller I210-IS
+.It
+Intel Ethernet Controller I210-IT
+.It
+Intel Ethernet Controller I211-AT
+.It
+Intel Ethernet Server Adapter I210-T1
+.It
+Intel Ethernet Server Adapter I340-F4
+.It
+Intel Ethernet Server Adapter I340-T4
+.It
+Intel Ethernet Server Adapter I350-F2
+.It
+Intel Ethernet Server Adapter I350-F4
+.It
+Intel Ethernet Server Adapter I350-T2
+.It
+Intel Ethernet Server Adapter I350-T4
+.It
+Intel Gigabit EF Dual Port Server Adapter
+.It
+Intel Gigabit ET Dual Port Server Adapter
+.It
+Intel Gigabit ET Quad Port Server Adapter
+.It
+Intel Gigabit ET2 Quad Port Server Adapter
+.It
+Intel Gigabit VT Quad Port Server Adapter
+.El
+.Sh TUNABLES
+Tunables can be set at the
+.Xr loader 8
+prompt before booting the kernel or stored in
+.Xr loader.conf 5 .
+.Em X
+is the device unit number.
+.Bl -tag -width ".Va hw.igbX.irq.unshared"
+.It Va hw.igb.rxd Va hw.igbX.rxd
+Number of receive descriptors allocated by the driver.
+The default value is 512.
+The minimum is 256,
+and the maximum is 4096.
+.It Va hw.igb.txd Va hw.igbX.txd
+Number of transmit descriptors allocated by the driver.
+The default value is 1024.
+The minimum is 256,
+and the maximum is 4096.
+.It Va hw.igb.rxr Va hw.igbX.rxr
+This tunable specifies the number of reception queues could be enabled.
+Maximum allowed value for these tunables is device specific
+and it must be power of 2 aligned.
+Setting these tunables to 0 allows the driver to make
+as many reception queues ready-for-use as allowed by the number of CPUs.
+.It Va hw.igb.txr Va hw.igbX.txr
+This tunable specifies the number of transmission queues could be enabled.
+Maximum allowed value for these tunables is device specific
+and it must be power of 2 aligned.
+Setting these tunables to 0 allows the driver to make
+as many transmission queues ready-for-use as allowed by the number of CPUs.
+.It Va hw.igb.msix.enable Va hw.igbX.msix.enable
+By default,
+the driver will use MSI-X if it is supported.
+This behaviour can be turned off by setting this tunable to 0.
+.It Va hw.igb.msi.enable Va hw.igbX.msi.enable
+If MSI-X is disabled and MSI is supported,
+the driver will use MSI.
+This behavior can be turned off by setting this tunable to 0.
+.It Va hw.igbX.msi.cpu
+If MSI is used,
+it specifies the MSI's target CPU.
+.It Va hw.igbX.irq.unshared
+If legacy interrupt is used,
+by default,
+the driver assumes the interrupt could be shared.
+Setting this tunable to 1 allows the driver to perform certain
+optimization based on the knowledge that the interrupt is not shared.
+.It Va hw.igb.flow_ctrl Va hw.igbX.flow_ctrl
+The default flow control settings.
+Supported values are:
+rxpause (only enable PAUSE reception),
+txpause (only enable PAUSE transmission),
+full (enable PAUSE reception and transmission),
+none (disable flow control PAUSE operation),
+force-rxpause (force PAUSE reception),
+force-txpause (force PAUSE transmission),
+force-full (forcefully enable PAUSE reception and transmission),
+force-none (forcefully disable flow control PAUSE operation).
+Default is none.
+.El
+.Sh MIB Variables
+A number of per-interface variables are implemented in the
+.Va dev.igb. Ns Em X
+branch of the
+.Xr sysctl 3
+MIB.
+.Bl -tag -width "rxtx_intr_rate"
+.It Va rxr
+Number of reception queues could be enabled (read-only).
+Use the tunable
+.Va hw.igb.rxr
+or
+.Va hw.igbX.rxr
+to configure it.
+.It Va rxr_inuse
+Number of reception queues being used (read-only).
+.It Va txr
+Number of transmission queues could be enabled (read-only).
+Use the tunable
+.Va hw.igb.txr
+or
+.Va hw.igbX.txr
+to configure it.
+.It Va txr_inuse
+Number of transmission queues being used (read-only).
+.It Va rxd
+Number of descriptors per reception queue (read-only).
+Use the tunable
+.Va hw.igb.rxd
+or
+.Va hw.igbX.rxd
+to configure it.
+.It Va txd
+Number of descriptors per transmission queue (read-only).
+Use the tunable
+.Va hw.igb.txd
+or
+.Va hw.igbX.txd
+to configure it.
+.It Va rxtx_intr_rate
+If MSI or legacy interrupt is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the device.
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which aggregate transmission queue and reception queue procecssing.
+It is 6000 by default (~150us).
+.It Va rx_intr_rate
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which only process reception queue.
+It is 6000 by default (~150us).
+.It Va tx_intr_rate
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which only process transmission queue.
+It is 4000 by default (250us).
+.It Va sts_intr_rate
+If MSI-X is used,
+this sysctl controls the highest possible frequency
+that interrupt could be generated by the MSI-X vectors,
+which only process chip status changes.
+It is 6000 by default (~150us).
+.It Va tx_intr_nsegs
+Transmission interrupt is asked to be generated upon every
+.Va tx_intr_nsegs
+transmission descritors having been setup.
+The default value is 1/16 of the number of transmission descriptors per queue.
+.It Va tx_wreg_nsegs
+The number of transmission descriptors should be setup
+before the hardware register is written.
+Setting this value too high will have negative effect
+on transmission timeliness.
+Setting this value too low will hurt overall transmission performance
+due to the frequent hardware register writing.
+The default value is 8.
+.It Va rx_wreg_nsegs
+The number of reception descriptors should be setup
+before the hardware register is written.
+Setting this value too high will make device drop incoming packets.
+Setting this value too low will hurt overall reception performance
+due to the frequent hardware register writing.
+The default value is 32.
+.El
+.\".Sh SUPPORT
+.\"For general information and support,
+.\"go to the Intel support website at:
+.\".Pa http://support.intel.com .
+.\".Pp
+.\"If an issue is identified with the released source code on the supported kernel
+.\"with a supported adapter, email the specific information related to the
+.\"issue to
+.\".Aq Mt freebsdnic@mailbox.intel.com .
+.Sh SEE ALSO
+.Xr altq 4 ,
+.Xr arp 4 ,
+.Xr ifmedia 4 ,
+.Xr netintro 4 ,
+.Xr ng_ether 4 ,
+.Xr polling 4 ,
+.Xr vlan 4 ,
+.Xr ifconfig 8
+.Sh HISTORY
+The
+.Nm
+device driver first appeared in
+.Fx 7.1 .
+.Sh AUTHORS
+The
+.Nm
+driver was written by
+.An Intel Corporation Aq Mt freebsdnic@mailbox.intel.com .

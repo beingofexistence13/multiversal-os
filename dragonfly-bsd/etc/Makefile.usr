@@ -1,0 +1,222 @@
+# Makefile.usr - installed as /usr/Makefile
+#
+# Provides simple targets to download and maintain /usr/src, /usr/dports etc.
+
+# DragonFly BSD source repository
+GITURL_SRC?=git://git.dragonflybsd.org/dragonfly.git
+# DragonFly BSD projects repository
+GITURL_PROJECTS?=git://git.dragonflybsd.org/projects.git
+# Branch to be fetched & checked out
+# * master - latest development branch
+# * DragonFly_RELEASE_x_y - stable release branch x.y
+BRANCH?=master
+BRANCH_PROJECTS?=master
+
+# DPorts source repository
+GITURL_DPORTS?=git://mirror-master.dragonflybsd.org/dports.git
+
+# Mirror from which to fetch the pkg bootstrap
+MIRROR?=https://mirror-master.dragonflybsd.org
+
+DPDLURL=https://api.github.com/repos/DragonFlyBSD/DPorts/tarball/
+PKGBOOT_VERSION=04
+PKGBOOT_x86_64=bootstrap_pkg_${PKGBOOT_VERSION}_x86-64.tar.xz
+PKGBOOT=${MIRROR}/dports/bootstraps/${PKGBOOT_${MACHINE_ARCH}}
+WSTARS="***************************************************************"
+WARNPS="  Warning: Delete or move ${.CURDIR}/pkg before building any dport!"
+LPATT="   make %-23s- %s\n"
+
+help all:
+	@echo "HELP:"
+	@echo
+.if exists(${.CURDIR}/dports/.git)
+	@printf ${LPATT} "dports-update"         "update your dports repository from the net"
+.else
+.  if exists(${.CURDIR}/dports)
+	@printf ${LPATT} "dports-replace"        "Replace dports with latest tarball (Github)"
+.  else
+	@printf ${LPATT} "dports-create"         "fetch initial dports repository from the net"
+	@printf ${LPATT} "dports-create-shallow" "fetch initial history-free dports repository"
+	@printf ${LPATT} "dports-download"       "download & install dports tarball (Github)"
+.  endif
+.endif
+	@echo
+	@printf ${LPATT} "pkg-bootstrap"	"Use pre-built pkg to install dports packages"
+	@printf ${LPATT} "pkg-bootstrap-force"	"Force it (pkg.conf will be overwritten)"
+	@echo
+
+.if exists(${.CURDIR}/src/.git)
+	@printf ${LPATT} "src-update"         "update your src repository from the net"
+.else
+	@printf ${LPATT} "src-create"         "fetch initial src repository from the net"
+	@printf ${LPATT} "src-create-shallow" "fetch initial history-free src repository"
+.endif
+.if exists(${.CURDIR}/projects/.git)
+	@printf ${LPATT} "projects-update"         "update your projects repository from the net"
+.else
+	@printf ${LPATT} "projects-create"         "fetch initial projects repository from the net"
+	@printf ${LPATT} "projects-create-shallow" "fetch initial history-free projects repository"
+.endif
+	@echo
+.if exists(${.CURDIR}/src-sys.tar.bz2)
+	@printf ${LPATT} "release-sys-extract" "extract the pre-packaged sys-only sources"
+	@echo
+.endif
+	@echo "src checkout branch: ${BRANCH}"
+
+git-check:
+	@/usr/bin/which -s git || \
+		(echo "git must be present on the system to use this option."; /usr/bin/false)
+
+src-check: git-check
+	@/bin/test ! -d ${.CURDIR}/src/.git || \
+		(echo "Error: ${.CURDIR}/src already exists"; /usr/bin/false)
+
+projects-check: git-check
+	@/bin/test ! -d ${.CURDIR}/projects/.git || \
+		(echo "Error: ${.CURDIR}/projects already exists"; /usr/bin/false)
+
+src-check-hasdir: git-check
+	@/bin/test -d ${.CURDIR}/src/.git || \
+		(echo "Error: ${.CURDIR}/src does not exist"; /usr/bin/false)
+
+src-create: src-check
+	@echo "If problems occur you may have to 'rm -rf src' and try again."
+	@echo
+	git clone --branch ${BRANCH} -- ${GITURL_SRC} ${.CURDIR}/src
+
+src-create-shallow: src-check
+	@echo "If problems occur you may have to 'rm -rf src' and try again."
+	@echo
+	git clone --depth 1 --branch ${BRANCH} -- ${GITURL_SRC} ${.CURDIR}/src
+
+projects-create: projects-check
+	@echo "If problems occur you may have to 'rm -rf projects' and try again."
+	@echo
+	git clone --branch ${BRANCH_PROJECTS} -- ${GITURL_PROJECTS} ${.CURDIR}/projects
+
+projects-create-shallow: projects-check
+	@echo "If problems occur you may have to 'rm -rf projects' and try again."
+	@echo
+	git clone --depth 1 --branch ${BRANCH_PROJECTS} -- ${GITURL_PROJECTS} ${.CURDIR}/projects
+
+src-update: src-check-hasdir
+	cd ${.CURDIR}/src && git pull --ff-only
+	@echo
+	@echo "To automate, feel free to run this task from cron(8)."
+
+projects-update: projects-check-hasdir
+	cd ${.CURDIR}/projects && git pull --ff-only
+	@echo
+	@echo "To automate, feel free to run this task from cron(8)."
+
+.if exists(${.CURDIR}/src-sys.tar.bz2)
+release-sys-extract:
+	cd ${.CURDIR} && tar xvpjf src-sys.tar.bz2
+.endif
+
+dports-check: git-check
+	@/bin/test ! -d ${.CURDIR}/dports/.git || \
+		   (echo "Error: ${.CURDIR}/dports already exists"; /usr/bin/false)
+
+dports-check-hasdir: git-check
+	@/bin/test -d ${.CURDIR}/dports/.git || \
+		   (echo "Error: ${.CURDIR}/dports does not exist"; /usr/bin/false)
+
+dports-create: dports-check
+	@echo "If problems occur you may have to 'rm -rf dports' and try again."
+	@echo
+	git clone ${GITURL_DPORTS} ${.CURDIR}/dports
+.if exists(${.CURDIR}/pkg)
+	@echo ${WSTARS}
+	@echo ${WARNPS}
+	@echo ${WSTARS}
+.endif
+
+dports-create-shallow: dports-check
+	@echo "If problems occur you may have to 'rm -rf dports' and try again."
+	@echo
+	git clone --depth 1 ${GITURL_DPORTS} ${.CURDIR}/dports
+.if exists(${.CURDIR}/pkg)
+	@echo ${WSTARS}
+	@echo ${WARNPS}
+	@echo ${WSTARS}
+.endif
+
+dports-update: dports-check-hasdir
+	cd ${.CURDIR}/dports && git pull --ff-only
+	@echo
+	@echo "To automate, feel free to run this task from cron(8)."
+
+dports-download:
+.if exists(${.CURDIR}/dports)
+	@echo "Error: ${.CURDIR}/dports already exists"
+	@/usr/bin/false
+.endif
+	mkdir ${.CURDIR}/dports
+	fetch -o - ${DPDLURL} | \
+		tar -xf - -C ${.CURDIR}/dports --strip-components 1
+.if exists(${.CURDIR}/pkg)
+	@echo ${WSTARS}
+	@echo ${WARNPS}
+	@echo ${WSTARS}
+.endif
+
+# NOTE: Ignore error from rm -rf because /usr/dports might be
+#	a null-mount.  Be safe, do not wildcard /usr/dports/*.
+#
+dports-replace:
+.if exists(${.CURDIR}/dports/.git)
+	@echo "Error: ${.CURDIR}/dports is a git repository currently."
+	@echo "Remove ${.CURDIR}/dports and execute 'make dports-download' if you want"
+	@echo "to convert to a non-git version."
+	@/usr/bin/false
+.else
+	-rm -rf ${.CURDIR}/dports
+	[ -d "${.CURDIR}/dports" ] || mkdir ${.CURDIR}/dports
+	fetch -o - ${DPDLURL} | \
+		tar -xf - -C ${.CURDIR}/dports --strip-components 1
+.endif
+
+PKG_ENV=
+.if !exists(/etc/ssl/cert.pem)  # from port 'security/ca_root_nss'
+# Disable SSL verification for fetch(1) and pkg-static(8)
+PKG_ENV+=	SSL_NO_VERIFY_PEER=1
+.endif
+.if defined(ABIVERS)
+PKG_ENV+=	ABI=${ABIVERS}
+.endif
+
+pkg-bootstrap-fetch:
+	${PKG_ENV} fetch -o - ${PKGBOOT} | \
+		tar -xf - -C ${.CURDIR}/local
+
+# This is a bit problematic
+#
+pkg-bootstrap-install:
+	${PKG_ENV} ${.CURDIR}/local/sbin/pkg-static \
+		install -y ${PKG_FLAGS} pkg ca_root_nss
+	[ -f ${.CURDIR}/local/etc/pkg/repos/df-latest.conf ] || \
+		cp -f ${.CURDIR}/local/etc/pkg/repos/df-latest.conf.sample \
+		${.CURDIR}/local/etc/pkg/repos/df-latest.conf \
+
+pkg-bootstrap:
+.if exists(${.CURDIR}/local/sbin/pkg)
+	@echo "Error: Bootstrap not necessary, ${.CURDIR}/local/sbin/pkg already exists"
+	@/usr/bin/false
+.elif exists(${.CURDIR}/local/etc/pkg.conf)
+	@echo "Error: ${.CURDIR}/local/etc/pkg.conf will be overwritten"
+	@echo "Please move this file and rerun 'make pkg-bootstrap'"
+	@/usr/bin/false
+.else
+	@(cd ${.CURDIR} && make pkg-bootstrap-fetch)
+	@(cd ${.CURDIR} && make pkg-bootstrap-install)
+.endif
+
+# NOTE: In force mode we also have to remove any old pkg.conf
+#	which might interfere with the newer pkg bootstrap.
+#
+pkg-bootstrap-force:
+	rm -f ${.CURDIR}/local/etc/pkg.conf
+	@(cd ${.CURDIR} && make pkg-bootstrap-fetch)
+	@(cd ${.CURDIR} && make pkg-bootstrap-install PKG_FLAGS="-f")

@@ -1,0 +1,37 @@
+GNU NCURSES 6.2
+===============
+
+Original source can be downloaded from:
+http://ftp.gnu.org/pub/gnu/ncurses
+
+file = ncurses-6.2.tar.gz
+date = 12 February 2020
+size = 3425862
+sha1 = 56e410fb77f2b5501a0b2f6a995376f3cefe1097
+
+A list of files and directories removed is in README.DELETED.
+
+Use "git diff vendor/NCURSES contrib/ncurses" to see local modifications.
+
+Configuring ncurses is tricky a bit because both ncurses and ncursesw
+have to be configured, and both into the same set of .h files.
+To distinguish one from the other, ENABLE_WIDEC is defined and activated
+later from Makefiles via -DENABLE_WIDEC.
+
+Basically, vendor configure script has to be run twice with these common
+options:
+
+	--enable-const
+	--with-sysmouse
+	--enable-termcap
+	--enable-bsdpad
+	--enable-getcap
+	--with-default-terminfo-dir=/usr/share/terminfo
+	--with-terminfo-dirs=/usr/share/terminfo
+
+First run with --disable-widec, second run with --enable-widec. Generated
+content from ./include/ directory has to be saved elsewhere between runs.
+Then carefully compare the outputs and apply appropriately into
+lib/libncurses/include/ on master branch. Special attention has to be paid
+to 'if 0' and 'if 1' directives in curses.head and MKterm.h.awk - ncurses'
+configure uses this to define different content to disable or enable widec.

@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src apps remotedesktop ;
+
+local defines = [ FDefines CLIENT_COMPILE ] ;
+local serverDir = [ FDirName $(HAIKU_TOP) src servers app drawing interface
+	remote ] ;
+
+SubDirC++Flags $(defines) ;
+
+UsePrivateHeaders interface shared ;
+UseHeaders $(serverDir) ;
+
+Application RemoteDesktop :
+	RemoteDesktop.cpp
+	RemoteMessage.cpp
+	RemoteView.cpp
+
+	NetReceiver.cpp
+	NetSender.cpp
+	StreamingRingBuffer.cpp
+
+	: be bnetapi [ TargetLibsupc++ ]
+	: RemoteDesktop.rdef
+;
+
+SEARCH on [ FGristFiles NetReceiver.cpp NetSender.cpp RemoteMessage.cpp
+	StreamingRingBuffer.cpp ] = $(serverDir) ;

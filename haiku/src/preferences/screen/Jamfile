@@ -1,0 +1,37 @@
+SubDir HAIKU_TOP src preferences screen ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UsePrivateHeaders [ FDirName graphics common ] ;
+UsePrivateHeaders [ FDirName graphics radeon ] ;
+UsePrivateHeaders interface preferences ;
+
+Preference Screen :
+	AlertWindow.cpp
+	MonitorView.cpp
+	multimon.cpp
+	RefreshSlider.cpp
+	RefreshWindow.cpp
+	ScreenApplication.cpp
+	ScreenMode.cpp
+	ScreenSettings.cpp
+	ScreenWindow.cpp
+	Utility.cpp
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ] localestub libaccelerantscommon.a
+	: Screen.rdef
+	;
+
+if $(TARGET_PLATFORM) = libbe_test {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : Screen
+		: tests!apps ;
+}
+
+DoCatalogs Screen :
+	x-vnd.Haiku-Screen
+	:
+	AlertWindow.cpp
+	RefreshSlider.cpp
+	RefreshWindow.cpp
+	ScreenApplication.cpp
+	ScreenWindow.cpp
+	;

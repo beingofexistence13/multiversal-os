@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src add-ons kernel drivers ports pc_serial ;
+
+UsePrivateHeaders libroot ;
+UsePrivateKernelHeaders ;
+UseHeaders [ FDirName $(HAIKU_TOP) headers os drivers tty ] : true ;
+
+SubDirC++Flags -fno-rtti ;
+
+KernelAddon pc_serial :
+	Driver.cpp
+	SerialDevice.cpp
+	Tracing.cpp
+;
+
+#AddResources pc_serial : pc_serial.rdef ;

@@ -1,0 +1,138 @@
+SubDir HAIKU_TOP src add-ons kernel file_systems packagefs ;
+
+
+UseBuildFeatureHeaders zlib ;
+UsePrivateKernelHeaders ;
+UsePrivateHeaders package shared storage support file_systems ;
+
+local zstdKernelLib ;
+
+if [ FIsBuildFeatureEnabled zstd ] {
+	zstdKernelLib = kernel_libzstd.a ;
+	UseBuildFeatureHeaders zstd ;
+	Includes [ FGristFiles $(zstdSources) ]
+		: [ BuildFeatureAttribute zstd : headers ] ;
+	SubDirC++Flags -DZSTD_ENABLED ;
+}
+
+local subDirs =
+	indices
+	nodes
+	package
+	package_links
+	resolvables
+	util
+	volume
+;
+SEARCH_SOURCE += $(subDirs:D=$(SUBDIR)) ;
+
+
+HAIKU_PACKAGE_FS_SOURCES =
+	AttributeCookie.cpp
+	AttributeDirectoryCookie.cpp
+	AttributeIndex.cpp
+	AutoPackageAttributeDirectoryCookie.cpp
+	AutoPackageAttributes.cpp
+	CachedDataReader.cpp
+	Dependency.cpp
+	Directory.cpp
+	EmptyAttributeDirectoryCookie.cpp
+	Index.cpp
+	IndexedAttributeOwner.cpp
+	kernel_interface.cpp
+	LastModifiedIndex.cpp
+	NameIndex.cpp
+	Node.cpp
+	NodeListener.cpp
+	OldUnpackingNodeAttributes.cpp
+	Query.cpp
+	Package.cpp
+	PackageDirectory.cpp
+	PackageFile.cpp
+	PackageFSRoot.cpp
+	PackageLeafNode.cpp
+	PackageLinkDirectory.cpp
+	PackageLinksDirectory.cpp
+	PackageLinksListener.cpp
+	PackageLinkSymlink.cpp
+	PackageNode.cpp
+	PackageNodeAttribute.cpp
+	PackagesDirectory.cpp
+	PackageSettings.cpp
+	PackageSymlink.cpp
+	Resolvable.cpp
+	ResolvableFamily.cpp
+	SizeIndex.cpp
+	String.cpp
+	StringConstants.cpp
+	StringPool.cpp
+	UnpackingAttributeCookie.cpp
+	UnpackingAttributeDirectoryCookie.cpp
+	UnpackingDirectory.cpp
+	UnpackingLeafNode.cpp
+	UnpackingNode.cpp
+	Version.cpp
+	Volume.cpp
+;
+
+HAIKU_PACKAGE_FS_SHARED_SOURCES =
+	QueryParserUtils.cpp
+	DebugSupport.cpp
+;
+
+HAIKU_PACKAGE_FS_PACKAGE_READER_SOURCES =
+	DataReader.cpp
+	ErrorOutput.cpp
+	FDDataReader.cpp
+	HPKGDefs.cpp
+	PackageContentHandler.cpp
+	PackageData.cpp
+	PackageDataReader.cpp
+	PackageEntry.cpp
+	PackageEntryAttribute.cpp
+	PackageFileHeapAccessorBase.cpp
+	PackageFileHeapReader.cpp
+	PackageReaderImpl.cpp
+	ReaderImplBase.cpp
+;
+
+Includes [ FGristFiles ZlibCompressionAlgorithm.cpp ]
+	: [ BuildFeatureAttribute zlib : headers ] ;
+
+local libSharedSources =
+	NaturalCompare.cpp
+;
+
+local storageKitSources =
+	FdIO.cpp
+;
+
+local supportKitSources =
+	CompressionAlgorithm.cpp
+	ZlibCompressionAlgorithm.cpp
+	ZstdCompressionAlgorithm.cpp
+;
+
+KernelAddon packagefs
+	:
+	$(HAIKU_PACKAGE_FS_SOURCES)
+	$(HAIKU_PACKAGE_FS_SHARED_SOURCES)
+	$(HAIKU_PACKAGE_FS_PACKAGE_READER_SOURCES)
+	$(libSharedSources)
+	$(storageKitSources)
+	$(supportKitSources)
+
+	: kernel_libz.a $(zstdKernelLib)
+;
+
+
+SEARCH on [ FGristFiles $(HAIKU_PACKAGE_FS_SHARED_SOURCES) ]
+	+= [ FDirName $(HAIKU_TOP) src add-ons kernel file_systems shared ] ;
+SEARCH on [ FGristFiles $(HAIKU_PACKAGE_FS_PACKAGE_READER_SOURCES) ]
+	+= [ FDirName $(HAIKU_TOP) src kits package hpkg ] ;
+SEARCH on [ FGristFiles $(libSharedSources) ]
+	+= [ FDirName $(HAIKU_TOP) src build libshared ] ;
+SEARCH on [ FGristFiles $(storageKitSources) ]
+	+= [ FDirName $(HAIKU_TOP) src kits storage ] ;
+SEARCH on [ FGristFiles $(supportKitSources) ]
+	+= [ FDirName $(HAIKU_TOP) src kits support ] ;

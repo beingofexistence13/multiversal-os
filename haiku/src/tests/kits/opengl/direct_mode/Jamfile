@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src tests kits opengl direct_mode ;
+UseBuildFeatureHeaders mesa ;
+UseBuildFeatureHeaders glu ;
+
+local sources =
+	GLDirectMode.cpp
+;
+
+Includes [ FGristFiles $(sources) ]
+	:
+	[ BuildFeatureAttribute mesa : headers ]
+	[ BuildFeatureAttribute glu : headers ]
+;
+
+SimpleTest GLDirectMode :
+	$(sources)
+	:
+	be game [ TargetLibsupc++ ]
+	[ BuildFeatureAttribute mesa : library ]
+	[ BuildFeatureAttribute glu : library ]
+	: GLDirectMode.rdef
+;

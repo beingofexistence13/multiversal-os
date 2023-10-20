@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src add-ons kernel network stack ;
+
+UseHeaders $(TARGET_PRIVATE_KERNEL_HEADERS) : true ;
+UsePrivateHeaders net shared ;
+
+KernelAddon stack :
+	ancillary_data.cpp
+	datalink.cpp
+	device_interfaces.cpp
+	domains.cpp
+	interfaces.cpp
+	net_buffer.cpp
+	net_socket.cpp
+	notifications.cpp
+	link.cpp
+	#radix.c
+	routes.cpp
+	stack.cpp
+	stack_interface.cpp
+	utility.cpp
+
+	# for test purposes
+	#simple_net_buffer.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network
+	: stack ;

@@ -1,0 +1,122 @@
+SubDir HAIKU_TOP src apps devices ;
+
+UsePrivateHeaders shared ;
+UsePrivateHeaders interface ;
+UsePrivateKernelHeaders ;
+UsePrivateSystemHeaders ;
+
+
+rule ISAPnPHeaderGen
+{
+	SEARCH on $(2) = $(SEARCH_SOURCE) ;
+	SEARCH on $(3) = $(SEARCH_SOURCE) ;
+
+	Depends $(1) : $(2) $(3) ;
+	MakeLocateArch $(<) ;
+	ISAPnPHeaderGen1 $(1) : $(2) $(3) ;
+	LocalClean clean : $(<) ;
+}
+
+actions ISAPnPHeaderGen1
+{
+	grep '^PNP[[:xdigit:]][[:xdigit:]][[:xdigit:]][[:xdigit:]] '  $(2[1]) \
+| awk -f $(2[2]) > $(1) ;
+}
+
+ISAPnPHeaderGen [ FGristFiles isapnpids.h ] : isapnp_devids.txt : devlist2h.awk ;
+
+rule PCIHeaderGen
+{
+	SEARCH on $(3) = $(SEARCH_SOURCE) ;
+
+	Depends $(1) : $(2) $(3) ;
+	MakeLocateArch $(<) ;
+	PCIHeaderGen1 $(1) : $(2) $(3) ;
+	LocalClean clean : $(<) ;
+}
+
+actions PCIHeaderGen1
+{
+	awk -v HEADERFILE=$(1) -f $(2[2]) $(2[1])
+}
+
+local pciidsFile = pci.ids ;
+SEARCH on $(pciidsFile) = [ FDirName $(HAIKU_TOP) src data ids ] ;
+
+PCIHeaderGen [ FGristFiles pcihdr.h ] : $(pciidsFile) : pci-header.awk ;
+
+rule USBHeaderGen
+{
+	SEARCH on $(3) = $(SEARCH_SOURCE) ;
+
+	Depends $(1) : $(2) $(3) ;
+	MakeLocateArch $(<) ;
+	USBHeaderGen1 $(1) : $(2) $(3) ;
+	LocalClean clean : $(<) ;
+}
+
+actions USBHeaderGen1
+{
+	awk -v HEADERFILE=$(1) -f $(2[2]) $(2[1])
+}
+
+local usbidsFile = usb.ids ;
+SEARCH on $(usbidsFile) = [ FDirName $(HAIKU_TOP) src data ids ] ;
+
+USBHeaderGen [ FGristFiles usbhdr.h ] : $(usbidsFile) : usb-header.awk ;
+
+rule ACPIPnPHeaderGen
+{
+	SEARCH on $(2) = $(SEARCH_SOURCE) ;
+
+	Depends $(1) : $(2) $(3) ;
+	MakeLocateArch $(<) ;
+	ACPIPnPHeaderGen1 $(1) : $(2) $(3) ;
+	LocalClean clean : $(<) ;
+}
+
+actions ACPIPnPHeaderGen1
+{
+	awk -f $(2[1]) $(2[2-]) > $(1) ;
+}
+
+# files can be updated so:
+# curl --fail -L -o acpi_id_registry.html 'https://uefi.org/uefi-acpi-export'
+# curl --fail -L -o pnp_id_registry.html 'https://uefi.org/uefi-pnp-export'
+local acpiidsFiles = acpi_id_registry.html pnp_id_registry.html ;
+SEARCH on $(acpiidsFiles) = [ FDirName $(HAIKU_TOP) src data ids ] ;
+
+ACPIPnPHeaderGen [ FGristFiles acpipnpids.h ]
+	:  acpipnplist2h.awk : $(acpiidsFiles) ;
+
+Application Devices :
+	DevicesApplication.cpp
+	DevicesView.cpp
+	dm_wrapper.c
+	DeviceACPI.cpp
+	DevicePCI.cpp
+	DeviceSCSI.cpp
+	DeviceUSB.cpp
+	Device.cpp
+	PropertyList.cpp
+	: be libcolumnlistview.a tracker [ TargetLibsupc++ ]
+		[ TargetLibstdc++ ]	localestub
+	: Devices.rdef
+;
+
+DoCatalogs Devices :
+	x-vnd.Haiku-Devices
+	:
+	DevicesApplication.cpp
+	DevicesView.cpp
+	DevicePCI.cpp
+	PropertyList.cpp
+	DeviceACPI.cpp
+	DeviceSCSI.cpp
+	Device.cpp
+;
+
+Includes [ FGristFiles DeviceACPI.cpp ] : [ FGristFiles acpipnpids.h ] ;
+Includes [ FGristFiles DevicePCI.cpp ] : [ FGristFiles pcihdr.h ] ;
+Includes [ FGristFiles DeviceUSB.cpp ] : [ FGristFiles usbhdr.h ] ;
+

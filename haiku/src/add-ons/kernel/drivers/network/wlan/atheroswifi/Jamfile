@@ -1,0 +1,201 @@
+SubDir HAIKU_TOP src add-ons kernel drivers network wlan atheroswifi ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src libs compat freebsd_network compat ]
+	: true ;
+UseHeaders [ FDirName $(HAIKU_TOP) src libs compat freebsd_wlan ] : true ;
+UsePrivateHeaders net system ;
+UsePrivateKernelHeaders ;
+
+SubDirCcFlags [ FDefines _KERNEL=1 FBSD_DRIVER=1 _XOPEN_SOURCE ]
+	-Wno-format
+	-Wno-unused
+	-Wno-uninitialized ;
+
+UseHeaders [ FDirName $(SUBDIR) ] : true ;
+UseHeaders [ FDirName $(SUBDIR) dev ath ath_hal ] : true ;
+UseHeaders [ FDirName $(SUBDIR) contrib ath_hal ] : true ;
+
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ] ;
+
+Depends atheroswifi : atheroswifi_hal.o ;
+Depends atheroswifi : atheroswifi_rate.o ;
+
+KernelAddon atheroswifi :
+	glue.c
+
+	if_ath.c
+	if_ath_beacon.c
+	if_ath_btcoex.c
+	if_ath_btcoex_mci.c
+	if_ath_descdma.c
+	if_ath_ioctl.c
+	if_ath_pci.c
+	if_ath_led.c
+	if_ath_lna_div.c
+	if_ath_keycache.c
+	if_ath_sysctl.c
+	if_ath_rx.c
+	if_ath_rx_edma.c
+	if_ath_spectral.c
+	if_ath_tdma.c
+	if_ath_tx.c
+	if_ath_tx_edma.c
+	if_ath_tx_ht.c
+
+	atheroswifi_hal.o
+	atheroswifi_rate.o
+	:
+	freebsd_wlan.a
+	libfreebsd_network.a
+	;
+
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar5210 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar5211 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar5212 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar5312 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar5416 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar9001 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar9002 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_hal ar9003 ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_dfs null ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) contrib ath_hal ar9300 ] ;
+
+KernelMergeObject atheroswifi_hal.o :
+	ah_osdep.c
+	ah.c
+	ah_regdomain.c
+	ah_eeprom_9287.c
+	ah_eeprom_v3.c
+
+	# AR5210 support
+	ah_eeprom_v1.c
+	ar5210_attach.c
+	ar5210_beacon.c
+	ar5210_interrupts.c
+	ar5210_keycache.c
+	ar5210_misc.c
+	ar5210_phy.c
+	ar5210_power.c
+	ar5210_recv.c
+	ar5210_reset.c
+	ar5210_xmit.c
+
+	# AR5211 support
+	ar5211_attach.c
+	ar5211_beacon.c
+	ar5211_interrupts.c
+	ar5211_keycache.c
+	ar5211_misc.c
+	ar5211_phy.c
+	ar5211_power.c
+	ar5211_recv.c
+	ar5211_reset.c
+	ar5211_xmit.c
+
+	# AR5212 support
+	ar5212_ani.c
+	ar5212_attach.c
+	ar5212_beacon.c
+	ar5212_eeprom.c
+	ar5212_gpio.c
+	ar5212_interrupts.c
+	ar5212_keycache.c
+	ar5212_misc.c
+	ar5212_phy.c
+	ar5212_power.c
+	ar5212_recv.c
+	ar5212_reset.c
+	ar5212_rfgain.c
+	ar5212_xmit.c
+
+	# RF backends
+	ar5111.c
+	ar5112.c
+	ar2413.c
+	ar2425.c
+	ar5413.c
+
+	# AR5416 support
+	ah_eeprom_v14.c
+	ah_eeprom_v4k.c
+	ar5416_ani.c
+	ar5416_attach.c
+	ar5416_beacon.c
+	ar5416_cal.c
+	ar5416_cal_iq.c
+	ar5416_cal_adcgain.c
+	ar5416_cal_adcdc.c
+	ar5416_eeprom.c
+	ar5416_gpio.c
+	ar5416_interrupts.c
+	ar5416_keycache.c
+	ar5416_misc.c
+	ar5416_phy.c
+	ar5416_power.c
+	ar5416_recv.c
+	ar5416_reset.c
+	ar5416_xmit.c
+	ar5416_btcoex.c
+	ar5416_radar.c
+	ar5416_spectral.c
+
+	# RF backend for 5416 and 9160
+	ar2133.c
+
+	# AR9001 and AR9002 support
+	ar9285_btcoex.c
+	ar9130_attach.c
+	ar9130_eeprom.c
+	ar9130_phy.c
+	ar9160_attach.c
+	ar9280_attach.c
+	ar9280_olc.c
+	ar9285_attach.c
+	ar9285_cal.c
+	ar9285_diversity.c
+	ar9285_phy.c
+	ar9285_reset.c
+	ar9287_attach.c
+	ar9287_cal.c
+	ar9287_olc.c
+	ar9287_reset.c
+
+	ar9280.c
+	ar9285.c
+	ar9287.c
+
+	# AR9300 support
+	ar9300_interrupts.c
+	ar9300_radar.c
+	ar9300_ani.c
+	ar9300_keycache.c
+	ar9300_radio.c
+	ar9300_xmit.c
+	ar9300_attach.c
+	ar9300_mci.c
+	ar9300_stub.c
+	ar9300_xmit_ds.c
+	ar9300_beacon.c
+	ar9300_misc.c
+	ar9300_recv.c
+	ar9300_stub_funcs.c
+	ar9300_eeprom.c
+	ar9300_paprd.c
+	ar9300_recv_ds.c
+	ar9300_freebsd.c
+	ar9300_phy.c
+	ar9300_reset.c
+	ar9300_gpio.c
+	ar9300_power.c
+	ar9300_timer.c
+	ar9300_spectral.c
+
+	dfs_null.c
+	;
+
+SEARCH_SOURCE += [ FDirName $(SUBDIR) dev ath ath_rate sample ] ;
+
+KernelMergeObject atheroswifi_rate.o :
+	sample.c
+	;

@@ -1,0 +1,46 @@
+SubDir HAIKU_TOP src tests add-ons mail imap ;
+
+UsePrivateHeaders mail shared ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src tests add-ons kernel file_systems
+	fs_shell ] ;
+SubDirHdrs [ FDirName $(HAIKU_TOP) src add-ons mail_daemon inbound_protocols
+	imap imap_lib ] ;
+
+local libSources = Commands.cpp Protocol.cpp Response.cpp ;
+#IMAPStorage.cpp
+
+# use OpenSSL, if enabled
+if $(HAIKU_BUILD_FEATURE_OPENSSL_ENABLED) {
+	SubDirC++Flags -DUSE_SSL ;
+	SubDirSysHdrs $(HAIKU_OPENSSL_HEADERS) ;
+	Includes [ FGristFiles $(sources) ] : $(HAIKU_OPENSSL_HEADERS_DEPENDENCY) ;
+		# Dependency needed to trigger downloading/unzipping the package before
+		# compiling the files.
+	SetupFeatureObjectsDir ssl ;
+} else {
+	SetupFeatureObjectsDir no-ssl ;
+}
+
+SimpleTest imap_tester :
+	imap_tester.cpp
+	$(libSources)
+
+	# from fs_shell
+	argv.c
+
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ] bnetapi mail
+;
+
+SimpleTest rfc3501_encoding_test :
+	rfc3501_encoding_test.cpp
+	$(libSources)
+
+	: be $(TARGET_LIBSTDC++) $(TARGET_LIBSUPC++) bnetapi
+;
+
+SEARCH on [ FGristFiles $(libSources) ]
+	= [ FDirName $(HAIKU_TOP) src add-ons mail_daemon inbound_protocols imap
+		imap_lib ] ;
+
+SEARCH on [ FGristFiles argv.c ] = [ FDirName $(HAIKU_TOP) src tests add-ons
+	kernel file_systems fs_shell ] ;

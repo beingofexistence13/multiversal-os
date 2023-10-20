@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src add-ons tracker zipomatic ;
+
+UsePrivateHeaders shared ;
+
+Application ZipOMatic :
+	GenericThread.cpp
+	ZipOMatic.cpp
+	ZipOMaticActivity.cpp
+	ZipOMaticWindow.cpp
+	ZipperThread.cpp
+
+	: be tracker [ TargetLibsupc++ ] localestub
+	: ZipOMatic.rdef
+;
+
+DoCatalogs ZipOMatic :
+	x-vnd.haiku.zip-o-matic
+	:
+	ZipOMatic.cpp
+	ZipOMaticWindow.cpp
+	ZipperThread.cpp
+;
+

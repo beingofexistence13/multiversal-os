@@ -1,0 +1,19 @@
+SubDir HAIKU_TOP src add-ons kernel network protocols l2cap ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net bluetooth ;
+
+KernelAddon l2cap :
+	l2cap.cpp
+	l2cap_address.cpp
+	l2cap_command.cpp
+	l2cap_signal.cpp
+	l2cap_lower.cpp
+	l2cap_upper.cpp
+# Stack subModules
+    L2capEndpoint.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network/protocols
+	: l2cap ;

@@ -1,0 +1,14 @@
+SubDir HAIKU_TOP src add-ons kernel partitioning_systems intel ;
+
+UsePrivateHeaders kernel shared storage ;
+UsePrivateSystemHeaders ;
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) common ] ;
+
+KernelAddon intel :
+	intel.cpp
+	PartitionLocker.cpp
+	PartitionMapParser.cpp
+	write_support.cpp
+	:
+	libpartitioning_systemscommon.a
+;

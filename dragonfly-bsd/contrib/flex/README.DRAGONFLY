@@ -1,0 +1,15 @@
+FLEX 2.6.4
+==========
+
+Original source can be downloaded from:
+https://github.com/westes/flex/releases
+
+file = flex-2.6.4.tar.gz
+date = May 6, 2017
+size = 1419096
+sha1 = fafece095a0d9890ebd618adb1f242d8908076e1
+
+A list of files and directories removed is in README.DELETED
+
+Local modifications applied to following files:
+	flexdef.h   (declare yylval)

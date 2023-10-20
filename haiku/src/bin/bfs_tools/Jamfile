@@ -1,0 +1,15 @@
+SubDir HAIKU_TOP src bin bfs_tools ;
+
+SubDirHdrs $(HAIKU_TOP) src bin bfs_tools lib ;
+UsePrivateHeaders [ FDirName shared ] ;
+
+StdBinCommands
+	bfsinfo.cpp
+	chkindex.cpp
+	bfswhich.cpp
+	recover.cpp
+
+	: libbfs_tools.a be shared [ TargetLibstdc++ ] : $(haiku-utils_rsrc)
+;
+
+SubInclude HAIKU_TOP src bin bfs_tools lib ;

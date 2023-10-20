@@ -1,0 +1,130 @@
+.\"
+.\" Copyright (c) 2012
+.\"	The DragonFly Project.  All rights reserved.
+.\" This code is derived from software contributed to The DragonFly Project
+.\" by Matthew Dillon <dillon@backplane.com> and Thomas Nikolajsen
+.\" <thomas.nikolajsen@mail.dk>
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\" 3. Neither the name of The DragonFly Project nor the names of its
+.\"    contributors may be used to endorse or promote products derived
+.\"    from this software without specific, prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+.\" FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+.\" COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING,
+.\" BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+.\" AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+.\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+.\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd October 21, 2012
+.Dt USCHED 8
+.Os
+.Sh NAME
+.Nm usched
+.Nd run a program with a specified userland scheduler and cpumask
+.Sh SYNOPSIS
+.Nm
+.Op Fl d
+.Brq Ar scheduler Ns Oo Cm \&: Ns Ar cpumask Oc | Cm \&: Ns Ar cpumask
+.Ar program
+.Op Ar argument ...
+.Sh DESCRIPTION
+Run
+.Ar program
+using the specified userland
+.Ar scheduler
+on
+.Tn CPUs
+given in
+.Ar cpumask .
+It assigns the
+.Ar program
+to the
+.Tn CPU
+with the smallest cpuid and adds the rest of the
+.Tn CPUs
+to the list of available
+.Tn CPUs
+for the
+.Ar program .
+The userland
+.Ar scheduler
+can have value
+.Sq bsd4
+or
+.Sq dfly .
+If
+.Ar scheduler
+is not specified,
+userland scheduler is inherited from parent process
+.Pq Nm .
+.Pp
+The following options are available:
+.Bl -tag -width indent
+.It Fl d
+Add debug output.
+.El
+.Pp
+.Nm
+is only usable for super user as other users cannot change
+userland scheduler or cpumask.
+.Pp
+System default userland scheduler can be changed in
+.Xr loader.conf 5 ,
+see
+.Xr loader 8 .
+.Sh EXIT STATUS
+.Ex -std usched
+.Sh EXAMPLES
+Run
+.Xr sh 1
+using only first 3
+.Tn CPUs .
+.Pp
+.Dl usched :7 sh
+.Pp
+Run
+.Xr sh 1
+using userland scheduler
+.Sq bsd4
+using only first 4
+.Tn CPUs .
+.Pp
+.Dl usched bsd4:0xf sh
+.Sh SEE ALSO
+.Xr usched_set 2 ,
+.Xr loader.conf 5 ,
+.Xr loader 8
+.Sh HISTORY
+The
+.Nm
+utility first appeared in
+.Dx 3.1 .
+.Sh AUTHORS
+.An Matthew Dillon Aq Mt dillon@backplane.com
+.An Thomas Nikolajsen Aq Mt thomas.nikolajsen@mail.dk
+.Sh BUGS
+Using system default userland scheduler by specifying
+.Ar scheduler
+as
+.Sq default
+is not implemented.
+.Pp
+.Ar cpumask
+only supports up to 64 CPUs due to implementation of usched.

@@ -1,0 +1,67 @@
+#!/bin/sh
+
+# program
+# <- libb.so
+#
+# dlopen():
+# liba.so
+#
+# Expected: Undefined symbol in liba.so resolves to symbol in libb.so.
+
+
+. ./test_setup
+
+
+# create liba.so
+cat > liba.c << EOI
+extern int b();
+int a() { return b(); }
+EOI
+
+# build
+compile_lib -o liba.so liba.c
+
+
+# create libb.so
+cat > libb.c << EOI
+int b() { return 1; }
+EOI
+
+# build
+compile_lib -o libb.so libb.c
+
+
+# create program
+cat > program.c << EOI
+#include <dlfcn.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+int
+main()
+{
+	void* liba;
+	int (*a)();
+
+	liba = dlopen("./liba.so", RTLD_NOW | RTLD_GLOBAL);
+	if (liba == NULL) {
+		fprintf(stderr, "Error opening liba.so: %s\n", dlerror());
+		exit(117);
+	}
+
+	a = (int (*)())dlsym(liba, "a");
+	if (a == NULL) {
+		fprintf(stderr, "Error getting symbol a: %s\n", dlerror());
+		exit(116);
+	}
+
+	return a();
+}
+EOI
+
+# build
+compile_program_dl -o program program.c ./libb.so
+
+# run
+test_run_ok ./program 1
+

@@ -1,0 +1,12 @@
+EXPAT 2.5.0
+===========
+
+Original source can be downloaded from:
+https://github.com/libexpat/libexpat/releases
+
+file = expat-2.5.0.tar.gz
+date = 25 October 2022
+size = 719235
+sha1 = 061c1232188dff35e44aa7137aec7757d3d90d27
+
+A list of files and directories removed is in README.DELETED

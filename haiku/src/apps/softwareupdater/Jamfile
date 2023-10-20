@@ -1,0 +1,32 @@
+SubDir HAIKU_TOP src apps softwareupdater ;
+
+UsePrivateHeaders app interface shared package ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src servers package ] ;
+
+Application SoftwareUpdater :
+	SoftwareUpdaterApp.cpp
+	SoftwareUpdaterWindow.cpp
+	UpdateAction.cpp
+	UpdateManager.cpp
+	CheckAction.cpp
+	CheckManager.cpp
+	WorkingLooper.cpp
+	
+	# package_daemon
+	ProblemWindow.cpp
+	
+	: be localestub package shared translation libbnetapi.so [ TargetLibsupc++ ]
+	: SoftwareUpdater.rdef
+;
+
+DoCatalogs SoftwareUpdater :
+	x-vnd.haiku-softwareupdater
+	:
+	CheckAction.cpp
+	CheckManager.cpp
+	SoftwareUpdaterApp.cpp
+	SoftwareUpdaterWindow.cpp
+	UpdateAction.cpp
+	UpdateManager.cpp
+;

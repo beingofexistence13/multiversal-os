@@ -1,0 +1,49 @@
+1	croatian	x-vnd.Haiku-Installer	3373100821
+Performing installation.	InstallProgress		Vršim instalaciju.
+<none>	InstallerWindow	No partition available	<nijedan>
+Please choose target	InstallerWindow		Molim izaberite metu
+Cancel	InstallProgress		Odustani
+Are you sure you want to to stop the installation?	InstallerWindow		Jeste li sigurni da želite zaustaviti instalaciju?
+Installer	System name		Instalacijski program
+Unknown Type	InstallProgress	Partition content type	Nepoznata vrsta
+Quit	InstallerWindow		Isključi
+Write boot sector to '%s'	InstallerWindow		Zapišite boot sektor na '%s'
+Welcome to the Haiku Installer!\n\n	InstallerApp		Dobrodošli u Haiku instaler!\n\n
+?? of ??	InstallerWindow	Unknown progress	?? od ??
+Write boot sector	InstallerWindow		Zapiši boot sektor
+%1ld of %2ld	InstallerWindow	number of files copied	%1ld od %2ld
+Finishing installation.	InstallProgress		Završavam instalaciju.
+Install from:	InstallerWindow		Instaliraj sa:
+Additional disk space required: 0.0 KiB	InstallerWindow		Potreban dodatni prostor na disku: 0.0 KiB
+This is beta-quality software! It means there is a risk of losing important data. Make frequent backups! You have been warned.\n\n\n	InstallerApp		Ovo je software beta kvalitete!! Znači da postoji rizik gubljenja važnih podataka. Učestalo radite sigurnosne kopije! Upozoreni ste.\n\n\n
+???	InstallerWindow	Unknown currently copied item	???
+Hide optional packages	InstallerWindow		Sakrij neobavezne pakete.
+???	InstallerWindow	Unknown partition name	???
+Have fun and thanks for trying out Haiku!	InstallerApp		Uživajte i hvala Vam što isprobavate Haiku!
+Quit	InstallerApp		Isključi
+OK	InstallerWindow		Uredu
+Try installing anyway	InstallProgress		Ipak pokušaj instalirati
+IMPORTANT INFORMATION BEFORE INSTALLING HAIKU\n\n	InstallerApp		VAŽNA INFORMACIJA PRIJE HAIKU INSTALACIJE\n\n
+Additional disk space required: %s	InstallerWindow		Potreban dodatni prostor na disku: %s
+Stop	InstallerWindow	In alert after pressing Stop	Stop
+Boot sector successfully written.	InstallProgress		Boot sektor je uspješno zapisan.
+An error was encountered and the installation was not completed:\n\nError:  %s	InstallerWindow		Došlo je do greške i instalacija nije dovršena:\n\nGreška:  %s
+Restart	InstallerWindow		Ponovo pokreni
+The disk can't be mounted. Please choose a different disk.	InstallProgress		Disk ne može biti montiran. Izaberite drugi disk.
+Begin	InstallerWindow		Počni
+Show optional packages	InstallerWindow		Pokaži neobavezne pakete
+The destination disk may not have enough space. Try choosing a different disk or choose to not install optional items.	InstallProgress		Odredišni direktorij možda nema dovoljno prostara. Probajte izabrati drugi disk ili izaberite neinstaliranje neobaveznih stavki.
+Installation canceled.	InstallProgress		Instalacija opozvana.
+Stop	InstallerWindow		Stop
+Cancel	InstallerWindow		Odustani
+Continue	InstallerWindow	In alert after pressing Stop	Nastavi
+Scanning for disks…	InstallerWindow		Skeniram za diskove...
+The partition can't be mounted. Please choose a different partition.	InstallProgress		Particija se ne može montirati. Molim izaberite drugu particiju.
+Set up partitions…	InstallerWindow		Postavi particije...
+Install progress:  	InstallerWindow		Napredak instalacije:  
+You can't install the contents of a disk onto itself. Please choose a different disk.	InstallProgress		Ne možete instalirati sadržaj diska na sami disk. Izaberite drugi disk.
+OK	InstallProgress		U redu
+Onto:	InstallerWindow		Na:
+Tools	InstallerWindow		Alati
+scanning…	InstallerWindow		skeniram...
+Continue	InstallerApp		Nastavi

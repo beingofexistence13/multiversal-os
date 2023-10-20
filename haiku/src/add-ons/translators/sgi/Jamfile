@@ -1,0 +1,29 @@
+SubDir HAIKU_TOP src add-ons translators sgi ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources SGITranslator : SGITranslator.rdef ; 
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles SGITranslator ] :
+			SGIImage.cpp
+			SGIMain.cpp
+			SGITranslator.cpp
+			SGIView.cpp
+			: be translation 
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs SGITranslator :
+	x-vnd.Haiku-SGITranslator
+	:
+	SGIMain.cpp
+	SGITranslator.cpp
+	SGIView.cpp
+;

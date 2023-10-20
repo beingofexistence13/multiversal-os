@@ -1,0 +1,468 @@
+/*
+ * Copyright 2010 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Alex Wilson, yourpalal2@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/interface/LayoutItem.h  rev 49040
+ *		src/kits/interface/LayoutItem.cpp  rev 49040
+ */
+
+
+/*!
+	\file LayoutItem.h
+	\ingroup layout
+	\ingroup libbe
+	\brief Describes the BLayoutItem class.
+*/
+
+
+/*!
+	\class BLayoutItem
+	\ingroup layout
+	\ingroup libbe
+	\brief Abstract class representing things that are positionable and
+		resizable by objects of the BLayout class.
+
+	The BLayoutItem class provides an interface that is meant to be used almost
+	exclusively by objects of the BLayout class. Despite this, there are some
+	methods that are provided for other users of the class.
+
+	\warning This class is not yet finalized, if you use it in your software
+	assume that it will break some time in the future.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BLayoutItem::BLayoutItem(BMessage* archive)
+	\brief Archive constructor.
+
+	Creates a BLayoutItem from the \a archive message.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BLayout* BLayoutItem::Layout() const
+	\brief Returns the BLayout this BLayoutItem resides in.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BLayoutItem::RemoveSelf()
+	\brief Remove this layout item from the BLayout it is a part of.
+
+	This method works analoguous to BView::RemoveSelf(), that is it removes
+	itself from the parent layout and returns whether or not this was
+	succesful.
+
+	\return \c true if the item was removed from the layout, or \c false if
+		item was not part of a layout, or removal was succesful.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BLayout::~BLayout()
+	\brief Destructor method.
+
+	Standard Destructor.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\name Reporting Size and Alignment Constraints to a BLayout
+*/
+
+
+//! @{
+
+
+/*!
+	\fn BSize BLayoutItem::MinSize() = 0
+	\brief Returns the minimum desirable size for this item.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BSize BLayoutItem::MaxSize() = 0
+	\brief Returns the maximum desirable size for this item.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BSize BLayoutItem::PreferredSize() = 0
+	\brief Returns the preferred size for this item.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BAlignment BLayoutItem::Alignment() = 0
+	\brief Returns the requested alignment for this item.
+
+	The value returned from this method is used in BLayoutItem::AlignInFrame(),
+	which BLayouts use to position and resize items. In a vertical BGroupLayout,
+	for example, although each item recieves the same horizontal area, each item
+	can use that area differently, aligning to the left, right or center for
+	example.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BLayoutItem::HasHeightForWidth()
+	\brief Returns whether or not this BLayoutItem&apos;s height constraints are
+		dependent on its width.
+
+	\note By default, this method returns \c false.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::GetHeightForWidth(float width, float* min,
+		float* max, float* preferred)
+	\brief Get this BLayoutItem&apos;s height constraints for a given \a width.
+
+	If a BLayoutItem does not have height for width constraints
+	(HasHeightForWidth() returns \c false) it does not need to implement this
+	method.
+
+	\note It is prudent to compare \a min, \a max, \a preferred to \c NULL
+	before dereferencing them.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Overriding Size and Alignment Constraints
+
+	Although the explicit constraints placed on an item are not enforced by the
+	BLayoutItem class, all Haiku BLayoutItem subclasses will use the
+	BLayoutUtils::ComposeSize() or BLayoutUtils::ComposeAlignment() functions
+	in when reporting these constraints. It is recommended that all subclasses
+	do this as well, the BAbstractLayoutItem class provides any easy way to
+	include this behaviour in your class.
+
+	\since Haiku R1
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BLayoutItem::SetExplicitMinSize(BSize size) = 0
+	\brief Set this item's explicit min size, to be used in MinSize().
+
+	This forces the minimal size for the item and overrides any constraints
+	that would normally be used to compute it. Most importantly, the minimal
+	size of children is ignored, so setting this can lead to the children not
+	fitting the view.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetExplicitMaxSize(BSize size) = 0
+	\brief Set this item's explicit max size, to be used in MaxSize().
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetExplicitPreferredSize(BSize size) = 0
+	\brief Set this item's explicit preferred size, to be used in
+		PreferredSize().
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetExplicitSize(BSize size)
+	\brief Set the explicity size to \a size.
+
+	This method is a convenience method that sets the minimum size, maximum
+	size and preferred size to \a size, as to force this layout item to have
+	a specific size.
+
+	\param size The specific (non-zero) size for this layout item.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetExplicitAlignment(BAlignment alignment) = 0
+	\brief Set this item's explicit alignment, to be used in Alignment().
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Getting/Setting the Visibility of a BLayoutItem
+
+	These methods take into account only the local visibility of this
+	item, not the visibility of its ancestors. \n
+*/
+
+
+//! @{
+
+
+/*!
+	\fn bool BLayoutItem::IsVisible() = 0
+	\brief Return the current local visibility of this item. If an item is not
+		visible, it will not be given space by the BLayout it resides in.
+
+	A simple implementation would return the last thing passed to SetVisible().
+	A more complex implementation may deal with a BView that could
+	be hidden in any number of ways.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetVisible(bool visible) = 0
+	\brief Set the local visibility of this item.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Getting/Setting Current On-Screen Positioning of a BLayoutItem
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BLayoutItem::AlignInFrame(BRect frame)
+	\brief Position this BLayoutItem within \a frame, given the value returned
+	       by Alignment(), and the size constraints for this item.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BRect BLayoutItem::Frame() = 0
+	\brief Return the bounding frame of this item.
+
+	The returned BRect is in the coordinate system of the target view of the
+	BLayout this item belongs to.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetFrame(BRect frame) = 0
+	\brief Set the bounding frame of this item.
+
+	\a frame is in the coordinate system of the target view of the BLayout
+	that this item belongs to.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\fn BView* BLayoutItem::View()
+	\brief Return the BView this item is representing, or \c NULL if it does not
+	       represent any view.
+
+	When a BLayoutItem is added to a BLayout, this method is called, and the
+	returned BView will be added to the BLayout&apos;s target view.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\name Layout Events and Requests
+
+	These methods represent events or requests originating from a
+	BLayout. In some implementations they may be handled directly by this
+	BLayoutItem, but many implementations will forward these events to
+	another object.
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BLayoutItem::InvalidateLayout(bool children = false)
+	\brief Invalidate the layout of this item, or the object it represents.
+
+	Although this method is virtual, you should not override it in your classes,
+	override LayoutInvalidated() instead. This method will take care of calling
+	the InvalidateLayout() methods of affected views/layouts/items. However, if
+	there is an object that is somehow connected to this one by means other than
+	the standard mechanisms provided by the Haiku API, you should use
+	the LayoutInvalidated() hook to do this.
+
+	\param children Whether or not to invalidate children of this object.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::Relayout(bool immediate = false)
+	\brief Relayout any children or onscreen data this item contains. Often
+		this request is forwarded to another object.
+
+	The default implementation of this method will likely be sufficient in
+	most cases. Assuming \c this->View() doesn't return \c NULL, the default
+	implementation calls Relayout() or Layout() on the value returned
+	by View().
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Utility Methods for BLayout Subclasses
+
+	Utility methods for the BLayout class to attach and retrieve
+	arbitrary data for a BLayoutItem.
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void* BLayoutItem::LayoutData() const
+	\brief Retrieve arbitrary data attached to this BLayoutItem.
+
+	\note This method should only be called by a BLayout subclass.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::SetLayoutData(void* data)
+	\brief Attach arbitrary data to this BLayoutItem.
+
+	\note This method should only be called by a BLayout subclass.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Hook methods
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BLayoutItem::LayoutInvalidated(bool children)
+	\brief Hook called from InvalidateLayout().
+
+	Override this method to clean out an cached layout info. It is good
+	practice to recreate such info only on demand, eg when MinSize() or friends
+	are called.
+
+	If \a children is \c true, then you should invalidate any information on
+	child objects as well, and propagate the invalidation to them.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::AttachedToLayout()
+	\brief Hook called when this object is attached to a BLayout (via
+	       BLayout::AddItem())
+
+	\note You can find the BLayout you've been attached to with the Layout()
+	      method.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::DetachedFromLayout(BLayout* layout)
+	\brief Hook called when this object is attached to a BLayout (via
+	       BLayout::RemoveItem())
+
+	\warning You should not use this hook to reattach \c this to \a BLayout,
+	         doing so will cause undefined behaviour (probably a crash).
+
+	\param layout The BLayout you were previously attached to.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BLayoutItem::AncestorVisibilityChanged(bool shown)
+	\brief Hook called when this BLayoutItem&apos;s ancestors change visibility,
+	       effectively hiding or showing this item.
+
+	Implementations of this method should alter the onscreen visibility of this
+	item. I.E. if \a shown is \c false, nothing should be drawn to represent
+	this item.
+
+	\note This method should not effect the value returned by this object's
+		IsVisible() method.
+
+	\param shown \c true to show, \c false to hide.
+
+	\since Haiku R1
+*/
+
+
+//! @}

@@ -1,0 +1,208 @@
+.\" Copyright (c) 2005 Sam Leffler <sam@errno.com>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FreeBSD: head/usr.sbin/wpa/wpa_cli/wpa_cli.8 210763 2010-08-02 13:11:27Z uqs $
+.\"
+.Dd May 21, 2020
+.Dt WPA_CLI 8
+.Os
+.Sh NAME
+.Nm wpa_cli
+.Nd "text-based frontend program for interacting with wpa_supplicant"
+.Sh SYNOPSIS
+.Nm
+.Op Fl Bhv
+.Op Fl p Ar path to ctrl sockets
+.Op Fl g Ar path to global ctrl_interface socket
+.Op Fl i Ar ifname
+.Op Fl a Ar action file
+.Op Fl P Ar pid file
+.Op Fl G Ar ping interval
+.Op Ar command ...
+.Sh DESCRIPTION
+.Nm
+is a text-based frontend program for interacting with wpa_supplicant. It is
+used to query current status, change configuration, trigger events, and request
+interactive user input.
+.Pp
+.Nm
+can show the current authentication status, selected security mode, dot11 and
+dot1x MIBs, etc. In addition, it can configure some variables like EAPOL state
+machine parameters and trigger events like reassociation and IEEE 802.1X
+logoff/logon. wpa_cli provides a user interface to request
+authentication information, like username and password, if these
+are not included in the configuration. This can be used to
+implement, e.g., one-time-passwords or generic token card
+authentication where the authentication is based on a
+challenge-response that uses an external device for generating the
+response.
+.Pp
+The control interface of wpa_supplicant can be configured to
+allow non-root user access (ctrl_interface GROUP= parameter in the
+configuration file). This makes it possible to run wpa_cli with a
+normal user account.
+.Pp
+wpa_cli supports two modes: interactive and command
+line. Both modes share the same command set and the main
+difference is in interactive mode providing access to unsolicited
+messages (event messages, username/password requests).
+.Pp
+Interactive mode is started when wpa_cli is executed without
+including the command as a command line parameter. Commands are
+then entered on the wpa_cli prompt. In command line mode, the same
+commands are entered as command line arguments for wpa_cli.
+.Sh "INTERACTIVE AUTHENTICATION PARAMETERS REQUEST"
+When wpa_supplicant need authentication parameters, like
+username and password, which are not present in the configuration
+file, it sends a request message to all attached frontend programs,
+e.g., wpa_cli in interactive mode. wpa_cli shows these requests
+with "CTRL-REQ-<type>-<id>:<text>"
+prefix. <type> is IDENTITY, PASSWORD, or OTP
+(one-time-password). <id> is a unique identifier for the
+current network. <text> is description of the request. In
+case of OTP request, it includes the challenge from the
+authentication server.
+.Pp
+The reply to these requests can be given with
+\fBidentity\fR, \fBpassword\fR, and
+\fBotp\fR commands. <id> needs to be copied from
+the matching request. \fBpassword\fR and
+\fBotp\fR commands can be used regardless of whether
+the request was for PASSWORD or OTP. The main difference between these
+two commands is that values given with \fBpassword\fR are
+remembered as long as wpa_supplicant is running whereas values given
+with \fBotp\fR are used only once and then forgotten,
+i.e., wpa_supplicant will ask frontend for a new value for every use.
+This can be used to implement one-time-password lists and generic token
+card -based authentication.
+.Pp
+Example request for password and a matching reply:
+.sp
+.nf
+CTRL-REQ-PASSWORD-1:Password needed for SSID foobar
+> password 1 mysecretpassword
+.fi
+.Pp
+Example request for generic token card challenge-response:
+.sp
+.nf
+CTRL-REQ-OTP-2:Challenge 1235663 needed for SSID foobar
+> otp 2 9876
+.fi
+.Sh Options
+.Bl -tag -width indent
+.It Fl p
+Change the path where control sockets should
+be found.
+.It Fl g
+Connect to the global control socket at the
+indicated path rather than an interface-specific control
+socket.
+.It Fl i
+Specify the interface that is being
+configured.  By default, choose the first interface found with
+a control socket in the socket path.
+.It Fl h
+Help.  Show a usage message.
+.It Fl v
+Show version information.
+.It Fl B
+Run as a daemon in the background.
+.It Fl a
+Run in daemon mode executing the action file
+based on events from wpa_supplicant.  The specified file will
+be executed with the first argument set to interface name and
+second to "CONNECTED" or "DISCONNECTED" depending on the event.
+This can be used to execute networking tools required to configure
+the interface.
+.Pp
+Additionally, three environmental variables are available to
+the file: WPA_CTRL_DIR, WPA_ID, and WPA_ID_STR. WPA_CTRL_DIR
+contains the absolute path to the ctrl_interface socket. WPA_ID
+contains the unique network_id identifier assigned to the active
+network, and WPA_ID_STR contains the content of the id_str option.
+.It Fl P
+Set the location of the PID
+file.
+.It Fl G
+Set the interval (in seconds) at which
+wpa_cli pings the supplicant.
+.El
+.Sh Commands
+The following commands are available:
+.Bl -tag -width indent
+.It Ic status
+get current WPA/EAPOL/EAP status
+.It Ic mib
+get MIB variables (dot1x, dot11)
+.It Ic help
+show this usage help
+.It Ic interface Ar ifname
+show interfaces/select interface
+.It Ic level Ar debug level
+change debug level
+.It Ic license
+show full wpa_cli license
+.It Ic logoff
+IEEE 802.1X EAPOL state machine logoff
+.It Ic logon
+IEEE 802.1X EAPOL state machine logon
+.It Ic set
+set variables (shows list of variables when run without arguments)
+.It Ic pmksa
+show PMKSA cache
+.It Ic reassociate
+force reassociation
+.It Ic reconfigure
+force wpa_supplicant to re-read its configuration file
+.It Ic preauthenticate Ar BSSID
+force preauthentication
+.It Ic identity Ar network_id identity
+configure identity for an SSID
+.It Ic password Ar network_id password
+configure password for an SSID
+.It Ic pin Ar network_id pin
+configure pin for an SSID
+.It Ic otp Ar network_id password
+configure one-time-password for an SSID
+.It Ic bssid Ar network_id BSSID
+set preferred BSSID for an SSID
+.It Ic \fBlist_networks\fR
+list configured networks
+.It Ic terminate
+terminate \fBwpa_supplicant\fR
+.It Ic quit
+exit wpa_cli
+.El
+.Sh "SEE ALSO"
+.Xr wpa_supplicant.conf 5 ,
+.Xr wpa_supplicant 8
+.Sh AUTHORS
+wpa_supplicant is copyright (c) 2003-2019,
+Jouni Malinen <j@w1.fi> and
+contributors.
+All Rights Reserved.
+.Pp
+This program is licensed under the BSD license (the one with
+advertisement clause removed).

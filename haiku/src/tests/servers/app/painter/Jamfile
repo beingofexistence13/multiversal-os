@@ -1,0 +1,74 @@
+SubDir HAIKU_TOP src tests servers app painter ;
+
+UseLibraryHeaders agg ;
+UsePrivateHeaders interface ;
+UsePrivateHeaders [ FDirName servers app ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing Painter ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing Painter drawing_modes ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src servers app drawing Painter font_support ] ;
+UseBuildFeatureHeaders freetype ;
+
+SimpleTest Painter :
+	BitmapBuffer.cpp
+	BitmapView.cpp
+	main.cpp
+	Painter.cpp
+	ShapeConverter.cpp
+	Transformable.cpp
+	DrawingModeFactory.cpp
+	# already included in libagg.a build
+	#agg_font_freetype.cpp
+	AGGTextRenderer.cpp
+	FontFamily.cpp
+	#FontManager.cpp
+	FontServer.cpp
+	#TextRenderer.cpp
+	PatternHandler.cpp
+	RGBColor.cpp
+	ServerFont.cpp
+	SystemPalette.cpp
+	ColorUtils.cc
+	: be libagg.a libfreetype.so textencoding ;
+
+SEARCH on [ FGristFiles
+	ColorUtils.cc
+	]
+	= [ FDirName $(HAIKU_TOP) src kits interface ] ;
+
+SEARCH on [ FGristFiles
+	PatternHandler.cpp
+	FontFamily.cpp
+	FontServer.cpp
+	RGBColor.cpp
+	ServerFont.cpp
+	SystemPalette.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src servers app ] ;
+
+SEARCH on [ FGristFiles
+	BitmapBuffer.cpp
+	PatternHandler.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src servers app drawing ] ;
+
+SEARCH on [ FGristFiles
+	Painter.cpp
+	ShapeConverter.cpp
+	Transformable.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src servers app drawing Painter ] ;
+
+SEARCH on [ FGristFiles
+	DrawingModeFactory.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src servers app drawing Painter drawing_modes ] ;
+
+SEARCH on [ FGristFiles
+#	agg_font_freetype.cpp
+	AGGTextRenderer.cpp
+	FontManager.cpp
+	TextRenderer.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src servers app drawing Painter font_support ] ;
+

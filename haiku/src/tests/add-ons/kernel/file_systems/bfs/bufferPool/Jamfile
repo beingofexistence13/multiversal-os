@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src tests add-ons kernel file_systems bfs bufferPool ;
+
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel file_systems bfs ;
+UsePrivateKernelHeaders ;
+
+{
+	local defines = [ FDefines USER DEBUG ] ; # _NO_INLINE_ASM
+	SubDirCcFlags $(defines) -fno-exceptions -fno-rtti ; #-fcheck-memory-usage
+	SubDirC++Flags $(defines) -fno-exceptions -fno-rtti ; #-fcheck-memory-usage
+}
+
+SimpleTest bfsBufferTest
+	: main.cpp
+	  BufferPool.cpp
+	: ;
+
+# Tell Jam where to find these sources
+SEARCH on [ FGristFiles BufferPool.cpp ]
+	= [ FDirName $(HAIKU_TOP) src add-ons kernel file_systems bfs ] ;
+

@@ -1,0 +1,56 @@
+1	belarusian	x-vnd.Haiku-Installer	3125198243
+Performing installation.	InstallProgress		Выконваецца ўсталёўка.
+Please close the DriveSetup window before closing the Installer window.	InstallerWindow		Калі ласка, закройце вакно DriveSetup перад тым як закрыць Усталёўшчык.
+No optional packages available.	PackagesView		Дадатковыя пакункі недаступныя.
+The mount point could not be retrieved.	InstallProgress		Не ўдалося атрымаць пункт мантавання.
+<none>	InstallerWindow	No partition available	<няма>
+Please choose target	InstallerWindow		Калі ласка, выберыце дыск прызначэння
+Cancel	InstallProgress		Адмена
+Are you sure you want to to stop the installation?	InstallerWindow		Сапраўды астанавіць усталёўку?
+Installer	System name		Усталёўшчык
+Unknown Type	InstallProgress	Partition content type	Невядомы тып
+README	InstallerApp		README
+Quit	InstallerWindow		Выйсці
+Write boot sector to '%s'	InstallerWindow		Запісаць загрузачны сектар на '%s'
+Boot sector not written because of an internal error.	InstallProgress		Загрузачны сектар не запісаны з-за ўнутранай памылкі.
+Welcome to the Haiku Installer!\n\n	InstallerApp		Прывітанне! Гэта ўсталёўшчык Haiku!\n\n
+?? of ??	InstallerWindow	Unknown progress	?? з ??
+DriveSetup, the application to configure disk partitions, could not be launched.	InstallerWindow		DriveSetup, праграма для праўкі дыскавых падзелаў, не запусцілася.
+Quit DriveSetup	InstallerWindow		Выйсці з DriveSetup
+Write boot sector	InstallerWindow		Запісаць загрузачны сектар
+%1ld of %2ld	InstallerWindow	number of files copied	%1ld з %2ld
+Install from:	InstallerWindow		Усталяваць з:
+Additional disk space required: 0.0 KiB	InstallerWindow		Патрэбна яшчэ 0.0 KiB месца на дыску
+???	InstallerWindow	Unknown currently copied item	???
+Hide optional packages	InstallerWindow		Схаваць дадатковыя пакункі
+???	InstallerWindow	Unknown partition name	???
+Quit	InstallerApp		Выйсці
+OK	InstallerWindow		ОК
+Try installing anyway	InstallProgress		Ўсё роўна паспрабаваць усталёўку
+IMPORTANT INFORMATION BEFORE INSTALLING HAIKU\n\n	InstallerApp		ВАЖНАЯ ІНФАРМАЦЫЯ НАКОНТ УСТАЛЁЎКІ\n\n
+Additional disk space required: %s	InstallerWindow		Патрэбна месца дадаткова: %s
+Stop	InstallerWindow	In alert after pressing Stop	Стоп
+Boot sector successfully written.	InstallProgress		Загрузачны сектар паспяхова запісаны.
+An error was encountered and the installation was not completed:\n\nError:  %s	InstallerWindow		Адбылася памылка і ўсталёўка абарвалася:\n\nError:  %s
+Restart	InstallerWindow		Перазапусціць
+The disk can't be mounted. Please choose a different disk.	InstallProgress		Немагчыма замантаваць дыск. Калі ласка, выберыце іншы.
+Begin	InstallerWindow		Пачаць
+Collecting copy information.	InstallProgress		Збіраецца інфармацыя капіявання.
+Show optional packages	InstallerWindow		Паказваць дадатковыя пакункі
+The destination disk may not have enough space. Try choosing a different disk or choose to not install optional items.	InstallProgress		Дыск прызначэння, пэўна, не мае патрэбнага месца. Паспрабуйце выбраць іншы дыск або адмяніце ўсталёўку дадатковых пунктаў.
+Installation canceled.	InstallProgress		Усталёўка адмененая.
+Stop	InstallerWindow		Стоп
+Cancel	InstallerWindow		Адмена
+Continue	InstallerWindow	In alert after pressing Stop	Працяг
+Scanning for disks…	InstallerWindow		Сканіраванне дыскаў…
+Running DriveSetup…\n\nClose DriveSetup to continue with the installation.	InstallerWindow		Працуе DriveSetup…\n\nЗакрыйце DriveSetup для працягу ўсталёўкі.
+The partition can't be mounted. Please choose a different partition.	InstallProgress		Немагчыма змантаваць падзел. Абярыце, калі ласка, іншы.
+Set up partitions…	InstallerWindow		Правіць падзелы…
+Install progress:  	InstallerWindow		Прагрэс усталёўкі:  
+You can't install the contents of a disk onto itself. Please choose a different disk.	InstallProgress		Вы не можаце капіяваць файлы на зыходны дыск. Выберыце, калі ласка, іншы.
+OK	InstallProgress		ОК
+Are you sure you want to install onto the current boot disk? The Installer will have to reboot your machine if you proceed.	InstallProgress		Сапрауды жадаеце усталяваць на цяперашні загрузачны дыск? Калі так, Усталёшчык перазапусціць ваш кампутар.
+Onto:	InstallerWindow		На:
+Tools	InstallerWindow		Прылады
+scanning…	InstallerWindow		сканіраванне…
+Continue	InstallerApp		Працягваць

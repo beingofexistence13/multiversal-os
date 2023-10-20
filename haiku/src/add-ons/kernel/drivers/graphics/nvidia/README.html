@@ -1,0 +1,271 @@
+<html>
+<head>
+	<meta http-equiv="Content-Type"	content="text/html; charset=iso-8859-1">
+	<meta name="GENERATOR" content="The DarkSite">
+	<title>Readme for Haiku Unified Nvidia graphics driver</title>
+</head>
+<body>
+<h2 align="center">Unified Nvidia graphics driver for Haiku</h2></align><br><br>
+<hr>
+<h3><strong>NOTE PLEASE:</strong><br>
+You use this software at your own risk! Although I don't expect it to damage your PC, videocard or Monitor, I cannot guarantee this!</h3>
+<hr>
+<h2>Supported cards (as far as is known):</h2>
+<ul>
+	<li>TNT 1/2;
+	<li>TNT 2-M64;
+	<li>Vanta/Aladdin TNT2;
+	<li>GeForce 256;
+	<li>GeForce 2 MX/Ti/GTS/Go;
+	<li>GeForce 2 Integrated GPU (Nforce);
+	<li>GeForce 3 (Ti);
+	<li>GeForce 4 MX/Ti/Go;
+	<li>GeForce 4 Integrated GPU (Nforce 2);
+	<li>GeForce (4 MX) PCX 4300;
+	<li>GeForce FX/PCX 5xxx/Go;
+	<li>GeForce FX/PCX 6xxx/Go;
+	<li>GeForce FX/PCX 7xxx/Go;
+	<li>Quadro (2/4/FX/PCX/Go);
+</ul>
+<strong>Note please:</strong><br>
+Geforce 8xxx and later series cards (NV50, G80, also known as GPGPU, general purpose graphics processing unit architecture) will NOT be supported with this driver. These cards are quite different in architecture compared to everything before so they need a seperate driver.<br>
+<br>
+<hr>
+<h2>Features:</h2>
+<ul>
+	<li>Hardware cursor support (on both heads on dualhead cards);
+	<li>Full 2D acceleration;
+	<li>Basic 3D acceleration for older cards: see the seperately available 3D accelerant's documentation for details;
+	<li>Full BWindowScreen support (used for hardware pageflipping, scrolling/panning and acceleration in applications/games);
+	<li>DPMS support for both DVI and most laptop panels, and for analog connected screens (on both heads on dualhead cards), <strong>but not (yet?)</strong> for external DVI panels on laptops;
+	<li>B_YCbCr422 hardware overlay support on both TNT and GeForce series cards, <strong>except</strong> for GeForce 6xxx and 7xxx series (GeForce 6800 works though). Overlay output 'follows head' in dualhead stretch/switch modes;
+	<li>Dualhead support on GeForce dualhead cards (use 'Dualhead Setup' or Haiku native ScreenPrefs panel (with limitations));
+	<li>DVI and laptop panel support;
+	<li>Widescreen mode support (<strong>all</strong> screens must be widescreen type;
+	<li>Basic AGP mode support on AGP cards, using the new (seperate) Haiku AGP busmanager;
+	<li>Basic ('legacy') PCIe support;
+	<li>Coldstart support for analog connected screens on most cards except TNT1, GeForce 6xxx and 7xxx series;
+	<li>TVout support on cards with Brooktree BT868/BT869 and Conexant CX25870/CX25871 encoders (use 'Dualhead Setup' <strong>0.05</strong> for now);
+	<li>DDC/EDID support for monitor capability detection.
+</ul>
+<strong>Known limitations:</strong> 
+<ul>
+	<li>If you want BScreen 'Sync_to_Retrace' capability make sure you enabled 'assign IRQ to VGA card' in your system BIOS (if available);
+	<li>If the driver seems to create 'random' trouble make sure you have a fully functional VGA BIOS, or system BIOS for embedded cards (check for updates on the manufacturor's site). Make sure you mail me if you still have trouble but also if this version fixed that!
+	<li>If on a laptop the internal panel doesn't work when you connect an external monitor, make sure you set 'output device selection' to 'internal' (instead of 'auto') in the system BIOS if it has such an option. If you have this symptom on a normal card, or on a laptop without that BIOS option then you are probably out of luck for dualhead support;
+	<li><strong>NV40 architecture cards:</strong> (GeForce 6xxx, but 6800 AGP seems to be OK)<br>
+ 	We can't control very well to which connector the card's output gets routed (lack of specs). This means you might have to experiment a bit with the way you connect your monitor to the card.
+</ul>
+<br>
+<hr>
+<h2>Installation:</h2>
+If you encounter bugs, please see if a matching bug report already exists at <a href="http://dev.haiku-os.org">the Haiku website</a>. If not, or if you are unsure, file a new one. Make sure you are as precise as possible because that will make things easier to trackdown and fix...<br>
+<br>
+<br>
+OK, now that's all said let's get to it ;-)<br>
+<br>
+You don't need to de-install official drivers for this driver to work correctly. This driver will install in the user part of Haiku, so not in the system part where the official drivers are.<br>
+Haiku first checks (during boot) if there are 'user-addons' that should be loaded for a device. If not, it loads it's own drivers (if any). You can select which driver should be loaded by hitting the spacebar just before the Haiku 'icons' splash screen appears. If you select <strong>disable user addons</strong> the system will load it's own drivers. If you don't do anything, the system will load the Haiku Nvidia TNT/GeForce graphics driver.<br>
+<br>
+<strong>Note:</strong> This might turn out to be handy if you run into trouble upon testing the driver, or if you are 'tweaking' the nvidia.settings file...<br>
+<br><br>
+<strong>actual INSTALLATION:</strong><br>
+<br>
+Doubleclick on the install.sh file and follow the instructions. You have to reboot in order to load the driver. Make sure you read the <strong>Settings</strong> information below before you do that...<br>
+<br>
+<br>
+<strong>alternate INSTALLATION method:</strong><br>
+<br>
+Unzip the zip file that contains the driver to the root folder. Now reboot and you should be using the new driver.<br>
+<br>
+<br>
+<strong>DE-INSTALLATION:</strong><br>
+<br>
+Currently there's no uninstall script included. Just do it manually:<br>
+<br>
+Delete the <strong>nvidia.accelerant</strong> file in <strong>home/config/non-packaged/add-ons/accelerants/</strong><br>
+Delete the <strong>nvidia.driver</strong> file in <strong>home/config/non-packaged/add-ons/kernel/drivers/bin/</strong><br>
+Delete the <strong>nvidia.settings</strong> file in <strong>home/config/settings/kernel/drivers/</strong><br>
+Delete the <strong>nvidia.driver shortcut</strong> in <strong>home/config/non-packaged/add-ons/kernel/drivers/dev/graphics/</strong> which pointed to the file <strong>nvidia.driver</strong>.<br>
+<br>
+You have to reboot in order to apply the original configuration.<br>
+<br>
+<br>
+<hr>
+<a name="settings"></a><h2>Settings:</h2><br>
+Please read this information carefully *before* installing and using the Haiku Nvidia TNT/GeForce graphics driver. It might spare you some trouble afterwards..<br>
+<p>The driver uses a file named <strong>nvidia.settings</strong> to determine how to use your card. After installation this file will be located at <strong>home/config/settings/kernel/drivers/</strong>. How you should setup this file depends on what you want to do with the driver. While it has a 'failsave' default configuration, you might be able to do better than that... Anyway, read the nifty details below.<br>
+<br>
+<strong>Note:</strong> The driver only reads this file during it's initialisation. This means that you have to reboot in order to let changes take effect.<br>
+<br>
+<br>
+<br>
+<strong>nvidia.settings driver configuration:</strong><br>
+<ul>
+	<li><strong>usebios:</strong><br>
+The name of this item may be somewhat misleading, it might be changed in the future. It actually tells the driver if it should coldstart the card or not. The driver will rely on the VGA BIOS to have coldstarted the card before BeOS booted if you specify 'true'.<br>
+To make things look even more complex the driver might actually use the BIOS to determine your cards specifications on *both* possible settings.
+	<ul>
+		<li><strong>false:</strong><br>
+		If you specify <strong>usebios false</strong> the driver will attempt to coldstart the card, which is the preferred way of doing it because of the better tuned setup if all is right. Unfortunately there's not enough info available to make this work reliably, so it's not used by default. This setting would enable you to use your nVidia card as a secondary card in your system. Be advised though that BeOS officially does not (yet) support multiple VGA cards, so you need special software in order to be able to actually use it (a video consumer node for instance).
+		<li><strong>true:</strong> (default setting)<br>
+		Specify <strong>usebios true</strong> unless you want to try to use a nVidia card as a secondary card in your system.
+	</ul>
+	<strong>Notes:</strong>
+ 	<ul>
+ 		<li>On driverversion 0.23 and before usebios had no effect at all. The cards were never coldstarted;
+		<li>Coldstarting should work on most cards except TNT1, GeForce 6xxx and GeForce 7xxx;
+		<li>Coldstarting will not yet work with laptop- and DVI panels.
+ 	</ul> 
+	<li><strong>memory:</strong> (disabled by default)<br>
+		This option enables you to override the 'memory amount autodetection' of the driver. If autodetection is working incorrect, you can manually set the amount this way. You could also lower the amount of RAM to a lower value than actually there to test with for instance overlay use in applications. So this option is probably mostly of interest to developers. Specify the RAM amount in Mb (use only 'whole' numbers!).<br>
+This option is disabled by default (preceded by a '#').<br>
+<li><strong>hardcursor:</strong><br>
+	A hardcursor is nessesary for DirectWindow windowed mode support.
+	<ul>
+		<li><strong>false:</strong><br>
+		If you have trouble with the hardcursor (on one or both of the heads), select <strong>hardcursor false</strong>. Make sure you let me know about the hardcursor trouble also: this should not happen!
+		<li><strong>true:</strong> (default setting)<br>
+		A software cursor 'flickers' a bit sometimes because it has to be redrawn constantly. So <strong>hardcursor true</strong> is the preferred setting. For DirectWindow windowed mode functionality you need to use this setting also (Chart demo app for instance).
+	</ul>
+<li><strong>logmask:</strong> (set to disabled by default)<br>
+The logmask option is very handy to track down trouble in the driver. You should only enable this if you are doing so, otherwise keep it turned off because it slows down your system. (All lines have a '#' preceding 'logmask' by default.) Logging creates a logfile called <strong>nv.(/dev/graphics name).0.log</strong> in your <strong>~ (home)</strong> folder. A second logfile may get created depending on how the driver is used (on cloning; for BWindowScreen for example). The second file is called <strong>nv.(/dev/graphics name).1.log</strong>, and it will also be in your home folder.<br>
+<strong>Note:</strong>
+<ul>
+<li>You may only enable *one* logmask-line. The value you place after it (hexadecimal 32bit) determines what will be logged. The first 7 digits determine the part of the driver that will be logging, the last single digit determines the level of logging (like 'all messages', or only 'error messages').
+</ul>
+<li><strong>dumprom:</strong><br>
+Dumprom is another 'tool' for bug-tracking purposes.
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+		Keep it set to <strong>dumprom false</strong>, unless you want the driver to dump the contents of your VGA BIOS ROM in a file.
+		<li><strong>true:</strong><br>
+		<strong>dumprom true</strong> lets the driver dump a copy of your VGA BIOS in a file called <strong>nv.(/dev/graphics name).rom</strong> in your <strong>~ (home)</strong> folder.
+	</ul>
+<li><strong>switchhead:</strong><br>
+The driver always autodetects which output should be used as primary one, but you can let the driver 'invert' the outcome of that detection with this option (only for dualhead cards).
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+		Keep it set to <strong>switchhead false</strong>, unless you feel you want the card's other output to be used as primary one. Note that if a single connected screen is found, that screen will be the driver's primary output with this setting.
+		<li><strong>true:</strong><br>
+		<strong>switchhead true</strong> lets the driver 'invert' the output assignments for all modes. Use only when you have two screens connected, otherwise the one connected screen will remain black as the other (not connected) output is being used.<br>
+	</ul>
+<strong>Note:</strong>
+<ul>
+	<li>If the driver determines it cannot use a digital panel <strong>despite</strong> it being physically connected and powered on, using the switchhead option will not fix this. This is no fault in your card or the panel, but happens only because the driver relies on certain functions inside your cards BIOS to behave in a certain way.
+</ul>
+	<li><strong>force_pci:</strong><br>
+On AGP cards you can block the use of AGP mode transfers.
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+Keep this option set to <strong>force_pci false</strong>, unless the graphics card or motherboard has trouble using AGP.
+		<li><strong>true:</strong><br>
+<strong>force_pci true</strong> prevents the graphicsdriver from activating AGP mode, so it will be using PCI mode like it has always been in the past. The downside of this is that this comes at a performance penalty if your motherboard supports the AGP 'fastwrite' (FW) option, which won't be utilized with this setting.
+	</ul>
+<strong>Note:</strong>
+<ul>
+	<li>If you have trouble using AGP mode, you should prefer tweaking the AGP busmanager settings file as it might well enable you to use a 'lesser' AGP mode instead of falling back to PCI mode alltogether. 
+</ul>
+	<li><strong>dma_acc:</strong><br>
+You can select one of two methods for (2D) acceleration here: PIO mode and DMA mode. DMA mode works 4-10 times as fast as PIO mode on modern CPU's (beyond 2Ghz or so), and should still be 2-3 times as fast as PIO mode on slower CPU's (below 500Mhz).
+	<ul>
+		<li><strong>false:</strong><br>
+If the default setting does not work as expected, you can try falling back to PIO mode acceleration. Note however that PIO mode is currently not working on NV40 and higher GPU's (GeForce 6200, 6600, 6800 and 7800 like types). Also, chances are that this method of acceleration will be removed in future driverversions (so be sure to let me know if you are having trouble with DMA mode!).
+		<li><strong>true:</strong> (default setting)<br>
+<strong>dma_acc true</strong> enables DMA cmd fetching by the GPU for (2D) acceleration instead of using the old PIO method (which directly programs acceleration commands inside the GPU). The DMA method works (much) faster than PIO mode depending on system CPU speed. Also the DMA method is the only method that works on NV40 and higher GPU's (GeForce 6xxx and 7xxx series) currently.
+	</ul>
+	<li><strong>tv_output:</strong> (disabled by default: preceded by a '#')<br>
+		This option enables you to override the 'TV output signal cable autodetection' of the driver. If autodetection is working incorrect, you can manually select a signal type this way. Specify 0, 1 or 2 (if enabled).<br>
+	<ul>
+		<li><strong>disabled or 0:</strong> (default setting)<br>
+		With this setting the driver will autodetect which signal(s) to output for a TVout mode. Normally you can leave it at that: but it's possible that the manufacturor of your card and/or TVset made a mistake in their design concerning line 'impedance'. In this case the driver might detect incorrectly leaving you with a (almost) black-and-white or color-distorted TV picture. In such a case you would probably like to instruct the driver what signals to output, overruling the autodetection result.
+		<li><strong>1:</strong><br>
+		Force Y/C (and CVBS if supported by hardware). Use this setting if you use a Y/C cable with or without a CVBS cable (some cards have both Y/C and CVBS outputs, so you can output a head to two sets at the same time).
+		<li><strong>2:</strong><br>
+		Force CVBS on all outputs. Use this setting if you use CVBS cable(s) only.
+	</ul>
+<strong>Notes:</strong>
+<ul>
+<li>Y/C stands for Luminance/Chrominance, or S-VHS. This signal is transferred using a 4 (or more) pins mini-DIN connector: two pins carry the color-info, and two pins carry the intensity-info.
+<li>CVBS stands for 'Composite Video Baseband Signal' which means that '2 pins' carry both color- and intensity info 'frequency-multiplexed' (at the same time). This signal is transferred using a 'Tulip', 'Cinch' or RCA plugged cable (all the same thing).
+<li>Y/C connections deliver a better image quality than CVBS connections do. Originally, CVBS connections were used for VHS video recorders (about 300 'vertical lines' horizontal resolution), while Y/C connections were used for S-VHS recorders (about 400 'vertical lines' horizontal resolution).
+<li>Some cards only having a Y/C connector also have a seperate short cable with them which 'converts' the Y/C connector into a CVBS connector. If you use that you are in fact using a CVBS connection.
+<li>TVsets that do not have a RCA and/or mini-DIN video connector might still be useable: most sets have a SCART connector. SCART has settings that can accomodate RGB (some sets on some inputs), Y/C and CVBS signals. You can get Y/C and CVBS to/from (switched) SCART adaptors seperately from stores. You need to set the switch (if there) to 'input', and select the signal type you want to use on your TVset. A/V stands for CVBS, and Y/C stands for Y/C.
+<li>Turn the TVset on before setting a TVout mode if you use the driver's default 'autodetection' setting. You probably don't need to pre-select the correct TV input as turning the power on is mostly enough to enable all of the set's input 'impendances' enabling correct autodetection by the driver.
+</ul>
+	<li><strong>unhide_fw:</strong><br>
+This option is only used if your card is running in AGP mode. It's a real <strong>tweak</strong> option. It's officially unsupported, and it's unknown if it can do harm to your card or system. It exists because using it <strong>can</strong> speedup unaccelerated graphics <strong>a lot</strong>. Think about video playback or playing quake2 in software rendering mode...
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+Keep this option set to <strong>unhide_fw false</strong> unless you are certain you want to try the 'unsupported' graphics speedup. NV15, NV18, NV28 and NV34 cards for example probably don't need it as they officially support the AGP FW (fastwrites) feature already. On cards supporting FW by default the unhide_fw option has no effect.
+		<li><strong>true:</strong><br>
+If you have an older card that officially doesn't support the AGP FW feature, you could possibly get this feature anyway by setting <strong>unhide_fw true</strong>. For instance (some) NV11 cards work nicely with AGP FW enabled this way and unaccelerated graphics speedup considerably. Please <strong>make sure</strong> that at the first sign of trouble (system hanging, displaying artifacts, etc) you disable this feature here again, or you might risk <strong>destroying</strong> your card and/or AGP slot.
+	</ul>
+	<li><strong>pgm_panel:</strong><br>
+This option only has an effect if you have a laptop panel or DVI panel connected. It's existing because it's currently impossible to setup the driver in a way every single panel outthere is happy about it.
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+If you select <strong>pgm_panel false</strong> the driver will not program the panel's pixelclock (refreshrate). Instead it relies on your cardBIOS to have done that correctly. While this is probably the case, it might introduce some displaying errors every now and then.
+		<li><strong>true:</strong><br>
+With the <strong>pgm_panel true</strong> setting, the driver will fix your panel's refreshrate to 60Hz. While this should be working on all panels outthere, some panels are particular picky about refreshrates below 60.0Hz (they shut off), and some other panels are particular picky about refreshrates above 60.0Hz (they shut off). While the driver requests the hardware to set 60.0Hz, this isn't exactly possible, so the actual setting is <strong>bound</strong> to be a tiny bit below or above 60.0Hz.
+	</ul>
+	<li><strong>vga_on_tv:</strong><br>
+This option only has an effect if you have a card with supported TV encoder chip when you use TV out modes. When set to <strong>true</strong> it provides a <strong>'tweaked'</strong> dualhead clone mode for singlehead cards and dualhead cards using singlehead modes on TV. Because this special mode can possibly destroy old VGA monitors it's disabled by default.
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+If you select <strong>vga_on_tv false</strong> the driver will automatically shut-off your VGA (or DVI) monitor (by means of special internal DPMS settings) when a TVout mode is enabled on the head the monitor is connected to. This means that on singlehead cards and on dualhead cards using singlehead TV modes your only output will be on TV. This is the standard way of doing things.
+		<li><strong>true:</strong> With this setting VGA (or DVI) output on a head is enabled concurrent with TV output on that head: that is if you select a TVout mode. This setting is a 'tweak' because the modeline used to drive your monitor is the same modeline that is used for the TV output. This means that the monitor picture positioning is probably a bit odd, in some modes it might distort somewhat, and the refreshrate will be 50Hz for PAL modes, and 60Hz for NTSC modes. Make sure you only enable this tweak if you know your monitor supports down to 50Hz refreshrate, and preferably has a failsafe built in that blocks output when out-of-range signals are sent to it (almost every newer monitor has this feature).<br>
+	</ul>
+	<li><strong>force_sync:</strong><br>
+This option only has an effect on hardware accelerated 3D rendering. When set to <strong>true</strong> it forces the 3D screen updates to be synchronized to your screen's vertical retraces, preventing 'tearing' to occur.
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+If you select <strong>force_sync false</strong> the driver's 3D accelerant will render 3D scenes as fast as it can, without paying attention to the actual screen's refreshrate. The upside of this setting is that you can measure the actual rendering power your card has in a specific mode for a specific application (if that application supports benchmarking). The downside is that you'll be able to witness 'tearing': the effect of seeing random horizontal distortion 'stripes' onscreen, especially when the view moves fast in a horizontal direction (like looking around in a room in Quake2). If you need the last bit of rendering power because you run a heavy app on a relatively 'slow' card, this setting might be your best option: it's a bit faster than using <strong>force_sync true</strong>.
+		<li><strong>true:</strong> With this setting all tearing effects should be gone. Another reason to use this setting would be 'fixing' the driver's fps (frames per second) rendered. That is, when you are using a screen mode that your card can render at least at the speed your screen's refreshrate is set to: In this case the fps will be virtually independant of the complexity of the rendered scenes. Hardcore gamers amongst us really want this feature to get 'fixed' latencies so they can issue (firing) commands at the exact right time...<br>
+	</ul>
+<strong>Note please:</strong>
+<ul>
+<li>Forcing vertical retrace synchronisation using the force_sync option 'overrules' retrace sync settings done in your applications: all applications will be synchronized to the vertical retrace events.
+</ul>
+	<li><strong>force_ws:</strong><br>
+This option (if enabled) overrules the aspect ratio detection for screens inside the driver. When set to <strong>true</strong> it forces all monitors to be treated as widescreen types.
+	<ul>
+		<li><strong>false:</strong> (default setting)<br>
+If you select <strong>force_ws false</strong> the driver will autodetect the screen's aspect ratio if it can, otherwise it will force 4:3 aspect. Screens that are connected with a DVI cable and screens inside a laptop are autodetected (according to the cardBIOS presets done), analog connected screens will also be autodetected if DDC/EDID works: otherwise the driver blocks widescreen modes. Connected analog TV sets are always treated like widescreen devices though.
+		<li><strong>true:</strong><br> With this setting all monitors are treated as being widescreen types. This setting should only be used if you are having trouble using a widescreen monitor, because on non-widescreen monitors there's a (small) chance of destroying them if used with a widescreen mode. Some non-widescreen monitors will simply shut-off or display a black screen. So use this setting with care.<br>
+	</ul>
+<li><strong>primary:</strong> (set to disabled by default)<br>
+Primary lets you force a certain card to be used as primary card in your system if you have multiple graphics cards installed: so it will display your desktop. To enable this (hack) feature uncomment this item and fill in the exact name of the card that is to be primary (as exported by the kerneldriver in /dev/graphics/). If you are going to select a card other than the one displaying your system's POST messages at bootup, make sure you also set 'usebios false' as otherwise the card(s) aren't coldstarted by the driver.<br>
+<strong>Note please:</strong>
+<ul>
+<li>DVI and laptop panels don't work yet with the 'usebios false' setting. Analog connected screens should work though. 
+<li>Coldstarting doesn't work on TNT1 and GeForce 6xxx/7xxx cards yet.
+<li>Primary forces the primary card by preceding the exported name by a minus-sign (-) for the selected device. This ensures that this device will be listed at the top in the /dev/graphics/ folder, which is alphabetically ordered. Please make sure you enable the 'primary' feature on just one graphics driver, otherwise it's effect isn't 'guaranteed'.
+</ul>
+<li><strong>block_acc:</strong><br>
+This option lets you disable the acceleration engine all together if enabled. Use this as a workaround if you encounter acceleration engine trouble.
+<ul>
+<li><strong>false:</strong> (default setting)<br>
+The acceleration engine is enabled.
+<li><strong>true:</strong><br>
+The acceleration engine is disabled.
+</ul>
+<strong>Note please:</strong>
+<ul>
+<li>On Haiku the acceleration engine is not used at all.<br>
+</ul>
+<li><strong>check_edid:</strong><br>
+This option lets you disable adherence to your monitor's reported capabilities via EDID. It happens very rarely that especially older monitors report their capabilities in a non-correct way, making the driver believe it has less capabilities than it actually has.
+	<ul>
+		<li><strong>false:</strong><br>
+		<strong>check_edid false</strong> prevents the driver from blocking modes your monitor does not support according to the EDID information it returns to the driver. The driver still fetches the EDID information from your monitor, and still checks it's aspect ratio.
+		<li><strong>true:</strong> (default setting)<br>
+		Keep it set to <strong>check_edid true</strong>, unless you have determined that your monitor supports higher resolution modes than the modes the driver lets you choose from currently.
+	</ul>
+</ul>
+<hr>
+<br>
+Rudolf Cornelissen.<br>
+<p>(Page last updated on January 5, 2016)</p>
+</body>
+</html>

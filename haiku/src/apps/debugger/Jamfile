@@ -1,0 +1,202 @@
+SubDir HAIKU_TOP src apps debugger ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) headers compatibility bsd ] : true ;
+
+UsePrivateHeaders debugger ;
+UsePrivateHeaders [ FDirName debugger arch ] ;
+UsePrivateHeaders [ FDirName debugger controllers ] ;
+UsePrivateHeaders [ FDirName debugger debug_info ] ;
+UsePrivateHeaders [ FDirName debugger debug_managers ] ;
+UsePrivateHeaders [ FDirName debugger elf ] ;
+UsePrivateHeaders [ FDirName debugger files ] ;
+UsePrivateHeaders [ FDirName debugger ids ] ;
+UsePrivateHeaders [ FDirName debugger model ] ;
+UsePrivateHeaders [ FDirName debugger settings ] ;
+UsePrivateHeaders [ FDirName debugger settings generic ] ;
+UsePrivateHeaders [ FDirName debugger source_language ] ;
+UsePrivateHeaders [ FDirName debugger source_language c_family ] ;
+UsePrivateHeaders [ FDirName debugger target_host_interface ] ;
+UsePrivateHeaders [ FDirName debugger user_interface ] ;
+UsePrivateHeaders [ FDirName debugger user_interface util ] ;
+UsePrivateHeaders [ FDirName debugger types ] ;
+UsePrivateHeaders [ FDirName debugger util ] ;
+UsePrivateHeaders [ FDirName debugger value ] ;
+UsePrivateHeaders [ FDirName debugger value value_formatters ] ;
+UsePrivateHeaders [ FDirName debugger value value_nodes ] ;
+UsePrivateHeaders [ FDirName debugger value values ] ;
+
+UsePrivateHeaders app interface kernel shared system ;
+UsePrivateSystemHeaders ;
+
+UseBuildFeatureHeaders libedit ;
+
+LINKFLAGS += -Wl,--exclude-libs,ALL ;
+
+SEARCH_SOURCE += [ FDirName $(SUBDIR) settings ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface cli ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface cli commands ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui connection_config ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui connection_config
+	config_handlers ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui expression_eval_window ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui inspector_window ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui model ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui settings ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui team_window ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui team_settings_window ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui teams_window ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui utility_windows ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui util ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui value ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface gui value value_handlers ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) user_interface report ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) util ] ;
+
+local debugAnalyzerSources
+	= [ FDirName $(HAIKU_TOP) src apps debuganalyzer ] ;
+
+SubDirHdrs [ FDirName $(debugAnalyzerSources) gui ] ;
+
+local sources =
+	Debugger.cpp
+
+	# settings
+	DebuggerSettingsManager.cpp
+
+	# user_interface/cli
+	CliContext.cpp
+	CommandLineUserInterface.cpp
+
+	# user_interface/cli/commands
+	CliCommand.cpp
+	CliContinueCommand.cpp
+	CliDebugReportCommand.cpp
+	CliDumpMemoryCommand.cpp
+	CliDumpStringCommand.cpp
+	CliPrintVariableCommand.cpp
+	CliQuitCommand.cpp
+	CliStackFrameCommand.cpp
+	CliStackTraceCommand.cpp
+	CliStopCommand.cpp
+	CliThreadCommand.cpp
+	CliThreadsCommand.cpp
+	CliVariablesCommand.cpp
+	CliWriteCoreFileCommand.cpp
+
+	# user_interface/gui
+	GraphicalUserInterface.cpp
+
+	# user_interface/gui/connection_config
+	ConnectionConfigHandler.cpp
+	ConnectionConfigHandlerRoster.cpp
+	ConnectionConfigView.cpp
+
+	# user_interface/gui/connection_config/config_handlers
+	NetworkConnectionConfigHandler.cpp
+	NetworkConnectionConfigView.cpp
+
+	# user_interface/gui/model
+	VariablesViewState.cpp
+	VariablesViewStateHistory.cpp
+
+	# user_interface/gui/expression_eval_window
+	ExpressionEvaluationWindow.cpp
+
+	# user_interface/gui/inspector_window
+	InspectorWindow.cpp
+	MemoryView.cpp
+
+	# user_interface/gui/settings
+	DebuggerUiSettingsFactory.cpp
+	GuiTeamUiSettings.cpp
+
+	# user_interface/gui/teams_window
+	TeamsWindow.cpp
+	TeamsListView.cpp
+
+	# user_interface/gui/team_window
+	BreakpointListView.cpp
+	BreakpointsView.cpp
+	ConsoleOutputView.cpp
+	ImageFunctionsView.cpp
+	ImageListView.cpp
+	RegistersView.cpp
+	SourceView.cpp
+	StackTraceView.cpp
+	TeamWindow.cpp
+	ThreadListView.cpp
+	TypeHandlerMenuItem.cpp
+	VariablesView.cpp
+
+	# user_interface/gui/team_settings_window
+	ExceptionStopConfigView.cpp
+	ImageStopConfigView.cpp
+	SignalsConfigView.cpp
+	TeamSettingsWindow.cpp
+
+	# user_interface/gui/util
+	ActionMenuItem.cpp
+	AlertWithCheckbox.cpp
+	GuiSettingsUtils.cpp
+	SettingsMenu.cpp
+	SignalDispositionMenu.cpp
+	TargetAddressTableColumn.cpp
+
+	# user_interface/gui/utility_windows
+	BreakpointEditWindow.cpp
+	ConnectionConfigWindow.cpp
+	ExpressionPromptWindow.cpp
+	SignalDispositionEditWindow.cpp
+	StartTeamWindow.cpp
+	VariableEditWindow.cpp
+	WatchPromptWindow.cpp
+
+	# user_interface/gui/value
+	TableCellBoolEditor.cpp
+	TableCellEnumerationEditor.cpp
+	TableCellFloatEditor.cpp
+	TableCellFormattedValueEditor.cpp
+	TableCellFormattedValueRenderer.cpp
+	TableCellIntegerEditor.cpp
+	TableCellOptionPopUpEditor.cpp
+	TableCellTextControlEditor.cpp
+	TableCellValueEditor.cpp
+	TableCellValueRenderer.cpp
+	TableCellValueRendererUtils.cpp
+	ValueHandler.cpp
+	ValueHandlerRoster.cpp
+
+	# user_interface/gui/value/value_handlers
+	AddressValueHandler.cpp
+	BoolValueHandler.cpp
+	EnumerationValueHandler.cpp
+	FloatValueHandler.cpp
+	IntegerValueHandler.cpp
+	StringValueHandler.cpp
+
+	# user_interface/report
+	ReportUserInterface.cpp
+;
+
+Includes [ FGristFiles $(sources) ] :
+	[ BuildFeatureAttribute ncurses : headers ]
+	[ BuildFeatureAttribute libedit : headers ]
+;
+
+Application Debugger :
+	$(sources)
+	:
+	<nogrist>DebugAnalyzer_gui_table.o
+
+	libcolumnlistview.a
+	shared
+
+	[ TargetLibstdc++ ]
+	be package tracker libbsd.so libdebugger.so
+
+	[ BuildFeatureAttribute ncurses : library ]
+	[ BuildFeatureAttribute libedit : library ]
+
+	: Debugger.rdef
+;

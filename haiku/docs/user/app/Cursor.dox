@@ -1,0 +1,400 @@
+/*
+ * Copyright 2012-2014, 2019 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		John Scipione, jscipione@gmail.com
+ * 
+ * Corresponds to:
+ *		headers/os/app/Cursor.h	 hrev54621
+ *		src/kits/app/Cursor.cpp	 hrev54621
+ */
+
+
+/*!
+	\file Cursor.h
+	\ingroup app
+	\ingroup libbe
+	\brief Provides the BCursor class.
+*/
+
+
+/*!
+	\enum BCursorID
+	List of predefined cursor IDs
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_SYSTEM_DEFAULT
+	System default cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_CONTEXT_MENU
+	Context menu cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_COPY
+	Copy cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_CREATE_LINK
+	Symlink cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_CROSS_HAIR
+	Cross hairs cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_FOLLOW_LINK
+	Follow html link cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_GRAB
+	Grab cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_GRABBING
+	Grabbing cursor (mouse down)
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_HELP
+	Help cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_I_BEAM
+	I beam cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_I_BEAM_HORIZONTAL
+	Horizontal I beam cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_MOVE
+	Move cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_NO_CURSOR
+	No cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_NOT_ALLOWED
+	Not allowed cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_PROGRESS
+	Progress cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_NORTH
+	Resize north cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_EAST
+	Resize east cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_SOUTH
+	Resize south cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_WEST
+	Resize west cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_NORTH_EAST
+	Resize north east cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_NORTH_WEST
+	Resize north west cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_SOUTH_EAST
+	Resize south east cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_SOUTH_WEST
+	Resize south west cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_NORTH_SOUTH
+	Resize north south cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_EAST_WEST
+	Resize east west cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_NORTH_EAST_SOUTH_WEST
+	Resize north east south west cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_RESIZE_NORTH_WEST_SOUTH_EAST
+	Resize north west south east cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_ZOOM_IN
+	Zoom in cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\var BCursorID B_CURSOR_ID_ZOOM_OUT
+	Zoom out cursor
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\class BCursor
+	\ingroup app
+	\ingroup libbe
+	\brief BCursor describes a view-wide or application-wide cursor.
+
+	\note As BeOS only supports 16x16 monochrome cursors, to see a nice
+		  shadowed one we will need to extend this.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BCursor::BCursor(const void* cursorData)
+	\brief Initializes a new cursor object.
+
+	If the \a cursorData parameter is not \c NULL then the cursor is initialized
+	with the cursor data.
+
+	\param cursorData The cursor data.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BCursor::BCursor(BCursorID id)
+	\brief Initializes a new cursor object from a predefined cursor \a id.
+
+	\param id The predefined \a id to initialize to.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BCursor::BCursor(const BCursor& other)
+	\brief Initializes a new cursor object from another cursor object.
+
+	\param other The cursor object to initialize from.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BCursor::BCursor(BMessage* data)
+	\brief Initializes a new cursor object from a message archive.
+
+	\param data The message data to initialize from.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BCursor::BCursor(const BBitmap* bitmap, const BPoint& hotspot)
+	\brief Initializes a new cursor object from a bitmap object and a point
+           object.
+
+	\param bitmap The bitmap object to initialize from.
+	\param hotspot The cursor hotspot.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BCursor::~BCursor()
+	\brief Destroy the cursor and free its memory.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn status_t BCursor::InitCheck() const
+	\brief Returns the initialization status.
+
+	\return \c B_OK if the object was properly initialized or an error code
+	        otherwise.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BCursor::Archive(BMessage *into, bool deep) const
+	\brief Archive the cursor. Not implemented.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BArchivable* BCursor::Instantiate(BMessage *archive)
+	\brief Instantiate the cursor from a message. Not implemented.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn BCursor& BCursor::operator=(const BCursor &other)
+	\brief Set the cursor to another cursor object.
+
+	\param other The cursor object to copy from.
+
+	\returns the new cursor object.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn bool BCursor::operator==(const BCursor &other) const
+	\brief Compare a cursor object to another and return if they are equal.
+
+	\param other The cursor object to compare to.
+
+	\returns \c true if the cursor objects are equal, \c false if the cursor
+	         objects are not equal.
+
+	\since BeOS R5
+*/
+
+
+/*!
+	\fn bool BCursor::operator!=(const BCursor &other) const
+	\brief Compare a cursor object to another and return if they are not equal.
+
+	\param other The cursor object to compare to.
+
+	\returns \c true if the cursor objects are not equal, \c false if the cursor
+		objects are equal.
+
+	\since BeOS R5
+*/

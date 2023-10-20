@@ -1,0 +1,959 @@
+#
+# Copyright (c) 2003 The FreeBSD Project. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+# 1. Redistributions of source code must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+# 2. Redistributions in binary form must reproduce the above copyright
+#    notice, this list of conditions and the following disclaimer in the
+#    documentation and/or other materials provided with the distribution.
+#
+# THIS SOFTWARE IS PROVIDED BY THE PROJECT AND CONTRIBUTORS ``AS IS'' AND
+# ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE PROJECT OR CONTRIBUTORS BE LIABLE
+# FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+# DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+# LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+# OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+# SUCH DAMAGE.
+#
+# $FreeBSD: src/etc/network.subr,v 1.163 2005/06/30 04:52:47 brooks Exp $
+#
+
+#
+# Subroutines commonly used from network startup scripts.
+# Requires that /etc/rc.subr be loaded first.
+#
+
+# ifconfig_up if
+#	Evaluate ifconfig(8) arguments for interface $if and
+#	run ifconfig(8) with those arguments. It returns 0 if
+#	arguments were found and executed or 1 if the interface
+#	had no arguments.  Pseudo arguments DHCP and WPA are handled
+#	here.
+#
+ifconfig_up()
+{
+	local _cfg ifconfig_args
+	_cfg=1
+
+	ifconfig_args=`ifconfig_getargs $1`
+	if [ -n "${ifconfig_args}" ]; then
+		ifconfig $1 ${ifconfig_args}
+		ifconfig $1 up
+		_cfg=0
+	fi
+
+	if wpaif $1; then
+		ifconfig $1 up
+		/etc/rc.d/wpa_supplicant start $1
+		# NOTE: wpa_supplicant(8) needs to control the interface's
+		#	state in order to perform the SSID scan.  But
+		#	dhcpcd(8), which may be started by the "dhcp_client"
+		#	below, can race against wpa_supplicant(8) and modify
+		#	the interface's state, breaking the SSID scan and
+		#	preventing the SSID association.
+		#	Insert a small delay here to workaround the issue.
+		sleep 1
+		_cfg=0		# XXX: not sure this should count
+	fi
+
+	if dhcpif $1; then
+		/etc/rc.d/dhcp_client start $1
+		_cfg=0
+	fi
+
+	return $_cfg
+}
+
+# ifconfig_down if
+#	Remove all inet entries from the $if interface. It returns
+#	0 if inet entries were found and removed. It returns 1 if
+#	no entries were found or they could not be removed.
+#
+ifconfig_down()
+{
+	local _cfg _ifs oldifs _inet inetList
+
+	[ -z "$1" ] && return 1
+	_ifs="^"
+	_cfg=1
+
+	inetList="`ifconfig $1 | grep 'inet ' | tr "\n" "$_ifs"`"
+
+	oldifs="$IFS"
+	IFS="$_ifs"
+	for _inet in $inetList ; do
+		# get rid of extraneous line
+		[ -z "$_inet" ] && break
+
+		_inet=`expr "$_inet" : '.*\(inet \([0-9]\{1,3\}\.\)\{3\}[0-9]\{1,3\}\).*'`
+
+		IFS="$oldifs"
+		ifconfig $1 ${_inet} delete
+		IFS="$_ifs"
+		_cfg=0
+	done
+	IFS="$oldifs"
+
+	if wpaif $1; then
+		/etc/rc.d/wpa_supplicant stop $1
+	fi
+
+	if dhcpif $1; then
+		/etc/rc.d/dhcp_client stop $1
+		_cfg=0
+	fi
+
+	if ifexists $1; then
+		ifconfig $1 down
+		_cfg=0
+	fi
+
+	return $_cfg
+}
+
+# get_if_var if var [default]
+#	Return the value of the pseudo-hash corresponding to $if where
+#	$var is a string containg the sub-string "IF" which will be
+#	replaced with $if after the characters defined in _punct are
+#	replaced with '_'. If the variable is unset, replace it with
+#	$default if given.
+#
+get_if_var()
+{
+	local _if _punct_c _punct _var _default prefix suffix
+
+	if [ $# -ne 2 -a $# -ne 3 ]; then
+		err 3 'USAGE: get_if_var name var [default]'
+	fi
+
+	_if=$1
+	_punct=". - / +"
+	for _punct_c in $_punct; do
+		_if=`ltr ${_if} ${_punct_c} '_'`
+	done
+	_var=$2
+	_default=$3
+
+	prefix=${_var%%IF*}
+	suffix=${_var##*IF}
+	eval echo \${${prefix}${_if}${suffix}-${_default}}
+}
+
+# _ifconfig_getargs if [af]
+#	Echos the arguments for the supplied interface to stdout.
+#	Returns 1 if no interface is specified.
+#	In general, the ifconfig_getargs() below should be used outside
+#	this file.
+#
+_ifconfig_getargs()
+{
+	local _if _ifn _af _args
+
+	_ifn=$1
+	_af=${2:+${2}_}
+
+	if [ -z "$_ifn" ]; then
+		return 1
+	fi
+
+	_args=`get_if_var $_ifn ${_af}ifconfig_IF`
+	if [ -z "$_args" -a -n "${pccard_ifconfig}" ]; then
+		for _if in ${removable_interfaces} ; do
+			if [ "$_if" = "$_ifn" ] ; then
+				_args=${pccard_ifconfig}
+				break
+			fi
+		done
+	fi
+
+	echo $_args
+}
+
+# ifconfig_getargs if [af]
+#	Takes the result from _ifconfig_getargs() and removes pseudo
+#	args such as DHCP and WPA.
+#
+ifconfig_getargs()
+{
+	local _tmpargs _arg _args is_optarg
+
+	_tmpargs=`_ifconfig_getargs $1 $2`
+	if [ $? -eq 1 ]; then
+		return 1
+	fi
+	_args=
+
+	is_optarg=no
+	for _arg in $_tmpargs; do
+		if [ "$is_optarg" = "no" ]; then
+			case $_arg in
+			[Dd][Hh][Cc][Pp])
+				;;
+			[Ww][Pp][Aa])
+				;;
+			*)
+				_args="$_args $_arg"
+				case $_arg in
+				authmode)
+					is_optarg=yes
+					;;
+				esac
+				;;
+			esac
+		else
+			_args="$_args $_arg"
+			is_optarg=no
+		fi
+	done
+
+	echo $_args
+}
+
+# ipv6if if
+#	Returns 0 if the interface should be configured for IPv6 and
+#	1 otherwise.
+#
+ipv6if()
+{
+	local _if _tmpargs
+	_if=$1
+
+	# lo0 is always IPv6-enabled
+	if [ "$_if" = "lo0" ]; then
+		return 0
+	fi
+
+	case ${ipv6_enable} in
+	[Nn][Oo]|[Ff][Aa][Ll][Ss][Ee]|[Oo][Ff][Ff]|0)
+		return 1
+		;;
+	esac
+
+	case "${ipv6_network_interfaces}" in
+	$_if|"$_if "*|*" $_if"|*" $_if "*|[Aa][Uu][Tt][Oo])
+		# True if $ipv6_ifconfig_IF is defined.
+		_tmpargs=`_ifconfig_getargs $_if ipv6`
+		if [ -n "${_tmpargs}" ]; then
+			return 0
+		fi
+
+		# True if $ipv6_prefix_IF is defined.
+		_tmpargs=`get_if_var $_if ipv6_prefix_IF`
+		if [ -n "${_tmpargs}" ]; then
+			return 0
+		fi
+
+		;;
+	esac
+
+	return 1
+}
+
+# dhcpif if [ipv4|ipv6]
+#	Returns 0 if the interface needs DHCP for IPv4/IPv6 and 1 otherwise.
+#	If the second argument is "ipv4" (or "ipv6"), then only IPv4 (or
+#	IPv6) is checked, otherwise both are checked.
+#
+dhcpif()
+{
+	local _tmpargs _arg _if _af
+	_if=$1
+	_af=$2
+
+	if [ -z "$_af" -o "$_af" = "ipv4" ]; then
+		_tmpargs=`_ifconfig_getargs $_if`
+		for _arg in $_tmpargs; do
+			case $_arg in
+			[Dd][Hh][Cc][Pp])
+				return 0
+				;;
+			esac
+		done
+	fi
+
+	if [ -z "$_af" -o "$_af" = "ipv6" ] && ipv6if $_if; then
+		_tmpargs=`_ifconfig_getargs $_if ipv6`
+		for _arg in $_tmpargs; do
+			case $_arg in
+			[Dd][Hh][Cc][Pp])
+				return 0
+				;;
+			esac
+		done
+	fi
+
+	return 1
+}
+
+# wpaif if
+#	Returns 0 if the interface is a WPA interface and 1 otherwise.
+#
+wpaif()
+{
+	local _tmpargs _arg is_optarg
+
+	_tmpargs=`_ifconfig_getargs $1`
+	is_optarg=no
+	for _arg in $_tmpargs; do
+		if [ "$is_optarg" = "no" ]; then
+			case $_arg in
+			[Ww][Pp][Aa])
+				return 0
+				;;
+			authmode)
+				is_optarg=yes
+				;;
+			esac
+		else
+			is_optarg=no
+		fi
+	done
+
+	return 1
+}
+
+# ifexists if
+#	Returns 0 if the interface exists and 1 otherwise.
+#
+ifexists()
+{
+	[ -z "$1" ] && return 1
+	ifconfig -n $1 >/dev/null 2>&1
+}
+
+# ifalias_common if action [ipv6]
+#	Helper function for ifalias_up() and ifalias_down().
+#	The $action argument can be either "alias" (to add an
+#	alias) or "-alias" (to remove an alias).
+#	Returns 0 if at least one alias was added/removed or
+#	1 if there were none.
+#
+ifalias_common()
+{
+	local _if _action _af _af2 _ret _var _args _alias
+	_if=$1
+	_action=$2
+	_af=$3
+
+	_ret=1
+	_alias=0
+	while : ; do
+		if [ "${_af}" = "ipv6" ]; then
+			_af2="inet6"
+			_var="ipv6_ifconfig_IF_alias${_alias}"
+		else
+			_af2="inet"
+			_var="ifconfig_IF_alias${_alias}"
+		fi
+		_args=`get_if_var $_if $_var`
+		_args="${_args#${_af2} }"
+		if [ -z "${_args}" ]; then
+			break
+		fi
+		ifconfig $_if $_af2 $_args $_action
+		_alias=$((${_alias} + 1))
+		_ret=0
+	done
+	return $_ret
+}
+
+# ifalias_up if [ipv6]
+#	Configure IPv4 aliases for network interface $if or
+#	IPv6 aliases if the second argument is "ipv6".
+#	It returns 0 if at least one alias was configured or
+#	1 if there were none.
+#
+ifalias_up()
+{
+	ifalias_common $1 alias $2
+}
+
+# ifalias_down if [ipv6]
+#	Remove IPv4 aliases for network interface $if or
+#	IPv6 aliases if the second argument is "ipv6".
+#	It returns 0 if at least one alias was removed or
+#	1 if there were none.
+#
+ifalias_down()
+{
+	ifalias_common $1 -alias $2
+}
+
+# ifscript_up if
+#	Evaluate a startup script for the $if interface.
+#	It returns 0 if a script was found and processed or
+#	1 if no script was found.
+#
+ifscript_up()
+{
+	if [ -r /etc/start_if.$1 ]; then
+		. /etc/start_if.$1
+		return 0
+	fi
+	return 1
+}
+
+# ifscript_down if
+#	Evaluate a shutdown script for the $if interface.
+#	It returns 0 if a script was found and processed or
+#	1 if no script was found.
+#
+ifscript_down()
+{
+	if [ -r /etc/stop_if.$1 ]; then
+		. /etc/stop_if.$1
+		return 0
+	fi
+	return 1
+}
+
+# wlan_get_unused
+# walk through net.wlan and find unused device that can be created
+#
+wlan_get_unused()
+{
+	local idx
+
+	idx=0
+
+	while : ; do
+		if ! ${SYSCTL_N} -q net.wlan.${idx}.%parent >/dev/null; then
+			echo "wlan${idx}"
+			break
+		fi
+		idx=$((${idx} + 1))
+	done
+}
+
+# wlan_is_parent
+# check if given interface is parent for any existing wlan device
+#
+wlan_is_parent()
+{
+	sysctl -q net.wlan | grep -q "%parent: ${1}"
+}
+
+# wlan_up
+#	Create IEEE 802.11 interfaces.
+#
+wlan_up()
+{
+	local _prefix _list parent child child_wlans create_args debug_flags
+	_prefix=
+	_list=
+
+	local _rcconf _auto
+	_rcconf=""
+	_auto=""
+
+	local wlan_devices
+	if [ -n "$1" ]; then
+		wlan_devices="$1"
+	else
+		wlan_devices="`${SYSCTL_N} -q net.wlan.devices`"
+	fi
+
+	# Order detected devices so that interfaces configured via rc.conf are
+	# created first, and then all other devices are automatically assigned
+	for parent in ${wlan_devices}; do
+		child_wlans=`get_if_var $parent wlans_IF`
+		if [ -n "${child_wlans}" ]; then
+			_rcconf="${_rcconf} ${parent}"
+		else
+			_auto="${_auto} ${parent}"
+		fi
+	done
+
+	for parent in ${_rcconf} ${_auto}; do
+		if wlan_is_parent $parent; then
+			continue
+		fi
+		# Parse wlans_$parent="$child ..."
+		child_wlans=`get_if_var $parent wlans_IF`
+		# Or find first unused wlan device to create
+		if [ -z "${child_wlans}" ]; then
+			child_wlans=`wlan_get_unused`
+		fi
+		for child in ${child_wlans}; do
+			if ifexists $child; then
+				continue
+			fi
+
+			create_args="wlandev $parent `get_if_var $child create_args_IF`"
+			debug_flags="`get_if_var $child wlandebug_IF`"
+			if expr $child : 'wlan[0-9][0-9]*$' >/dev/null 2>&1; then
+				ifconfig $child create ${create_args}
+			else
+				ifconfig wlan create ${create_args} name $child
+			fi
+			if [ $? -eq 0 ]; then
+				_list="${_list}${_prefix}${child}"
+				[ -z "$_prefix" ] && _prefix=' '
+			fi
+			if [ -n "${debug_flags}" ]; then
+				wlandebug -i $child ${debug_flags}
+			fi
+		done
+	done
+
+	if [ -n "${_list}" ]; then
+		echo "Created wlan interfaces: ${_list}"
+	fi
+	debug "Created wlan interfaces: ${_list}"
+}
+
+# wlan_down
+#	Destroy IEEE 802.11 interfaces.
+#
+wlan_down()
+{
+	local _prefix _list parent child child_wlans
+	_prefix=
+	_list=
+
+	local wlan_devices
+	if [ -n "$1" ]; then
+		wlan_devices="$1"
+	else
+		wlan_devices="`${SYSCTL_N} -q net.wlan.devices`"
+	fi
+
+	for parent in ${wlan_devices}; do
+		child_wlans=`get_if_var $parent wlans_IF`
+		for child in ${child_wlans}; do
+			if ! ifexists $child; then
+				continue
+			fi
+
+			ifconfig -n $child destroy
+			if [ $? -eq 0 ]; then
+				_list="${_list}${_prefix}${child}"
+				[ -z "$_prefix" ] && _prefix=' '
+			fi
+		done
+	done
+
+	if [ -n "${_list}" ]; then
+		echo "Destroyed wlan interfaces: ${_list}"
+	fi
+	debug "Destroyed wlan interfaces: ${_list}"
+}
+
+# clone_up
+#	Create cloneable interfaces.
+#
+clone_up()
+{
+	local _prefix _list ifn
+	_prefix=
+	_list=
+
+	for ifn in ${cloned_interfaces}; do
+		ifconfig ${ifn} create
+		if [ $? -eq 0 ]; then
+			_list="${_list}${_prefix}${ifn}"
+			[ -z "$_prefix" ] && _prefix=' '
+		fi
+	done
+	if [ -n "${_list}" ]; then
+		echo "Created clone interfaces: ${_list}"
+	fi
+	debug "Created clone interfaces: ${_list}"
+}
+
+# clone_down
+#	Destroy cloned interfaces.
+#
+clone_down()
+{
+	local _prefix _list ifn
+	_prefix=
+	_list=
+
+	for ifn in ${cloned_interfaces}; do
+		ifconfig ${ifn} destroy
+		if [ $? -eq 0 ]; then
+			_list="${_list}${_prefix}${ifn}"
+			[ -z "$_prefix" ] && _prefix=' '
+		fi
+	done
+	if [ -n "${_list}" ]; then
+		echo "Destroyed clone interfaces: ${_list}"
+	fi
+	debug "Destroyed clone interfaces: ${_list}"
+}
+
+# gif_up
+#	Create IPv6<-->IPv4 tunnels
+#
+gif_up() {
+	local _if _peers
+
+	case ${gif_interfaces} in
+	[Nn][Oo] | '')
+		return
+		;;
+	esac
+
+	for _if in ${gif_interfaces}; do
+		eval _peers=\$gifconfig_${_if}
+		case ${_peers} in
+		'')
+			continue
+			;;
+		*)
+			ifconfig $_if create >/dev/null 2>&1
+			ifconfig $_if tunnel ${_peers}
+			ifconfig $_if up
+			;;
+		esac
+	done
+}
+
+# ifnet_rename
+#	Rename all requested interfaces.
+#
+ifnet_rename()
+{
+	local _ifn_list _if _ifname
+
+	_ifn_list=$(ifconfig -l)
+	[ -z "$_ifn_list" ] && return 0
+
+	for _if in ${_ifn_list} ; do
+		_ifname=`get_if_var $_if ifconfig_IF_name`
+		if [ -n "$_ifname" ]; then
+			ifconfig $_if name $_ifname
+		fi
+	done
+	return 0
+}
+
+# list_net_interfaces
+#	List all network interfaces.
+#	Note that the list will include cloned interfaces if applicable.
+#	Cloned interfaces must already exist to have a chance to appear
+#	in the list if ${network_interfaces} is set to `auto'.
+#
+list_net_interfaces()
+{
+	local _tmplist _autolist _lo _if
+
+	case ${network_interfaces} in
+	[Aa][Uu][Tt][Oo])
+		_autolist=$(ifconfig -l)
+		_lo=
+		for _if in ${_autolist} ; do
+			if [ "$_if" = "lo0" ]; then
+				_lo="lo0"
+			else
+				_tmplist="${_tmplist} ${_if}"
+			fi
+		done
+		_tmplist="${_lo} ${_tmplist}"
+		;;
+	*)
+		_tmplist="${network_interfaces} ${cloned_interfaces}"
+		;;
+	esac
+
+	echo $_tmplist
+}
+
+hexdigit()
+{
+	if [ $1 -lt 10 ]; then
+		echo $1
+	else
+		case $1 in
+		10)	echo a ;;
+		11)	echo b ;;
+		12)	echo c ;;
+		13)	echo d ;;
+		14)	echo e ;;
+		15)	echo f ;;
+		esac
+	fi
+}
+
+hexprint()
+{
+	local val str dig
+	val=$1
+	str=''
+
+	dig=`hexdigit $((${val} & 15))`
+	str=${dig}${str}
+	val=$((${val} >> 4))
+	while [ ${val} -gt 0 ]; do
+		dig=`hexdigit $((${val} & 15))`
+		str=${dig}${str}
+		val=$((${val} >> 4))
+	done
+
+	echo ${str}
+}
+
+is_wired_interface()
+{
+	local media
+
+	case `ifconfig $1 2>/dev/null` in
+		*media:?Ethernet*) media=Ethernet ;;
+	esac
+
+	test "$media" = "Ethernet"
+}
+
+#
+# IPv6-specific setup subroutines
+#
+
+# Setup the interfaces for IPv6
+network6_interface_setup()
+{
+	local interfaces rtsol_interfaces ipv6_ifconfig
+	local rtsol_available rtsol_interface
+	local prefix laddr hostid address
+	local _if j
+
+	interfaces=$*
+	rtsol_interfaces=''
+	case ${ipv6_gateway_enable} in
+	[Yy][Ee][Ss])
+		rtsol_available=no
+		;;
+	*)
+		rtsol_available=yes
+		;;
+	esac
+	for _if in $interfaces; do
+		rtsol_interface=yes
+		prefix=`get_if_var $_if ipv6_prefix_IF`
+		if [ -n "${prefix}" ]; then
+			rtsol_available=no
+			rtsol_interface=no
+			laddr=`network6_getladdr $_if`
+			hostid=`expr "${laddr}" : 'fe80::\(.*\)%\(.*\)'`
+			for j in ${prefix}; do
+				address=$j\:${hostid}
+				ifconfig $_if inet6 ${address} prefixlen 64 alias
+
+				case ${ipv6_gateway_enable} in
+				[Yy][Ee][Ss])
+					# subnet-router anycast address
+					# (rfc2373)
+					ifconfig $_if inet6 $j:: prefixlen 64 \
+						alias anycast
+					;;
+				esac
+			done
+		fi
+		ipv6_ifconfig=`ifconfig_getargs $_if ipv6`
+		ipv6_ifconfig="${ipv6_ifconfig#inet6 }"
+		if [ -n "${ipv6_ifconfig}" ]; then
+			rtsol_available=no
+			rtsol_interface=no
+			ifconfig $_if inet6 ${ipv6_ifconfig} alias
+		fi
+
+		if [ "${rtsol_available}" = "yes" -a \
+		     "${rtsol_interface}" = "yes" ]; then
+			case ${i} in
+			lo0|gif[0-9]*|stf[0-9]*|lp[0-9]*|sl[0-9]*|tun[0-9]*)
+				;;
+			*)
+				rtsol_interfaces="${rtsol_interfaces} ${_if}"
+				;;
+			esac
+		else
+			ifconfig $_if inet6
+		fi
+	done
+
+	if [ "${rtsol_available}" = "yes" -a -n "${rtsol_interfaces}" ]; then
+		# Act as endhost - automatically configured.
+		# You can configure only single interface, as
+		# specification assumes that autoconfigured host has
+		# single interface only.
+		${SYSCTL_W} net.inet6.ip6.accept_rtadv=1
+		set ${rtsol_interfaces}
+		ifconfig $1 up
+		echo "Auto configuring interface $1 ..."
+		rtsol $1
+	fi
+
+	for _if in $interfaces; do
+		ifalias_up $_if ipv6
+	done
+}
+
+# Setup IPv6 to IPv4 mapping
+network6_stf_setup()
+{
+	local stf_prefixlen stf_interface_ipv6_ifid
+	local hexfrag1 hexfrag2 ipv4_in_hexformat laddr
+	local _if OIFS
+
+	case ${stf_interface_ipv4addr} in
+	[Nn][Oo] | '')
+		;;
+	*)
+		# assign IPv6 addr and interface route for 6to4 interface
+		stf_prefixlen=$((16+${stf_interface_ipv4plen:-0}))
+		OIFS="$IFS"
+		IFS=".$IFS"
+		set ${stf_interface_ipv4addr}
+		IFS="$OIFS"
+		hexfrag1=`hexprint $(($1*256 + $2))`
+		hexfrag2=`hexprint $(($3*256 + $4))`
+		ipv4_in_hexformat="${hexfrag1}:${hexfrag2}"
+		case ${stf_interface_ipv6_ifid} in
+		[Aa][Uu][Tt][Oo] | '')
+			for _if in ${ipv6_network_interfaces}; do
+				laddr=`network6_getladdr $_if`
+				case ${laddr} in
+				'')
+					;;
+				*)
+					break
+					;;
+				esac
+			done
+			stf_interface_ipv6_ifid=`expr "${laddr}" : \
+						      'fe80::\(.*\)%\(.*\)'`
+			case ${stf_interface_ipv6_ifid} in
+			'')
+				stf_interface_ipv6_ifid=0:0:0:1
+				;;
+			esac
+			;;
+		esac
+		ifconfig stf0 create >/dev/null 2>&1
+		ifconfig stf0 inet6 2002:${ipv4_in_hexformat}:${stf_interface_ipv6_slaid:-0}:${stf_interface_ipv6_ifid} \
+			prefixlen ${stf_prefixlen}
+		# disallow packets to malicious 6to4 prefix
+		route add -inet6 2002:e000:: -prefixlen 20 ::1 -reject
+		route add -inet6 2002:7f00:: -prefixlen 24 ::1 -reject
+		route add -inet6 2002:0000:: -prefixlen 24 ::1 -reject
+		route add -inet6 2002:ff00:: -prefixlen 24 ::1 -reject
+		;;
+	esac
+}
+
+# Setup static routes
+network6_static_routes_setup()
+{
+	local _rt
+
+	# Set up any static routes.
+	case ${ipv6_defaultrouter} in
+	[Nn][Oo] | '')
+		;;
+	*)
+		ipv6_static_routes="default ${ipv6_static_routes}"
+		ipv6_route_default="default ${ipv6_defaultrouter}"
+		;;
+	esac
+	case ${ipv6_static_routes} in
+	[Nn][Oo] | '')
+		;;
+	*)
+		for _rt in ${ipv6_static_routes}; do
+			eval ipv6_route_args=\$ipv6_route_${_rt}
+			route add -inet6 ${ipv6_route_args}
+		done
+		;;
+	esac
+}
+
+# Install the "default interface" to kernel, which will be used
+# as the default route when there's no router.
+network6_default_interface_setup()
+{
+	local _if laddr
+
+	# Choose IPv6 default interface if it is not clearly specified.
+	case ${ipv6_default_interface} in
+	'')
+		for _if in ${ipv6_network_interfaces}; do
+			if [ "${_if}" = "lo0" ]; then
+				continue
+			fi
+
+			laddr=`network6_getladdr $_if exclude_tentative`
+			case ${laddr} in
+			'')
+				;;
+			*)
+				ipv6_default_interface=$_if
+				break
+				;;
+			esac
+		done
+		;;
+	esac
+
+	# Disallow unicast packets without outgoing scope identifiers,
+	# or route such packets to a "default" interface, if it is specified.
+	route add -inet6 fe80:: -prefixlen 10 ::1 -reject
+	case ${ipv6_default_interface} in
+	[Nn][Oo] | '')
+		route add -inet6 ff02:: -prefixlen 16 ::1 -reject
+		;;
+	*)
+		laddr=`network6_getladdr ${ipv6_default_interface}`
+		route add -inet6 ff02:: ${laddr} -prefixlen 16 -interface \
+			-cloning
+
+		# Disable installing the default interface with the
+		# case net.inet6.ip6.forwarding=0 and
+		# net.inet6.ip6.accept_rtadv=0, due to avoid conflict
+		# between the default router list and the manual
+		# configured default route.
+		case ${ipv6_gateway_enable} in
+		[Yy][Ee][Ss])
+			;;
+		*)
+			if [ `${SYSCTL_N} net.inet6.ip6.accept_rtadv` -eq 1 ]
+			then
+				ndp -I ${ipv6_default_interface}
+			fi
+			;;
+		esac
+		;;
+	esac
+}
+
+network6_getladdr()
+{
+	local proto addr rest
+
+	ifconfig $1 2>/dev/null | while read proto addr rest; do
+		case ${proto} in
+		inet6)
+			case ${addr} in
+			fe80::*)
+				if [ -z "$2" ]; then
+					echo ${addr}
+					return
+				fi
+				case ${rest} in
+				*tentative*)
+					continue
+					;;
+				*)
+					echo ${addr}
+					return
+				esac
+			esac
+		esac
+	done
+}

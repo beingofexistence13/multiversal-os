@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src add-ons translators ;
+
+SubInclude HAIKU_TOP src add-ons translators avif ;
+SubInclude HAIKU_TOP src add-ons translators bmp ;
+SubInclude HAIKU_TOP src add-ons translators exr ;
+SubInclude HAIKU_TOP src add-ons translators gif ;
+SubInclude HAIKU_TOP src add-ons translators hvif ;
+SubInclude HAIKU_TOP src add-ons translators ico ;
+SubInclude HAIKU_TOP src add-ons translators jpeg ;
+SubInclude HAIKU_TOP src add-ons translators jpeg2000 ;
+SubInclude HAIKU_TOP src add-ons translators pcx ;
+SubInclude HAIKU_TOP src add-ons translators png ;
+SubInclude HAIKU_TOP src add-ons translators ppm ;
+SubInclude HAIKU_TOP src add-ons translators raw ;
+SubInclude HAIKU_TOP src add-ons translators rtf ;
+SubInclude HAIKU_TOP src add-ons translators sgi ;
+SubInclude HAIKU_TOP src add-ons translators shared ;
+SubInclude HAIKU_TOP src add-ons translators stxt ;
+SubInclude HAIKU_TOP src add-ons translators tga ;
+SubInclude HAIKU_TOP src add-ons translators tiff ;
+SubInclude HAIKU_TOP src add-ons translators webp ;
+SubInclude HAIKU_TOP src add-ons translators wonderbrush ;
+SubInclude HAIKU_TOP src add-ons translators icns ;
+SubInclude HAIKU_TOP src add-ons translators psd ;

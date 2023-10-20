@@ -1,0 +1,32 @@
+SubDir HAIKU_TOP src build libbe support ;
+
+UsePrivateBuildHeaders app interface shared support ;
+UsePrivateObjectHeaders Url.cpp : locale ;
+
+USES_BE_API on <libbe_build>support_kit.o = true ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits support ] ;
+
+SubDirC++Flags -DZSTD_ENABLED ;
+
+BuildPlatformMergeObjectPIC <libbe_build>support_kit.o :
+	Archivable.cpp
+	BlockCache.cpp
+	BufferIO.cpp
+	ByteOrder.cpp
+	CompressionAlgorithm.cpp
+	DataIO.cpp
+	DataPositionIOWrapper.cpp
+	Flattenable.cpp
+	Job.cpp
+	JobQueue.cpp
+	List.cpp
+	Locker.cpp
+	PointerList.cpp
+	Referenceable.cpp
+	String.cpp
+	StringList.cpp
+	Url.cpp
+	ZlibCompressionAlgorithm.cpp
+	ZstdCompressionAlgorithm.cpp
+;

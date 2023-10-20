@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src add-ons print transports parallel_port ;
+
+UsePrivateHeaders print ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits print ] ;
+
+Addon Parallel\ Port :
+	ParallelTransport.cpp
+	PrintTransportAddOn.cpp
+	: be [ TargetLibsupc++ ]
+;

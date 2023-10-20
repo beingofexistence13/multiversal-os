@@ -1,0 +1,24 @@
+/*
+ * Copyright 2009-2013, Ingo Weinhold, ingo_weinhold@gmx.de.
+ * Distributed under the terms of the MIT License.
+ */
+#ifndef PACKAGE_H
+#define PACKAGE_H
+
+#include <SupportDefs.h>
+
+
+void	print_usage_and_exit(bool error);
+int32	parse_compression_argument(const char* arg);
+
+int		command_add(int argc, const char* const* argv);
+int		command_checksum(int argc, const char* const* argv);
+int		command_create(int argc, const char* const* argv);
+int		command_dump(int argc, const char* const* argv);
+int		command_extract(int argc, const char* const* argv);
+int		command_info(int argc, const char* const* argv);
+int		command_list(int argc, const char* const* argv);
+int		command_recompress(int argc, const char* const* argv);
+
+
+#endif	// PACKAGE_H

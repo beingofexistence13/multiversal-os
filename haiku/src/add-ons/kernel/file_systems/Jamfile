@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src add-ons kernel file_systems ;
+
+SubInclude HAIKU_TOP src add-ons kernel file_systems bfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems bfs_big ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems bindfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems btrfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems cdda ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems exfat ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems ext2 ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems fat ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems iso9660 ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems netfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems nfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems nfs4 ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems ntfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems packagefs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems ramfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems reiserfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems udf ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems ufs2 ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems userlandfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems websearchfs ;
+SubInclude HAIKU_TOP src add-ons kernel file_systems xfs ;
+
+SubInclude HAIKU_TOP src add-ons kernel file_systems layers ;

@@ -1,0 +1,183 @@
+# This file defines the optional packages that can be added to the Haiku image.
+# It is directly included from HaikuImage -- all variables defined there can
+# be used.
+
+# Available Optional Packages:
+#	BeOSCompatibility		- creates links within the system to support old apps
+#	Development				- more complete dev environment (including autotools)
+#	DevelopmentBase			- basic development environment (gcc, headers, libs,...)
+#	DevelopmentMin			- development headers, libs, tools, from sources only
+#	Git						- the distributed version control system
+#	WebPositive				- native, WebKit-based web browser
+#	Welcome					- introductory documentation to Haiku
+
+
+# dependencies between optional packages
+OptionalPackageDependencies Development : DevelopmentBase ;
+OptionalPackageDependencies DevelopmentBase : DevelopmentMin ;
+OptionalPackageDependencies DevelopmentPowerPC : DevelopmentMin ;
+OptionalPackageDependencies NetFS : UserlandFS ;
+
+
+# Haiku sources
+if $(HAIKU_INCLUDE_SOURCES) = 1 {
+	AddPackageFilesToHaikuImage _sources_
+		:
+		haiku_source.hpkg
+		:
+		nameFromMetaInfo
+		;
+}
+
+
+# BeBook
+if [ IsOptionalHaikuImagePackageAdded BeBook ] {
+	AddHaikuImageSystemPackages be_book ;
+	AddSymlinkToHaikuImage home Desktop
+		: /boot/system/documentation/BeBook/index.html
+		: BeBook ;
+}
+
+
+# BeOSCompatibility
+if [ IsOptionalHaikuImagePackageAdded BeOSCompatibility ] {
+	if $(TARGET_ARCH) != x86
+			|| $(TARGET_CC_IS_LEGACY_GCC_$(TARGET_PACKAGING_ARCH)) != 1 {
+		Echo "No optional package BeOSCompatibility available for"
+			"$(TARGET_ARCH)" ;
+	} else {
+		Echo "Warning: Adding BeOS compatibility symlinks. This will go away."
+			"Please fix your apps!" ;
+		AddSymlinkToHaikuImage beos : ../system/apps ;
+		AddSymlinkToHaikuImage beos : ../system/bin ;
+		AddSymlinkToHaikuImage beos
+			: ../system/documentation ;
+		AddSymlinkToHaikuImage beos : ../system/settings/etc ;
+		AddSymlinkToHaikuImage beos : ../system/preferences ;
+		AddSymlinkToHaikuImage beos : ../system ;
+		AddDirectoryToHaikuImage var ;
+		AddSymlinkToHaikuImage var : /boot/system/var/log ;
+		AddSymlinkToHaikuImage var : /boot/system/cache/tmp ;
+	}
+}
+
+
+# Development
+if [ IsOptionalHaikuImagePackageAdded Development ] {
+	# autotools
+	AddHaikuImageDisabledPackages autoconf automake texinfo ;
+	AddHaikuImageSourcePackages autoconf automake texinfo ;
+
+	# some other build tools
+	AddHaikuImageDisabledPackages pkgconfig ;
+	AddHaikuImageSourcePackages pkgconfig ;
+
+	# devel packages for some of the base set
+	local architectureObject ;
+	for architectureObject in [ MultiArchSubDirSetup ] {
+		on $(architectureObject) {
+			AddHaikuImageDisabledPackages openssl_devel
+				libjpeg_turbo_devel libpng16_devel zlib_devel zstd_devel ;
+		}
+	}
+}
+
+
+# DevelopmentBase
+if [ IsOptionalHaikuImagePackageAdded DevelopmentBase ] {
+	# gcc and binutils (for all target architectures)
+	local architectureObject ;
+	for architectureObject in [ MultiArchSubDirSetup ] {
+		on $(architectureObject) {
+			AddHaikuImageDisabledPackages binutils gcc !gcc2 @{ mpc mpfr }@ ;
+			AddHaikuImageSystemPackages gmp@!gcc2 ;
+			AddHaikuImageSourcePackages binutils gcc !gcc2 @{ gmp mpc mpfr }@ ;
+		}
+	}
+
+	# other commonly used tools
+	AddHaikuImageDisabledPackages bison cdrtools flex jam make mawk mkdepend
+		m4@!gcc2 m4_x86@secondary_x86 nasm@!gcc2 nasm_x86@secondary_x86 patch ;
+	AddHaikuImageSourcePackages bison cdrtools make patch
+		m4@!gcc2 m4_x86@secondary_x86 ;
+}
+
+
+# DevelopmentMin
+if [ IsOptionalHaikuImagePackageAdded DevelopmentMin ]
+		&& ( $(TARGET_ARCH) = x86 || $(TARGET_ARCH) = x86_64 ) {
+	AddPackageFilesToHaikuImage _packages_
+		:
+		haiku_devel.hpkg
+		haiku_$(TARGET_PACKAGING_ARCHS[2-])_devel.hpkg
+		:
+		nameFromMetaInfo
+		;
+
+	if $(HAIKU_IS_BOOTSTRAP) != 1 {
+		AddPackageFilesToHaikuImage _packages_
+			:
+			makefile_engine.hpkg
+			:
+			nameFromMetaInfo
+			;
+		AddHaikuImageDisabledPackages make mkdepend ;
+		AddHaikuImageSourcePackages make ;
+	}
+}
+
+
+# Git
+if [ IsOptionalHaikuImagePackageAdded Git ] {
+	AddHaikuImageSystemPackages git git_daemon perl ;
+	AddHaikuImageSourcePackages git ;
+}
+
+
+# WebPositive
+if [ IsOptionalHaikuImagePackageAdded WebPositive ] {
+	local architectureObject ;
+	for architectureObject in [ MultiArchSubDirSetup ] {
+		on $(architectureObject) {
+			if [ FIsBuildFeatureEnabled webpositive ] {
+				AddPackageFilesToHaikuImage system packages : webpositive.hpkg
+					: nameFromMetaInfo ;
+				break ;
+			}
+		}
+	}
+}
+
+
+# Welcome
+if [ IsOptionalHaikuImagePackageAdded Welcome ] {
+	AddHaikuImageSystemPackages
+		haiku_userguide_ca
+		haiku_userguide_de
+		haiku_userguide_en
+		haiku_userguide_es
+		haiku_userguide_fi
+		haiku_userguide_fur
+		haiku_userguide_fr
+		haiku_userguide_hu
+		haiku_userguide_id
+		haiku_userguide_jp
+		haiku_userguide_pl
+		haiku_userguide_pt_br
+		haiku_userguide_pt_pt
+		haiku_userguide_ro
+		haiku_userguide_ru
+		haiku_userguide_sk
+		haiku_userguide_sv_se
+		haiku_userguide_tr
+		haiku_userguide_uk
+		haiku_userguide_zh_cn
+		haiku_welcome
+		;
+
+	AddSymlinkToHaikuImage home Desktop	: /boot/system/bin/quicktour
+		: Quick\ Tour ;
+
+	AddSymlinkToHaikuImage home Desktop	: /boot/system/bin/userguide
+		: User\ Guide ;
+}

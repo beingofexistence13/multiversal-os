@@ -1,0 +1,41 @@
+#!/bin/sh
+#
+# $FreeBSD: src/etc/rc.d/wpa_supplicant,v 1.2 2005/10/19 22:26:47 jkim Exp $
+#
+
+# PROVIDE: wpa_supplicant
+# REQUIRE: mountcritremote
+# KEYWORD: nojail
+
+. /etc/rc.subr
+. /etc/network.subr
+
+name="wpa_supplicant"
+rcvar=`set_rcvar`
+
+load_rc_config $name
+
+ifn="$2"
+
+if [ -z "${ifn}" ]; then
+	# got no interface, run single daemon for multiple matching interfaces
+	# but ensure the feature is supported first
+	case `${wpa_supplicant_program} -h 2>/dev/null` in
+		*-M*) match_iface=1 ;;
+		*) return 1 ;;
+	esac
+	flags="-M -i wlan* -D bsd -P /var/run/${name}.pid ${wpa_supplicant_flags}"
+else
+	# got particular interface, possibly called from ifconfig_up() in network.subr
+	# force "enable" to ensure run_rc_command below runs daemon for the interface
+	wpa_supplicant_enable="YES"
+	if is_wired_interface ${ifn} ; then
+		driver="wired"
+	else
+		driver="bsd"
+	fi
+	flags="-i ${ifn} -D ${driver} -P /var/run/${name}/${ifn}.pid ${wpa_supplicant_flags}"
+fi
+
+flags="-B -s ${flags}"
+run_rc_command "$1"

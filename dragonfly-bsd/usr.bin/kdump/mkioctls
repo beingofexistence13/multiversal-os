@@ -1,0 +1,126 @@
+#!/bin/sh
+#
+# $FreeBSD: src/usr.bin/kdump/mkioctls,v 1.15.2.5 2002/11/15 18:22:31 ru Exp $
+
+set -e
+
+if [ "x$1" = "x-s" ]; then
+	use_switch=1
+	shift
+else
+	use_switch=0
+fi
+
+if [ -z "$1" -o -z "$2" ]; then
+	echo "usage: sh $0 [-s] include-dir current-dir"
+	exit 1
+fi
+
+LC_ALL=C; export LC_ALL
+
+# Build a list of headers that have ioctls in them.
+# Leave out fake softlinks.
+ioctl_includes=`
+	cd $1
+	find -s * -name '*.h' -follow |
+		egrep -v '^(cam/)|^(compat/)|^(fs/)|^(isofs/)|^(mfs/)|^(msdosfs/)|^(netkey/)|^(netsmb/)|^(nfs/)|^(ntfs/)|^(pccard/)|^(ufs/)' |
+		xargs egrep -l \
+'^#[ 	]*define[ 	]+[A-Za-z_][A-Za-z0-9_]*[ 	]+_IO[^a-z0-9_]' |
+		awk '{printf("#include <%s>\\\\n", $1)}'
+	printf '/*\\\\n'
+	printf ' * We should probably install some of these to /usr/include/sys\\\\n'
+	printf ' */\\\\n'
+	printf '#include <bus/firewire/firewire.h>\\\\n'
+	printf '#include <bus/iicbus/iic.h>\\\\n'
+	printf '#include <bus/u4b/storage/rio500_usb.h>\\\\n'
+	printf '#include <dev/acpica/acpiio_mcall.h>\\\\n'
+	printf '#include <dev/disk/iscsi/initiator/iscsi.h>\\\\n'
+	printf '#include <dev/disk/isp/isp_ioctl.h>\\\\n'
+	printf '#include <dev/disk/nvme/nvme_ident.h>\\\\n'
+	printf '#include <dev/disk/nvme/nvme_log.h>\\\\n'
+	printf '#include <dev/disk/nvme/nvme_ns.h>\\\\n'
+	printf '#include <dev/disk/nvme/nvme_chipset.h>\\\\n'
+	printf '#include <dev/disk/nvme/nvme_ioctl.h>\\\\n'
+	printf '#include <dev/drm/include/uapi/drm/drm.h>\\\\n'
+	printf '#include <dev/drm/include/uapi/drm/i915_drm.h>\\\\n'
+	printf '#include <dev/drm/include/uapi/drm/radeon_drm.h>\\\\n'
+	printf '#include <dev/misc/gpio/gpio.h>\\\\n'
+	printf '#include <netproto/802_11/ieee80211_radiotap.h>\\\\n'
+	printf '#include <dev/netif/ath/ath/if_athioctl.h>\\\\n'
+	printf '#include <dev/netif/iwn/if_iwn_ioctl.h>\\\\n'
+	printf '#include <dev/raid/aac/aac_ioctl.h>\\\\n'
+	printf '#include <dev/raid/amr/amrio.h>\\\\n'
+	printf '#include <dev/raid/arcmsr/arcmsr.h>\\\\n'
+	printf '#include <dev/raid/mlx/mlxio.h>\\\\n'
+	printf '#include <net/gre/if_gre.h>\\\\n'
+	printf '#include <net/netmap/netmap.h>\\\\n'
+	printf '#include <vfs/hpfs/hpfs_ioctl.h>\\\\n'
+`
+
+awk -v x="$ioctl_includes" 'BEGIN {print x}' |
+	gcc -D_KERNEL_STRUCTURES -E -I$1 -I$2/../../sys -I$2/../../sys/dev/drm/include -dM - |
+	awk -v ioctl_includes="$ioctl_includes" -v use_switch="$use_switch" '
+BEGIN {
+	print "/* XXX obnoxious prerequisites. */"
+	print "#define _KERNEL_STRUCTURES"
+	print "#include <sys/tty.h>"
+	print "#include <net/if_arp.h>"
+	print "#include <net/route.h>"
+	print "#include <netinet/in.h>"
+	print "#include <net/ip_mroute/ip_mroute.h>"
+	print "#include <netinet6/nd6.h>"
+	print "#include <netinet6/ip6_mroute.h>"
+	print "#include <stdio.h>"
+	print "#include <bus/cam/cam.h>"
+	print "#define ACPI_DEBUG_OUTPUT"
+	print "#define ACPI_APPLICATION"
+	print "#include <contrib/dev/acpica/source/include/acpi.h>"
+	print "#undef ACPI_APPLICATION"
+	print "#undef ACPI_DEBUG_OUTPUT"
+	print ""
+	print ioctl_includes
+	print "const char *ioctlname(u_long);"
+	print ""
+	print "const char *"
+	print "ioctlname(u_long val)"
+	print "{"
+	if (use_switch)
+		print "\tswitch(val) {"
+}
+
+/^#[ 	]*define[ 	]+[A-Za-z_][A-Za-z0-9_]*[ 	]+_IO/ {
+	
+	# find where the name starts
+	for (i = 1; i <= NF; i++)
+		if ($i ~ /define/)
+			break;
+	++i;
+	# 
+	if (use_switch)
+		printf("\tcase %s:\n\t\treturn(\"%s\");\n", $i, $i);
+	else
+		printf("\tif (val ==  %s)\n\t\treturn(\"%s\");\n", $i, $i);
+
+}
+
+/^#[ 	]*define[ 	]+[^ 	]+[ 	]+DRM_IO/ {
+	if (use_switch)
+		printf("\tcase %s:\n\t\treturn(\"%s\");\n", $2, $2);
+	else
+		printf("\tif (val ==  %s)\n\t\treturn(\"%s\");\n", $2, $2);
+}
+
+/^#[ 	]*define[ 	]+[^ 	]+[ 	]+MIXER_(READ|WRITE)/ {
+	if (use_switch)
+		printf("\tcase %s:\n\t\treturn(\"%s\");\n", $2, $2);
+	else
+		printf("\tif (val ==  %s)\n\t\treturn(\"%s\");\n", $2, $2);
+}
+
+END {
+	if (use_switch)
+		print "\t}"
+	print "\n\treturn(NULL);"
+	print "}"
+}
+'

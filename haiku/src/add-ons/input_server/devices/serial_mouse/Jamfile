@@ -1,0 +1,8 @@
+SubDir HAIKU_TOP src add-ons input_server devices serial_mouse ;
+
+UsePrivateHeaders input ;
+
+Addon <input>serial_mouse : 
+	MouseInputDevice.cpp 
+	SerialMouse.cpp
+	: be device input_server ;

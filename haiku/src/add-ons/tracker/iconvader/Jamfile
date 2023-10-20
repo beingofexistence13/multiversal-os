@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src add-ons tracker iconvader ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src kits tracker ] : true ;
+UsePrivateHeaders tracker ;
+UsePrivateHeaders shared ;
+
+Addon IconVader :
+	IconVader.cpp
+	: be tracker [ TargetLibstdc++ ]
+;
+AddResources IconVader : IconVader.rdef ;

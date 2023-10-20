@@ -1,0 +1,10 @@
+ONE TRUE AWK
+============
+
+Original source is available from:
+
+https://github.com/onetrueawk/awk
+
+A list of files removed is in README.DELETED.
+
+Use "git diff vendor/AWK contrib/awk" to see local modifications.

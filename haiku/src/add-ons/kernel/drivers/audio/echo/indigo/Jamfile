@@ -1,0 +1,67 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio echo indigo ;
+
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo ;
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo generic ;
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo generic DSP ;
+SubDirHdrs $(HAIKU_TOP) src add-ons kernel drivers audio echo generic ASIC ;
+
+UsePrivateSystemHeaders ;
+UsePrivateHeaders kernel 			# For kernel_cpp.cpp
+	audio ;
+
+# set some additional defines
+SubDirCcFlags -DECHO_BEOS -DINDIGO_FAMILY -DCARDBUS ;
+SubDirC++Flags -DECHO_BEOS -DINDIGO_FAMILY -fno-rtti -DAUTO_DUCK_ALLOCATE -DCARDBUS ;
+
+local echo_files =
+	CChannelMask.cpp
+	CDaffyDuck.cpp
+	CDspCommObject.cpp
+	CDspCommObjectVmixer.cpp
+	CEchoGals.cpp
+	CEchoGals_info.cpp
+	CEchoGals_midi.cpp
+	CEchoGals_mixer.cpp
+	CEchoGals_power.cpp
+	CEchoGals_transport.cpp
+	CEchoGalsVmixer.cpp
+	CIndigo.cpp
+	CIndigoDspCommObject.cpp
+	CIndigoIO.cpp
+	CIndigoIODspCommObject.cpp
+	CIndigoDJ.cpp
+	CIndigoDJDspCommObject.cpp
+	CLineLevel.cpp
+	CMonitorCtrl.cpp
+	CPipeOutCtrl.cpp
+	;
+
+KernelAddon echoindigo :
+	kernel_cpp.cpp
+	debug.c
+	echo.cpp
+	multi.cpp
+	util.c
+	$(echo_files)
+	OsSupportBeOS.cpp
+;
+
+# suppress warnings on some files including the echo headers which provoke ugly warnings
+ObjectC++Flags $(echo_files) : -w ;
+ObjectC++Flags echo.cpp : -w ;
+
+SEARCH on [ FGristFiles
+	$(echo_files)
+	OsSupportBeOS.cpp
+	] = [ FDirName $(HAIKU_TOP) src add-ons kernel drivers audio echo generic ] ;
+
+SEARCH on [ FGristFiles
+		kernel_cpp.cpp
+	] = [ FDirName $(HAIKU_TOP) src system kernel util ] ;
+
+SEARCH on [ FGristFiles
+		debug.c
+		echo.cpp
+		multi.cpp
+		util.c
+	] = [ FDirName $(HAIKU_TOP) src add-ons kernel drivers audio echo ] ;

@@ -1,0 +1,278 @@
+<html>
+<head>
+<title>Changes</title>
+</head>
+<body>
+<p><h2>Changes done for each driverversion:</h2></p>
+<p><h1>head (Haiku repository 1.16, Rudolf)</h1></p>
+<ul>
+<li>Fixed driver trouble on several Geforce 6000-6200 cards and maybe even more where the refreshrate was not properly calculated causing things like only displaying a part of the screen, a wobbly screen, no screen at all or just displaying at a too low rate. In cases where the GPU and/or RAM PLL is programmed on cards (depending on the nvidia.settings file) this might also solve random 'noise' or flickering across the entire screen(s). It turns out some newer supported cards outthere (notably Nforce 4 and 4xx types) use a new crystal frequency base (25 Mhz) for the GPU chip which was not yet detected by the driver.
+<li>Fixed I2C buses not working and so screen DDC/EDID fetch failing on C51 chips specifically. This makes default startup resolution, screenprefs panel and widescreen modes available without nvidia.settings file tricks on a number of Geforce 6100(Go) and 6150(Go) graphics outthere. Now there should nolonger be cards without functioning (but implemented) I2C channels in this driver.
+<li>Fixed PLL VCO, discriminator and postscaler limits for C51 chips specifically. This fixes (much more) wobbly- or black screens. C51 chips (Geforce 6100(Go) and 6150(Go)) should now work without any problems left.
+</ul>
+<p><h1>Nvidia driver 1.10 (Rudolf)</h1></p>
+<ul>
+<li>Fixed driver assuming enabling AGP mode succeeded on some occasions if it did not block it itself. Blocking AGP mode completely via the AGP busmanager (option 'block_agp') resulted in a crashing acceleration engine because it was setup for AGP transfers instead of using PCI transfers. Error was solved with help from user kraton.
+<li>Fixed shared_info struct problem occuring when 3D 'accelerant' is used (tested Alpha 4.1): the TVencoder type definition list apparantly gets some memory assigned these days when done inside the definition of shared_info. Moved encoder list outside the shared_info definition.
+<li>Updated naming for some previous unknown cards, added some 20 new cards for support/recognition in the kernel driver and accelerant, being GF 6xxx and 7xxx types. Also two more nforce 6100 cards are recognized now. All non GF 8xxx cards listed in nvidia's official april 2007 ID list are now recognized. GF 8xxx and later cards will not be supported by this driver as their architecture is quite different from before.<br>
+<li>Modified two default settings for the driver:
+<ul>
+<li>'pgm_panel' is now preset to 'false' since this will probably increase chances of a good picture on panels outthere.
+<li>'force_ws' is (re-enabled and) preset to 'false' since automatic widescreen detection now works for both analog and digital screens (thanks to added DDC/EDID processing).<br> <strong>Note please:</strong><br>
+'force_ws' was hardcoded to setting 'true' some time ago by the Haiku team because of lacking analog monitor widescreen autodetection.
+</ul>
+<li>Added 'block_acc' option in nvidia.settings to completely disable the acceleration engine. Use this as a work-around if the acceleration engine misbehaves.
+<li>Fixed card/system hanging after trying to log LVDS/TMDS distinction info. This (at least) fixes one NV34 trying to startup after a failed kernel VESA modeswitch without using the driver's coldstart option. Might very well help on other type cards too.
+<li>HDTV video upto/including 1920x1080p can now be played back using overlay on Geforce cards where overlay is supported. On TNT1/TNT2/TNT2-M64 this can't be done and bitmap output is used.
+<li>Added DDC/EDID support: detecting connected screens, doing widescreen autodetection, checking max. resolutions when setting a mode, returning full EDID info to the app_server when requested (implemented new haiku-specific driverhook GET_EDID_INFO). Haiku's screen preferences panel should now only offer screen-compatible modes.
+<li>Added confirmed support for laptop card with ID 0x01d7: Quadro NVS 110M/GeForce 7300 Go. Also fixed support for laptop card with ID 0x01d8: GeForce 7400 Go: the 'laptop' definition was missing here.
+<li>Fixed acceleration engine crashes on at least G72 cards (Geforce 7300/7400/7500) by powering up new part(s) of the acceleration engines too..
+<li>Modified GPU PTimer programming which according to the Nouveau project fixes LVDS panel programming in some cases.
+<li>Corrected/Added detection of third I2C bus on cards that support it. The old detection method for a third and (non-existing) fourth bus was faulty. The driver uses I2C channels for monitor DDC/EDID and TVencoder communications.
+<li>DDC/EDID fetching now also works on GCC4 binaries due to a fixed fault in the accelerants/common code (which is used for that function);
+<li>Added support for Haiku specific driverhook GET_PREFERRED_DISPLAY_MODE. Laptops should now also startup in native mode automatically at first system boot;
+<li>Rewrote framebuffer memory detection. Accelerant now only uses the amount of RAM mapped by the kerneldriver as maximum. This fixes black screen at app_server startup on a number of GF6xxx and GF7xxx cards;
+<li>Finally(!) fixed PLL selection trouble on NV40 architecture (Geforce 6xxx and 7xxx) cards. Now dualhead should (almost) always work OK, and now low-res bootscreens should nolonger result in 'frequency out of range' messages on DVI connected screens;
+<li>Fixed shivering display on some systems (confirmed a Geforce 5200 laptop): Pixelclocks should <strong>never</strong> be setup for spread spectrum on analog connections;
+<li>Added full HDTV mode (1920x1080p) to exported modelist: Haiku's Screen preflet allows you to set this mode now if your screen supports it;
+<li>Improved modeline scaling for digitally connected screens: this fixes missing SYNC pulses on some setups. The screen nolonger shows shifted pictures (this happened mostly on 640x480 resolution);
+<li>Modified head selection code on NV40 architecture cards except for NV40, NV41 and NV45. The cards affected have differently behaving BIOSes. This should fix black or disabled screens if the secondary connector was used for VGA while the first one was not connected;
+<li>Added dithering for laptop panels (if they are connected to DAC1 only for now). Gradients should now display much more fluently on 18bit depth panels (no more 'colorbands');
+<li>Fixed black screen on (some?) NV44 cards like Geforce 6100, 6150 and 6200 types;
+<li>Modified 'force_ws' option to force aspect 16:9 instead of 16:10 so both aspect widescreen modes are settable;
+<li>Added basic support for Haiku's native ScreenPrefs panel for dualhead modes. No TVout currently, and switched dualhead mode is not remembered over reboots nor is it coupled with workspaces (so unlike as it is with Dualhead Setup);
+<li>Added new nv.setting called 'check_edid' that forces higher resolution modes to be available on monitors that don't report their EDID info correctly (if option is set to 'false'). Only use this new option if appropriate of course, too high resolution modes will not be liked by your monitor(s)!
+</ul>
+<p><h1>nv_driver 0.80 (Rudolf)</h1></p>
+<ul>
+<li>Improved 3D speed related initialisation programming for NV11 and NV15: NV11 just gained 44% rendering speed, NV15 gained 21% speed. The GeForce2Ti (NV15) is the new winner: Quake 2 timedemo 1 runs at 28.3fps in 1024x768x32 mode @ 75Hz refreshrate (P4 2.8Ghz, fsb 533Mhz, AGP4x), while on the GeForce4MX (NV18) it keeps running at 26.3fps. The GeForce2MX (NV11) now runs at 18.9fps.
+<li>Improved 3D speed related initialisation programming again. This time confirmed for NV11, NV15 and NV18 (so works on probably all NV1x cards): NV11 just gained another 43% rendering speed, NV15 gained another 60% speed, and NV18 gained 41% speed. The GeForce2Ti (NV15) is the definate winner: Quake 2 timedemo 1 runs at 45.4fps in 1024x768x32 mode @ 75Hz refreshrate (P4 2.8Ghz, fsb 533Mhz, AGP4x), while on the GeForce4MX (NV18) it now runs at 37.0fps. The GeForce2MX (NV11) now runs at 27.1fps.
+<li>Improved 3D speed related initialisation programming for TNT2 and TNT2-M64 card types, TNT1 speed remains unchanged. The speed improvement depends on colorspace and exact card type: there's a 1-4% gain. TNT2 runs Quake 2 timedemo 1 at about 17fps in 1024x768x32 mode @ 75Hz refreshrate, while TNT2-M64 is at 10.2fps (P4 2.8Ghz, fsb 533Mhz, AGP mode).
+<li>Added new nv.setting called 'force_ws' that forces all your connected screens to be treated as being widescreen types. This enables listing of the widescreen modes in most screen preference panels and the use of these modes. Only use this new option if appropriate of course, non-widescreen monitors might not like them!
+<li>Added support for 23 new cards in the GeForce 6xxx and 7xxx range (7300 - G72; 7600 - G73; 7900 - G71), along with support for nVidia's latest IGP Nforce4 (GeForce 6100/6150 - NV44). All new ID's come from nVidia's own March 2006 ID release, except for one which was reported by a BeOS user.
+<li>Fixed coldstart trouble on a number of cards probably (confirmed GeForce4 MX4000): Coldstarting must be performed in PCI mode as some cards reset their AGP PLL during this action. The driver now forces PCI mode before attempting a coldstart; AGP mode is re-enabled after that (if used).<br>
+<strong>Note please:</strong><br>
+<ul>
+<li>Forcing PCI mode doesn't work reliably with AGP busmanager V0.01. Please upgrade to AGP busmanager V0.02!!
+</ul>
+</ul>
+<p><h1>nv_driver 0.74 (Rudolf)</h1></p>
+<ul>
+<li>The overlay engine code now respects the B_OVERLAY_COLOR_KEY flag instead of forcing keying ON;
+<li>Hook GET_ACCELERANT_DEVICE_INFO now returns much more detailed info about the card in use;
+<li>Hooks INIT_ACCELERANT and CLONE_ACCELERANT now enforce their correct use; returning error B_NOT_ALLOWED in case of errors;
+<li>Improved coldstart RAM tests for NV10 and higher: they could fail to correctly program the card on 'high-voltage' AGP 1.0 slots (confirmed a NV11);
+<li>Added support for acceleration engine 2D command SCREEN_TO_SCREEN_SCALED_FILTERED_BLIT (as defined by Be) for all cards;
+<li>Fixed driver not always finding it's VGA BIOS when started and stopped more than once per system uptime 'session';
+<li>Fixed 'BScreen Sync-to-Retrace not working' bug that appeared on all dualhead cards when CRTC2 was used as primary CRTC. On some systems outthere this bug might have shown itself as a 'system (or app) hanging' error occuring while using apps that feature explicit retrace sync. Completely rewrote interrupt handling to now handle retrace syncs on both CRTC1 and CRTC2, although only the CRTC used as primary will be enabled (for now);
+<li>Modified hardware 3D rendering colorspace setting for 32bit depth: this gives us upto some 11% gain on accelerated 3D rendering speed using the 3D accelerant;
+<li>Added new nv.setting called 'force_sync': this option (if enabled) forces accelerated 3D rendering to be synchronized to the screen's vertical retrace (refreshrate). This option is disabled by default;
+<li>Added new nv.setting called 'gpu_clk': this TWEAK! option (if enabled) forces the requested GPU clockspeed, as long as it's within certain sanity limits. This option might be handy for 3D application developers for determining bottlenecks (via underclocking), and it might be handy for hardcore gamers to overclock their graphics card. Be carefull with overclocking though: it might DESTROY your computer!!
+<li>Added new nv.setting called 'ram_clk': this TWEAK! option (if enabled) forces the requested card-memory clockspeed, as long as it's within certain sanity limits. This option might be handy for 3D application developers for determining bottlenecks (via underclocking), and it might be handy for hardcore gamers to overclock their graphics card. Be carefull with overclocking though: it might DESTROY your computer!!
+</ul>
+<p><h1>nv_driver 0.67 (Rudolf)</h1></p>
+<ul>
+<li>Added capability to driver to run without an INT assigned. Driver will now automatically disable the 'Sync_to_Retrace' function if no INT was assigned instead of not loading/running at all;
+<li>Fixed PLL reference recognition (used for refreshrate calculations) and dualhead detection for a number of 'newer' cards: most notably for a lot of GeForce 6200 types! Code is rewritten so it's much less breakable when new cards are added to the supported list in the future;
+<li>Added TVout support for Brooktree BT868/BT869 and Conexant CX25870/CX25871 TV encoders: NTSC and PAL 640x480 and 800x600 Desktop modes are supported, NTSC VCD 640x480 and DVD 720x480 Video modes are supported, PAL VCD 768x576 and DVD 720x576 Video modes are supported;
+<li>Added 'force TV output signal type' (called tv_output) to nv.settings: Now you can select Y/C or CVBS output manually in case autodetection fails for your TV set. That might happen in case the TV and/or card manufacturor didn't adhere to the impedance specs that exist for these signals;
+<li>Added detection for some ten new cards being Geforce 6600/6800 and 7800 types;
+<li>Added 'force VGA output ON while TVout enabled' (called 'vga_on_tv') to nv.settings: Now the VGA (or DVI) screen is disabled by default for a head outputting to TV. You can turn it on however using this new preset setting. Note though: doing that is considered a tweak which might damage your screen (if it's an old one);
+<li>Added custom modeflag for users to be able to select TVout head on a 'per mode' basis. The Dualhead Setup preference panel needs to be updated (to a version newer than 0.03a) to correctly issue this flag;
+<li>Added rudimentary NV11 CRTC2 FIFO watermark/burst-size programming to remove/minimize vertical distortion stripes occuring on some cards due to data fetching errors (because of limited bandwidth);
+<li>Modified NV05M64 (TNT2-M64) watermark/burst-size programming to be executed independant of coldstart feature;
+<li>Updated acceleration engine DMA-mode initialisation code: This should fix trouble on some newer cards with acceleration, and also adds NV47 (G70) acceleration support;
+<li>Added preliminary laptop panel DPMS support (except for NV11): currently only in use when no external DVI panels are connected. Please provide feedback on this item if you have a laptop (send a logfile along): only then can this feature be expanded/finalized!
+<li>Added new nv.setting ("primary") to force a certain card to be primary card in a system with multiple graphics cards: so it will display your desktop. To enable this (hack) feature uncomment this item and fill in the exact name of the card that is to be primary (as exported by the kerneldriver in /dev/graphics/). If you are going to select a card other than the one displaying your system's POST messages at bootup, make sure you also set 'usebios false' as otherwise the card(s) aren't coldstarted by the driver.<br>
+<strong>Note please:</strong>
+<ul>
+ <li>DVI and laptop panels don't work yet with the 'usebios false' setting. Analog connected screens should work though. 
+ <li>Coldstarting doesn't work on TNT1 and GeForce 6xxx/7xxx cards yet.
+</ul>
+</ul>
+<p><h1>nv_driver 0.53 (Rudolf)</h1></p>
+<ul>
+<li>Added recognition for 10-15 more newer cards: mostly GeForce 6200, 6600 and 6800 types;
+<li>Added 3D initialisation and updated 2D/3D command setup (defines and hash) for DMA acceleration (pre-NV40 only, 3D confirmed functional on TNT1 upto/including GeForce2Ti and GeForce4MX types: MX440 and MX4000 confirmed);
+<li>Moved the DMA command buffer from graphics memory to main system memory, plus expanded it's size from 32kB to 1Mb. Buffer is mapped using MTRR-WC where available (confirmed speedups for both modifications; pre-NV40 only). Note that all TNT1 cards will be much faster with DMA acceleration now: the new mode is 'officially' working on them, while the old mode used a 'nasty' workaround;
+<li>Graphics engine is now using AGP transfers for fetching commands from the DMA buffer where available. Note that direct memory accesses are used: GART and AGP aperture (scatter-gather) are not in use. (confirmed speedup for this modification);
+<li>Concurrent overlay and 3D acceleration are now possible: no more acceleration engine hangs should occur now;
+<li>Added shared_info flag to inform 3D add-on that it should reload it's rendering state whenever 2D commands are executed. This makes room for further speed improvements for 3D as it can minimize reloading rendering states;
+<li>Added more shared_info flags to support upto 32 3D accelerants in a simple fashion. Texture memory allocation sharing support isn't there yet though.
+</ul>
+<p><h1>nv_driver 0.45 (Rudolf)</h1></p>
+<ul>
+<li>Added recognition for one more card: a GeForce 6200 PCIe (ID 0x014f);
+<li>Fixed long-standing trouble with NV15 cards (GeForce 2 Ti/GTS/pro/ultra, Quadro 2 pro), and maybe also for other singlehead cards. RAM access trouble is now fixed so the screen output nolonger distorts and engine hangs are gone. This error was 'introduced' in nVidia driver V0.10: V0.09 was the last previous version working correctly on some of these cards!<br>
+Note please that this fix was only possible thanks to someone donating a 'malfunctioning' card. So: thanks again Atilla!!<br>
+Note also: with 3D add-on alpha 1-final these NV15 cards are the fastest supported ones ;-)
+<li>Fixed driver coldstart capability for pre-GeForce type cards using PINS V3-V5.15. Newer TNT2-M64 cards will now coldstart OK;
+<li>Added pre-PINS V5.16 coldstart RAM-size check and correction code. This feature was still lacking and possibly solves coldstart trouble on pre-GeForce type cards;
+<li>Added rudimentary CRTC1 FIFO watermark/burst-size programming for TNT2-M64 cards (if coldstarted). This minimizes output distortions on high resolutions. Note please that these distortions can't be completely removed: the RAM bandwidth these cards have is too limited: Bandwidth in increasing order: TNT2-M64, TNT1, TNT2 original, all GeForce types. With the TNT2-M64 watermark/burst-size programming in place it performs still less good than a TNT1 in this respect.
+</ul>
+<p><h1>nv_driver 0.43 (Rudolf)</h1></p>
+<ul>
+	<li>Updated 3D specific engine initialisation for PIO mode to make the 3D add-on work on pre-NV10 cards. It now works on NV04-NV18 (although NV18 is slow) if you select PIO mode acceleration;
+	<li>Added two shared_info 'flags' informing the 3D add-on about modeswitches when they happen.
+</ul>
+<p><h1>nv_driver 0.41 (Rudolf)</h1></p>
+<ul>
+	<li>Added new acceleration method using DMA command fetching. You can now choose beween (the old) PIO mode and (the new) DMA mode acceleration via a new switch in nv.settings (DMA mode is now the default). DMA acceleration is say 2-3 times as fast as PIO mode acceleration on systems with relative fast CPU's (above 2Ghz or so). On relative slow CPU's (500Mhz or lower) there is no speedgain left and both methods match about up.<br>
+	<strong>Note please:</strong> On NV40 and higher only DMA mode acceleration currently works;
+	<li>Execution of acceleration commands (DMA mode) has been optimized (compared to PIO mode): now the top-level acceleration functions are incorporated in the engine, and the engine's command execution itself is also optimized. This further increases DMA mode acceleration with upto a factor of 2-3, independant of CPU speed; 
+	<li>Execution of acceleration commands (PIO mode) is re-setup. Now it should be possible to use more engine commands than there are FIFO channels for them, by doing on-the-fly reconfiguring (DMA mode can do this also). This should be especially usefull when 3D acceleration is going to be setup later on;
+	<li>Added recognition for 20 new cards: Most GeForce 6200, 6600 and 6800 types are now recognized, and some more other cards as well;
+	<li>Modified cursor to be hardware synchronized to the screen's vertical retrace. This fixes the high CPU load on moving the mouse especially while being on the bottom of the screen (all GeForce series cards);
+	<li>Added DPMS support for digital flatpanels connected via DVI;
+	<li>Updated 'extended PLL' VCO limits: this (could) fix PLL locking trouble (shivering image / too low refreshrate) on NV31 (FX 5600), NV36 (FX/PCX 57xx) and NV40 and up (FX/PCX 6200, 6600 and 6800). Confirmed NV36, on a PCX 5750 for PCIe.
+</ul>
+<p><h1>nv_driver 0.30 (Rudolf)</h1></p>
+<ul>
+	<li>Overlay fix for GeForce2 and GeForce4 MX Integrated GPU boards: updated RAM amount detection. The last 64Kb RAM is used for the card's BIOS or something so it's not available to the graphicsdriver;
+	<li>Enabled coldstart switch setting (called 'usebios' in nv.settings) in drivercode. Changed the default setting to keep the driver working in the same way it did before;
+	<li>Added recognition for 25 new cards including the first PCI-express (PCX) cards: FX/PCX 6800, FX 6600, PCX 5300/5750/5900, PCX Quadro. New 'old style' cards: Quadro FX 700, Quadro FX 1000 Go, FX 5100 and FX 5700 Go. While FX6800 still seems to be non-functional, a Quadro4 280 NVS PCIe (GeForce PCX 5300 PCIe) has been confirmed working OK already;
+	<li>Card coldstarts should now be operational (if enabled in nv.settings) on most cards, except TNT1, GeForce 6600 and GeForce 6800. Tested successfully on TNT2/TNT2-M64 (NV05), GeForce2 MX400 (NV11), GeForce4 MX440 (NV18), GeForce4 Ti4200 (NV28) and GeForce FX5200 (NV34). Note however that laptop panels and DVI panels will not work via coldstarting yet!
+	<li>The 'bandwidth trouble' existing on older cards, especially on some GeForce2 types, should be fixed now if you enable card coldstarting for these cards. Note that this problem existed because of a fault in these card's BIOSes (they missed some specific register programming). Confirmed a NV15 working OK now.
+</ul>
+<p><h1>nv_driver 0.22 (Rudolf)</h1></p>
+<ul>
+	<li>Added AGP mode capability on AGP cards along with the option to block it in nv.settings. No GART and AGP aperture support; but if your card and system AGP host bridge support the 'fastwrite' (FW) feature, you'll notice a nice speedup of unaccelerated graphics.
+	<ul>
+ 	<li>Tested Quake 2 in software rendering mode over here using timedemo1 with demo1.dm2: framerates jumped up to 140% of the 'original' in  AGP2.0 4X mode!
+	<li>Also tested video playback using bitmap output mode: CPU load drops considerably depending on desktop colordepth and size of the video output window.<br>
+	<li>2D acceleration will not speedup because it's working 'local', so within the graphics cards engine and it's RAM only.
+	</ul>
+<strong>Note please:</strong><br>
+	<ul>
+	<li>You need the new (seperate) Haiku AGP busmanager module that has been setup for this feature, without it you will remain using PCI mode as usual.
+	<li>If you have trouble with AGP, you have the option to shut it off by setting 'force_pci true' in nv.settings. You are adviced however to tweak the AGP busmanager settings file instead, as this might enable you to keep using AGP mode, be it in a slower setting.
+	</ul>
+	<li>Updated CRTC modeline tuning for panels: this should fix the 'right-shifted' picture on some panels in their native modes;
+	<li>Fixed BIOS ROM dump (to file) option;
+	<li>Fixed GET_TIMING_CONSTRAINTS and GET_ACCELERANT_DEVICE_INFO accelerant hooks to return valid data; updated modeline checking and modification code (used by ProposeDisplayMode) to adhere to one more timing constraint
+	<li>Lowered fixed refreshrate setting for panels to be 60Hz now: it turns out panels exist that are picky 'on the high side' as well;
+	<li>Added option in nv.settings to block refreshrate programming if a flatpanel is active: this should enable support on picky panels;
+	<li>Added option in nv.settings to 'unhide' fastwrite support in AGP cards. Some older cards support FW even though normally they don't show it so it won't get activated (confirmed GeForce2 MX400, NV11).<br>
+ 	<strong>NOTE please:</strong><br>
+ 	This is a tweak that you <strong>can</strong> enable, but you do so at your own risk (of course)!
+ 	<li>Fixed RAM amount detection for GeForce2 and GeForce4 MX Integrated GPU boards.
+</ul>
+<p><h1>nv_driver 0.10 (Rudolf)</h1></p>
+<ul>
+	<li>Implemented laptop internal flatpanel presence and native resolution detection;
+	<li>Implemented external DVI flatpanel(s) presence and native resolution detection;
+	<li>Added flatpanel(s) refreshrate protection: it(they) is(are) always kept at 62Hz refresh (60Hz shuts off some panels);
+	<li>Added flatpanel specific CRTC modeline and DFP modeline tuning: DVI connected panels work now on both heads (if applicable);
+	<li>Added aspect correction programming for flatpanels: corrects if mode aspect differs too much from panel aspect;
+	<li>Fixed acceleration engine management regarding sync_to_token: no more updating glitches should occur now;
+	<li>Added recognition for GeForce4 MX 4000, GeForceFX 5700LE and GeForceFX 5700VE cards; also modified a few others to be more correct;
+	<li>Implemented virtualized CRTC1/DAC1 and CRTC2/DAC2 access: when one flatpanel is found on a card that panel is always primary output now;
+	<li>Dualhead switch mode is operational with flatpanels now (via the virtualized setup);
+	<li>The user has the option to select the primary output via nv.settings now (via the new 'switchhead' option);
+	<li>Modified analog type monitor detection to work the same as for digital panels (detect on bootup only);
+	<li>Added dualhead switch mode for NV11 (works via virtualized head access implemented now);
+	<li>Modified dualhead switch mode for all other cards to work via the virtualized head access also;
+	<li>Modified overlay to work correctly with the virtualized setup;
+	<li>Added output-devices/heads matrix setup: the driver now selects the right head for primary output and dualhead should work for all cards with all monitor-types now (if connected before boot);
+	<li>Updated head selection code for register programming: NV11 needs a special treatment (again); NV11 dualhead modes are finally OK now, including switch mode;
+	<li>Updated secondary head specs: they are improved for nview cards (like GeForce4 and FX) in comparison to twinview cards (like GeForce2);
+	<li>Added move_overlay() so overlay (finally) works correctly in virtualscreens;
+	<li>You can now select upto one more 4:3 aspect, and 6 new 16:10 aspect modes by just selecting them from the Screenprefs app, <strong>except</strong> if you use the native R5 one. Use Dualhead setup instead (for example):
+		<ul>
+			<li>Added standard (4:3 aspect) mode 1400x1050 for panels and analog monitors to the modelist exported by the driver;
+			<li>Added widescreen (16:10 aspect) modes 800x500, 1024x640, 1280x800, 1440x900, 1680x1050 and 1920x1200 for panel(s) to the modelist exported by the driver if only widescreen panel(s) is (are) connected (so also no analog monitors may be connected!);
+			<li>Added blocking of modes above panel (with lowest) native resotution: this includes blocking of all widescreen modes if a non-widescreen (analog) screen is detected.
+		</ul>	
+	<li>Cursor update for dualhead cards: when the 'softcursor' is used, the hardcursors are <strong>both</strong> actually turned off now.
+</ul>
+<br>
+<strong>NOTE:</strong><br>
+The features below are shutdown because they are possibly dangerous without feedback: No documentation on this exists, so this was setup by me tested on my cards only. Feedback (<strong>logfiles!</strong>) you might send to me might help me gain more info about <strong>IF</strong> we can use (or need) this, and <strong>IF</strong> it's OK to use it for a later driver release. 
+<ul>
+	<li>Added flatpanel LVDS and TMDS transmitters powerup if a panel is detected (not finished: needs more feedback);
+	<li>Added flatpanel DPMS support for both heads via powerup/powerdown of LVDS and TMDS transmitters (not finished: needs more feedback).
+
+</ul>
+<p><h1>nv_driver 0.09 (Rudolf)</h1></p>
+<ul>
+	<li>Fixed NV11 trouble with repeating screen(s) on the right side of the monitor;
+	<li>Updated CRTC memory granularity code to work-around a hardware bug in older cards;
+	<li>Fixed fuzzy modes / no picture on GeForceFX 5700 cards: PLL discriminator restrictions updated.
+</ul>
+<p><h1>nv_driver 0.08 (Rudolf)</h1></p>
+<ul>
+	<li>Fixed GeForceFX 5600 and FX 5700 monitor 'refresh out of range' / shutoff fault. nVidia changed the pixelPLL for the NV31 and NV36;
+	<li>Fixed acceleration engine restrictions code to adhere to GeForceFX 5600 restrictions: those are still NV20 style for this card;
+	<li>Fixed overlay scaling restriction code to adhere to GeForceFX 5600 restrictions: engine is still the NV10/NV20 one, so it can downscale to 1/8 of the picture size;
+	<li>Kernel driver now signals abort on not being able to setup the INT routine instead of letting the machine freeze during accelerant initialisation;
+	<li>BWindowScreen R3-style function update for acceleration and page flipping/virtualscreens in apps ('Allegro' update): fixed cloning accelerants;
+	<li>Now only programming options head select register on dualhead cards. This fixes driver hanging on integrated GeForce2 cards (ID 0x01a0), and maybe also on some other cards;
+	<li>Expanded modelist to include suggested modes above 1600x1200 upto 2048x1536 resolution (if a card supports them): Done by Andrew Bachmann;
+	<li>Added card recognition for GeForceFX 5700, FX 5950 and some other (older) cards;
+	<li>Added 256Mb RAM detection;
+	<li>Improved startup code: this should (could) fix random trouble on some cards like for instance hardcursor trouble on especially laptops; 
+	<li>Added dualhead support (use Mark Watson's 'Dualhead Setup' from BeBits for now);
+	<li>Updated mode granularity and max virtual size checking/limiting;
+	<li>Added dualhead support for 8- and 15bit colordepths;
+	<li>Fixed move_display distortions in virtualscreens especially visible in 8-bit colordepth (for both heads);
+	<li>Added 'overlay follows head' for dualhead stretch and switch modes: if more than half the overlay output window is on a screen, that screen gets the overlay output;
+	<li>Added dualhead switch mode (except for NV11 cards as they do not have output connector switching capability);
+	<li>Added monitor presence detection for both monitor output connectors on dualhead cards (analog type signals only);
+	<li>Added 'output follows monitor' for all modes: it does not matter on which connector you connect your monitor, the output will go there after setting a mode; like the card's BIOS does (except for NV11 cards as they do not have output connector switching capability).
+</ul>
+<p><h1>nv_driver 0.07 (Rudolf)</h1></p>
+<ul>
+	<li>Added card recognition for some Nvidia GeForce4 Ti 4600 cards (ID 0x0252);
+	<li>GeForce overlay activation updated: hardware should respond to the first request instead of to the second ('stampTV' update);
+	<li>Included B_YCbCr422 hardware overlay for TNT 1/2 class cards (pre NV10 architecture).
+</ul>
+<p><h1>nv_driver 0.06 (Rudolf)</h1></p>
+<ul> 
+	<li>Added full 2D acceleration for TNT1 - GeForce FX cards;
+	<li>Added card recognition for GeForce FX Go and some older laptop cards;
+	<li>Implemented retrace synchronisation (INT routine);
+	<li>Geforce overlay updated: turned off ints explicitly, corrected upscaling restriction to be 8x, small speed improvement;
+	<li>Vertical timing updated: missed a register on all GeForce cards, missed another register on older cards;
+	<li>Register unlocking updated: missed a register on all supported cards.
+</ul>
+<p><h1>nv_driver 0.05 (Rudolf)</h1></p>
+<ul>
+	<li>Update on cursor move routine: pointer will nolonger accept illegal left-top positions. As a result it will nolonger vanish on some cards;
+	<li>Fixed hardware overlay on GeForce4 MX and Go series cards: disabled the embedded MPEG2 decoder engine which exist on these cards only;
+	<li>Fixed driver to adhere to the downscaling limitations of the new overlay engine existing in the GeForceFX series cards.
+</ul>
+<p><h1>nv_driver 0.04 (Rudolf)</h1></p>
+<ul>
+	<li>New cursor_move sync_to_retrace for all supported cards: now all display distortions should be gone (GeForce4 for example);
+	<li>Added hardware overlay support for the entire GeForce series cards;
+	<li>Now powering up all card function blocks: dualhead cards should now switch to the connected head (by it's BIOS) instead of hanging the system on boot (tested on a dualhead GeForce4 with a DVI and a VGA connector).
+</ul>
+<p><h1>nv_driver 0.03 (Rudolf)</h1></p>
+<ul>
+	<li>Prevent system or video freeze on dragging files or so in tracker windows;
+	<li>Pre NV10 cursor sync_to_retrace: no more distortions in cursor bitmaps on moving it;
+	<li>Cursor bitmapadress setup modification for laptops: The cursor should be visible now also on 'Go' type of cards;
+	<li>BWindowScreen / Sync_to_retrace fix: prevent apps from crashing on endless waiting for retrace. Wait_for_retrace is temporary disabled now until it's actually implemented.
+</ul>
+<p><h1>nv_driver 0.02 (Rudolf)</h1></p>
+<ul>
+	<li>hardcursor support;
+	<li>virtual screens / BWindowScreen support including panning/scrolling;
+	<li>colorspace selection;
+	<li>colorpalette setup;
+	<li>refreshrate selection;
+	<li>85 cards of 4 brands are detected now: These are all TNT1 - GeForce FX5900 Ultra cards as far as I know. Hopefully all those cards will actually work OK with the driver;
+	<li>DPMS support;
+	<li>resolution selection (CRTC setup);
+	<li>switch to 'enhanced mode' included: VESA is gone now!
+	<li>cardspecs are setup (faked PINS);
+	<li>several small fixes done to get the driver working correctly on all four of my cards: PCI TNT1, AGP TNT1, AGP TNT2 and AGP GeForce2MX400.
+</ul>
+<p><h1>Still todo:</h1></p>
+<ul>
+	<li>Extend TVout feature to support more encoder-types (Chrontel, Philips);
+	<li>Improve/extend various stuff when/if possible.
+</ul>
+</p>
+</body>
+</html>

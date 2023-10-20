@@ -1,0 +1,329 @@
+.\" Copyright (c) 1999 Daniel C. Sobral
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FreeBSD: src/sys/boot/forth/loader.conf.5,v 1.18 2002/08/27 01:02:56 trhodes Exp $
+.\"
+.Dd October 29, 2020
+.Dt LOADER.CONF 5
+.Os
+.Sh NAME
+.Nm loader.conf
+.Nd system bootstrap configuration information
+.Sh DESCRIPTION
+The file
+.Nm
+contains descriptive information on bootstrapping the system.
+Through it you can specify the kernel to be booted,
+parameters to be passed to it,
+and additional kernel modules to be loaded;
+and generally set all variables described in
+.Xr loader 8 .
+.Pp
+A file
+.Pa dloader.rc
+must contain the following lines for
+.Nm
+to be automatically processed:
+.Pp
+.Dl include defaults/loader.conf
+.Dl optinclude loader.conf
+.Dl optinclude loader.conf.local
+.Pp
+If no
+.Pa /boot/dloader.rc
+exists at installworld time, one with the above lines will be installed.
+.Sh SYNTAX
+Though
+.Nm Ns 's
+format was defined explicitly to resemble
+.Xr rc.conf 5 ,
+and can be sourced by
+.Xr sh 1 ,
+some settings are treated in a special fashion.
+Also, the behavior of some settings is defined by the setting's suffix;
+the prefix identifies which module the setting controls.
+.Pp
+The general parsing rules are:
+.Bl -bullet
+.It
+Spaces and empty lines are ignored.
+.It
+A
+.Ql #
+sign will mark the remainder of the line as a comment.
+.It
+Only one setting can be present on each line.
+.El
+.Pp
+All settings have the following format:
+.Pp
+.Dl variable="value"
+.Pp
+This assigns value to a local variable.
+If variable is in a list of known kernel environment variables or
+is a kernel tunable,
+it is also assigned to the kernel environment variable of the given name.
+.Pp
+The settings that receive special treatment are listed below.
+Settings beginning with
+.Aq Ar module
+below define the kernel modules to be loaded.
+All such settings sharing a common
+prefix refer to the same module.
+.Bl -tag -width indent
+.It Ar kernel
+Name of the kernel to be loaded.
+If no kernel name is set, no additional
+modules will be loaded.
+.It Ar kernel_options
+Flags to be passed to the kernel (see
+.Xr boot 8 ) .
+.It Ar verbose_loading
+If set to
+.Dq YES ,
+module names will be displayed as they are loaded.
+.It Ao Ar module Ac Ns Ar _load
+If set to
+.Dq YES ,
+that kernel module will be loaded.
+If no
+.Ao Ar module Ac Ns Ar _name
+is defined (see below), the
+module's name is taken to be
+.Aq Ar module .
+Only modules necessary for mounting the root file system should be loaded from
+.Nm
+due to memory limitations in the early boot phase.
+Other modules can be loaded later via similar entries in
+.Xr rc.conf 5 .
+.It Ao Ar module Ac Ns Ar _name
+Defines the name of the module.
+.It Ao Ar module Ac Ns Ar _type
+Defines the module's type.
+If none is given, it defaults to a
+.Xr kld 4
+module.
+.It Ao Ar module Ac Ns Ar _flags
+Flags and parameters to be passed to the module.
+.It Ao Ar module Ac Ns Ar _before
+Commands to be executed before the module is loaded.
+Use of this setting
+should be avoided.
+.It Ao Ar module Ac Ns Ar _after
+Commands to be executed after the module is loaded.
+Use of this setting
+should be avoided.
+.It Ao Ar module Ac Ns Ar _error
+Commands to be executed if the loading of a module fails.
+Except for the
+special value
+.Dq abort ,
+which aborts the bootstrap process, use of this setting should be avoided.
+.El
+.Sh DEFAULT SETTINGS
+See
+.Pa /boot/defaults/loader.conf
+for
+.Nm Ns 's
+default settings.
+The few of them which are important
+or useful are:
+.Bl -tag -width indent
+.It Va bitmap_load
+.Pq Dq NO
+If set to
+.Dq YES ,
+a bitmap will be loaded to be displayed on screen while booting.
+.It Va bitmap_name
+.Pq Dq splash.bmp
+Name of the bitmap to be loaded.
+Any other name can be used.
+.It Va boot_verbose
+.Pq Dq NO
+Set to
+.Dq YES
+to enable verbose booting.
+.It Va console
+.Pq Dq vidconsole
+.Dq comconsole
+selects serial console,
+.Dq vidconsole
+selects the video console, and
+.Dq nullconsole
+selects a mute console
+(useful for systems with neither a video console nor a serial port).
+.Pp
+When using a comconsole the kernel defaults to allowing a console on sio0.
+To change this to sio1 you must specify
+.Va sio0.flags=0
+and
+.Va sio1.flags=0x10
+in addition to setting the console to the comconsole.
+You can also set the baud rate with (for example)
+.Va sio1.baud=115200
+or simply inherit the baud set in the boot code.
+Normally these must be set if you want to use a stock kernel in a
+IPMI environment.
+When setting the serial console you must specify the serial port
+with (for example)
+.Va sio1.port=0x3e8 .
+Typically sio0 is on 0x3f8 and sio1 is on 0x2f8, but IPMI consoles
+on sio1 are often on 0x3e8 (instead of sio2), which can be confusing.
+Be sure to specify the correct port
+if you want early kernel boot messages to work.
+If you do not specify the port the console will still operate on
+the serial port but only after the kernel has started init.
+.Pp
+Some IPMI environments do not enable sio1 during the BIOS boot,
+which can cause the loader to get confused and not pass RB_SERIAL
+to the kernel.
+Setting console=comconsole in this situation also does not work because
+then the loader is inacessible.  Instead, set the sioX fields as shown
+above and also add
+.Va set boot_serial="YES"
+to cause the kernel to use the serial port without also forcing the
+boot loader to use the serial port.
+.Pp
+In contrast to the above, if you wish to place your serial console
+on a late-configuring serial port (such as one from a PCIe card),
+that serial port will not be available to the loader or for half
+the boot and it is probably best to leave
+.Va boot_serial unset .
+In
+this situation, syscons may have already taken the console, so
+you need to override it using (for example)
+.Va sio4.flags=0x30 instead of 0x10.
+.Pp
+The boot1/boot2 code uses BIOS calls to read and write the screen but also
+mirrors output to and monitors COM1 @ 9600.
+In an IPMI environment you do not usually have to adjust the boot code
+at all, instead using the IPMI feature to redirect the video output.
+In non-IPMI setups if you want the boot code to be available on
+COM2 at 57600 baud instead of COM1, for example, you must set the variables
+.Va BOOT_COMCONSOLE_PORT=0x2f8
+and
+.Va BOOT_COMCONSOLE_SPEED=57600
+in
+.Pa /etc/make.conf
+and recompile and install the boot code at
+.Pa /usr/src/stand/boot ,
+then install the bootcode to the partition via
+.Xr disklabel 8 .
+.Pp
+Note that in comconsole mode the kernel will pick up the baud rate
+from the boot loader, so no kernel recompile is needed.
+.It Va kernel
+.Pq Dq kernel .
+.It Va loader_plain
+.Pq Dq NO
+Unlike in the past, the loader defaults to displaying Fred, the official
+.Dx
+mascot, in color when the boot menu appears, unless
+.Pa console
+is set to
+.Dq comconsole
+in
+.Pa loader.conf
+or in the environment. If set to
+.Dq YES ,
+Fred will always be displayed in monochrome.
+.It Va fred_is_red
+.Pq Dq NO
+Under color mode, Fred is depicted as a blue dragonfly with cyan wings
+by default.  If set to
+.Dq YES ,
+Fred will be shown as a red dragonfly with red wings instead.
+.It Va fred_disable
+.Pq Dq NO
+Fred is displayed with the menu by default.  If set to
+.Dq YES ,
+Fred will not be shown.  The area will simply be blank.
+.It Va fred_on_left
+.Pq Dq NO
+If set to
+.Dq YES ,
+Fred will be displayed on the left side of the menu rather than the right side.
+.It Va fred_separated
+.Pq Dq NO
+If set to
+.Dq YES ,
+a line will be drawn between Fred and the menu block.
+.It Va splash_bmp_load
+.Pq Dq NO
+If set to
+.Dq YES ,
+will load the splash screen module, making it possible to display a bmp image
+on the screen while booting.
+.It Va splash_pcx_load
+.Pq Dq NO
+If set to
+.Dq YES ,
+will load the splash screen module, making it possible to display a pcx image
+on the screen while booting.
+.El
+.Sh IPMI
+Generally speaking machines with IPMI capabilities are capable of
+redirecting the BIOS POST to a fake serial port controlled by the BMC.
+It is then possible to use
+.Xr ipmitool 1
+from
+.Xr dports 7
+to access the console.
+.Dx
+kernels adjust the video mode in a way that the BMC cannot usually
+redirect, so your best bet is to set the boot loader AND the kernel up to
+use a serial port via the
+.Va console=comconsole
+feature described above.
+Often the IPMI controller, called the BMC, is not sitting on COM1 so
+.Dx Ap s
+default console parameters and baud rate will not work.
+.Sh FILES
+.Bl -tag -width ".Pa /boot/defaults/dloader.menu" -compact
+.It Pa /boot/defaults/dloader.menu
+default settings for menu setup -- do not change this file.
+.It Pa /boot/defaults/loader.conf
+default settings -- do not change this file.
+.It Pa /boot/dloader.menu
+defines the commands used by
+.Nm loader
+to setup menus.
+.It Pa /boot/loader.conf
+user defined settings.
+.It Pa /boot/loader.conf.local
+machine-specific settings for sites with a common loader.conf.
+.It Pa /boot/dloader.rc
+contains the instructions to automatically process.
+.El
+.Sh SEE ALSO
+.Xr boot 8 ,
+.Xr loader 8
+.Sh HISTORY
+The file
+.Nm
+first appeared in
+.Fx 3.2 .
+.Sh AUTHORS
+This manual page was written by
+.An Daniel C. Sobral Aq Mt dcs@FreeBSD.org .

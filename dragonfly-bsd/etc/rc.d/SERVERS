@@ -1,0 +1,15 @@
+#!/bin/sh
+#
+# $NetBSD: SERVERS,v 1.9 2002/03/22 04:33:57 thorpej Exp $
+# $FreeBSD: src/etc/rc.d/SERVERS,v 1.3 2002/10/12 13:49:21 schweikh Exp $
+#
+
+# PROVIDE: SERVERS
+# REQUIRE: mountcritremote mounttmpfs
+
+#	This is a dummy dependency, for early-start servers relying on
+#	some basic configuration.
+
+. /etc/rc.subr
+dummy_rc_command "$1"
+

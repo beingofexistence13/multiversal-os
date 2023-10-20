@@ -1,0 +1,7 @@
+SubDir HAIKU_TOP src add-ons input_server devices tablet ;
+
+UsePrivateHeaders input ;
+
+Addon <input>tablet :
+	TabletInputDevice.cpp
+	: be input_server [ TargetLibsupc++ ] ;

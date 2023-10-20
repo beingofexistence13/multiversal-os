@@ -1,0 +1,407 @@
+<HTML>
+<!-- $Id: BPropertyInfoUseCases.html 814 2002-08-19 05:26:56Z jrand $ -->
+<HEAD>
+<TITLE>BPropertyInfo Use Cases and Implementation Details</TITLE>
+</HEAD>
+
+<BODY BGCOLOR="white" LINK="#000067" VLINK="#000067" ALINK="#0000FF">
+
+<FONT FACE="Verdana,Arial,Helvetica,sans-serif" SIZE="-1">
+
+<H1>BPropertyInfo Use Cases and Implementation Details:</H1>
+
+<P>This document describes the BPropertyInfo interface and some basics of how it is implemented.
+The document has the following sections:</P>
+
+<OL>
+<LI><A HREF="#interface">BPropertyInfo Interface</A></LI>
+<LI><A HREF="#usecases">BPropertyInfo Use Cases</A></LI>
+<LI><A HREF="#implement">BPropertyInfo Implementation</A></LI>
+</OL>
+
+<A NAME="interface"></A><H2>BPropertyInfo Interface:</H2>
+
+<P>The BPropertyInfo class is a simple class for describing the scripting interface which a 
+BHandler provides.  It makes implementing the ResolveSpecifier() hook function easier to implement.
+One source of information for the BPropertyInfo interface can be found
+<A HREF="https://www.haiku-os.org/legacy-docs/bebook/BPropertyInfo.html">here in the Be Book</A>.
+Unfortunately, details of some changes to this interface introduced in BeOS 4 does not seem to have
+made it into the BeBook.  For the latest, refer to the
+<A HREF="file:///system/develop/headers/be/app/PropertyInfo.h">PropertyInfo.h</A> header file or the
+<A HREF="http://pulkomandy.tk/~beosarchive/unsorted/cypresstwist/BeOS/Docs/BeBook/Release_Notes/R4RN_AppKit.html ">BeOS 4 Developer Release Notes</A>.
+</P>
+
+<A NAME="usecases"></A><H2>BPropertyInfo Use Cases:</H2>
+
+<P>The following use cases cover the BPropertyInfo functionality:</P>
+
+<OL>
+
+<LI><P><B>Construction 1:</B> A BPropertyInfo can be created with 0 arguments.  In this case,
+it will not have any property_info or value_info structures associated with it.  The only
+way to initialize it would be to Unflatten() a flattened BPropertyInfo instance (see Unflatten
+use cases).</P></LI>
+
+<LI><P><B>Construction 2:</B> A BPropertyInfo can be created with a single property_info argument.
+In this case, there will be no value_info structure associated with it and the BPropertyInfo
+will assume it does not need to de-allocate the property_info structure itself on 
+destruction.</P></LI>
+
+<LI><P><B>Construction 3:</B> A BPropertyInfo can be created with a property_info argument and
+a value_info argument.  In this case, the BPropertyInfo will use both of these arguments to
+determine its future behaviour.  It will assume it does not need to de-allocate the property_info
+structure or the value_info structure itself on destruction.</P></LI>
+
+<LI><P><B>Construction 4:</B> A BPropertyInfo can be created with a property_info argument and
+a value_info argument and a flag to indicate whether these structres were allocated on the heap.
+If the flag is false, it will assume it does not need to de-allocate the property_info structure
+or the value_info structure itself on destruction.  If the flag is true, it will assume that
+the property_info pointer and the value_info pointer and all pointers contained within them (ie
+const char * instances) need to be free()'d when the BPropertyInfo is destructed.</P></LI>
+
+<LI><P><B>Destruction:</B> On destruction, a BPropertyInfo class does nothing unless the third
+argument (free_on_delete flag) at construction was true.  If this argument was true, the 
+BPropertyInfo class performs a "free()" on the pointers passed in at construction time and all
+pointers contained within these structures.</P></LI>
+
+<LI><P><B>Properties:</B> The Properties() member function returns the first argument passed in
+at construction time of the BPropertyInfo or NULL if it was constructed with no arguments.</P></LI>
+
+<LI><P><B>Values:</B> The Values() member function returns the second argument passed in
+at construction time of the BPropertyInfo or NULL if it was constructed with one or fewer 
+arguments.</P></LI>
+
+<LI><P><B>Count Properties:</B> The CountProperties() member function returns the number of
+elements in the NULL terminated array of property_info structures passed in as the first argument
+at construction time.  If the BPropertyInfo class was constructed with no arguments, 0 is 
+returned.</P></LI>
+
+<LI><P><B>Count Values:</B> The CountValues() member function returns the number of
+elements in the NULL terminated array of value_info structures passed in as the second argument
+at construction time.  If the BPropertyInfo class was constructed with one or fewer arguments, 0 is 
+returned.</P></LI>
+
+<LI><P><B>Fixed Size:</B> The IsFixedSize() method always returns false indicating that a
+BPropertyInfo class instance can be flattened but the size of that flattened instance depends on
+the state of the BPropertyInfo class itself.</P></LI>
+
+<LI><P><B>Type Code:</B> The TypeCode() method always returns B_PROPERTY_INFO_TYPE ('SCTD') 
+regardless of the state of the BPropertyInfo class instance indicating that the flattened instance
+is of type B_PROPERTY_INFO_TYPE.</P></LI>
+
+<LI><P><B>Allows Type Code:</B> The AllowsTypeCode() method returns false for all passed in type
+codes unless B_PROPERTY_INFO_TYPE ('SCTD') is passed in when this method returns true.  This 
+implies that a BPropertyInfo class instance can be unflattened from flattened data of 
+B_PROPERTY_INFO_TYPE only (NOTE: the Be implementation seems to return true for all values
+passed in although that doesn't seem to make much sense).</P></LI>
+
+<LI><P><B>Flattened Size:</B> The FlattenedSize() member function retures the number of bytes
+required to store a flattened version of the BPropertyInfo instance.  The size will be determined
+by the description of the flattened data structure described in the "implementation" section
+below.</P></LI>
+
+<LI><P><B>Flatten:</B> The Flatten() member function turns the current BPropertyInfo instance into
+a series of bytes which completely describes its state so it can be recreated from it later.  The
+actual description of this byte representation of BPropertyInfo is described in the "implementation"
+section below.</P></LI>
+
+<LI><P><B>Unflatten:</B> The Unflatten() member function takes a passed in series of bytes and
+sets the current BPropertyInfo instance into a copy of the BPropertyInfo described by those
+bytes (ie a flattened version of a previous BPropertyInfo).  The old state of the current
+BPropertyInfo is replaced by that described by the flattened representation.  The actual description
+of this byte representation of BPropertyInfo is described in the "implemenation" section
+below.</P></LI>
+
+<LI><P><B>Print To Stream:</B> The PrintToStream() member function sends the current state of
+the BPropertyInfo instance to standard out for debugging purpose.  The actual format of this output
+isn't critical but it should describe the state of the object and be easy for a developer to
+understand.</P></LI>
+
+<LI><P><B>Find Match:</B> The FindMatch() member function takes a BMessage, a specifier (in the
+form of a BMessage), a specifier type (called form, ie B_DIRECT_SPECIFIER), property name and an
+index.  The member returns -1 if no match can be found.  A match will have the "what" code of the
+message (not the specifier message) in its command list or have a wildcard command.  It will also
+have the property name as its property name.  And, the specifier type will be listed as a valid
+specifier, or the property will have a wildcard specifier.  Note, if the index is non-zero, then
+only properties with command wildcards will be a match (a wildcard is an empty list of commands,
+similarly for specifier type).  On a match, the result is a 0 based offset into the array of
+properties.</P></LI>
+
+</OL>
+
+<A NAME="implement"></A><H2>BPropertyInfo Implementation:</H2>
+
+<P>There is a key difference between the OpenBeOS BPropertyInfo class and the Be implementation
+is support for BeOS R3 compiled executables.  The elements in the property_info structure changed
+in R4 versus the one which was used in R3.  Be did the following to handle this:</P>
+
+<UL>
+<LI>The R3 constructor was made private.  Existing R3 binaries would use this constructor.  This
+constructor would use static functions to convert between the old property_info structure passed
+from the R3 binary to the new one.</LI>
+<LI>A new constructor was introduced in R4.  This constructor would be source code compatible with
+existing code which compiled on R3.  However, when that code was recompiled for R4, this new
+constructor would be called because the old one was made private.</LI>
+<LI>I expect that work was also done to ensure that the R4 BPropertyInfo class could unflatten
+R3 based BPropertyInfo instances.  I have not done serious checking on this however.</LI>
+</UL>
+
+<P>For the OpenBeOS implementation, we have decided not to implement this R3 compatibility at
+this time but we are not going to rule it out.  The header file for BPropertyInfo will be changed
+to "remove" the R3 compatibility interfaces using an "ifdef R3_compatible".   The interfaces will
+still appear to the human reader but not be there as far as the compiler is concerned.  If we
+revise out decision in the future, it will be a simple matter of removing the ifdefs and implement
+these R3 compatibility interfaces.  For now, we have decided not to do this because:</P>
+
+<UL>
+<LI>There is no binary compatibility between R3 and R4 of BeOS Intel.  The ability for OpenBeOS
+to be binary compatible with these old R3 interfaces buys us nothing on Intel.</LI>
+<LI>There is binary compatibility with R3 with R4 and R5 on BeOS PPC.  Without these interfaces
+implemented, it may not be possible for R3 compiled binaries for PPC to operate against the
+OpenBeOS implementation.  However, there are no specific plans to support PPC.  Also, the informal
+PPC ports that have been discussed were considering using the gcc toolset which I believe precludes
+any backward compatibility, even with R5 binaries.</LI>
+<LI>There is some risk that a flattened BPropertyInfo instance on someone's hard disk was created
+against the old R3 implementation.  The OpenBeOS implementation may not be able to read this
+flattened BPropertyInfo.  However, we believe the chance of this happening to be very low and
+not worth the cost of the implementation.</LI>
+</UL>
+
+<P>The flattened format of BPropertyInfo looks like the following:</P>
+
+<TABLE BORDER=1>
+<TR><TH>Section</TH><TH>Size</TH><TH>Description</TH></TR>
+
+<TR><TD ROWSPAN=3>Header</TD><TD>1</TD><TD>Endian flag, 1 for big endian, 0 for little
+endian</TD></TR>
+<TR><TD>4</TD><TD>Number of property_info elements in the flattened data.</TD></TR>
+<TR><TD>4</TD><TD>Set to 3 if there are value_info in the flattened data, 1 otherwise</TD></TR>
+
+<TR><TD ROWSPAN=5>property_info main section, one per property_info element</TD><TD>1 to n</TD><TD>NULL terminated property_name</TD></TR>
+<TR><TD>1 to n</TD><TD>NULL terminated usage string.</TD></TR>
+<TR><TD>4</TD><TD>The extra_data value</TD></TR>
+<TR><TD>4 to 40</TD><TD>Up to 10 commands, each 4 bytes in size.  A zero command indicates the end of
+the commands.</TD></TR>
+<TR><TD>4 to 40</TD><TD>Up to 10 specifiers, each 4 bytes in size.  A zero specifier indicates the end of
+the specifiers.</TD></TR>
+
+<TR><TD ROWSPAN=2>property_info types section, one per property_info element</TD><TD>4 to 40</TD>
+<TD>Up to 10 types, each 4 bytes in size.  A zero type indicates the end of the types.</TD></TR>
+<TR><TD>4 to n</TD><TD>A series of 0 to 15 name and type pairs from the "compound types" or ctypes
+section of the property_info structure.  Each is made up of a null terminated name followed by a
+4 byte type.  There are up to 15 because there is a three element array of five name/type pairs.
+If fewer than 5 elements appear in any one set of the the three elements, four zero bytes are
+in the stream where the "name" would be.  Also, to indicate that there are fewer than three
+compound types, four zero bytes are in the stream where the first name would be.</TD></TR>
+
+<TR><TD ROWSPAN=1>value_info header, only appears if the flag in the header is set to "3"</TD>
+<TD>2</TD><TD>Number of value_info elements in the flattened data.</TD></TR>
+
+<TR><TD ROWSPAN=5>value_info section, one per value_info element</TD><TD>4</TD><TD>The "kind"
+of this value_info element.</TD></TR>
+<TR><TD>4</TD><TD>The "value" of this value_info element</TD></TR>
+<TR><TD>1 to n</TD><TD>A NULL terminated name string</TD></TR>
+<TR><TD>1 to n</TD><TD>A NULL terminated usage string</TD></TR>
+<TR><TD>4</TD><TD>The "extra_data" of this value_info element</TD></TR>
+
+</TABLE>
+
+
+<P>The following is some information from Marc Flerackers sent in a series of emails which 
+describes his investigation into how BPropertyInfo instances are flattened.  Note that the
+implementation is very much based Marc's implementation elluded to in these messages, although
+you will see some differences between the above description and Marc's messages.  The above
+table describes the actual format as it is implemented today and seems to match Be's 
+implementation.  However, Marc's investigation, implementation and emails were critical to
+getting this information and is therefore included here in this document:</P>
+
+<H3>Message 1:</H3>
+
+<P>I spend this morning some time to check how a BPropertyInfo is flattened,
+here's the result for BControl (not such a good choice as there are no
+compound types, however I added at the bottom how the layout looks if there
+are). I'm implementing this now in my own BPropertyInfo class. How is the
+OBOS BPropertyInfo class going BTW?<P>
+
+<PRE>
+// Header
+4		6		chunk count
+4		1		version
+
+// Start of property_info chunks, without types
+8		"Enabled"	name
+58		""		usage ("Returns whether or not the BControl is currently enabled.")
+4		0		extra_data
+4		PGET		commands
+4		0		end commands list
+4		1		specifiers
+4		0		end specifiers list
+
+8		"Enabled"	name
+34		""		usage ("Enables or disables the BControl.")
+4		0		extra_data
+4		PSET		commands
+4		0		end commands list
+4		1		specifiers
+4		0		end specifiers list
+
+6		"Label"	name
+30		""		usage ("Returns the BControl's label.")
+4		0		extra_data
+4		PGET		commands
+4		0		end commands list
+4		1		specifiers
+4		0		end specifiers list
+
+6		"Label"	name
+32		""		usage ("Sets the label of the BControl.")
+4		0		extra_data
+4		PSET		commands
+4		0		end commands list
+4		1		specifiers
+4		0		end specifiers list
+
+6		"Value"	name
+30		""		usage ("Returns the BControl's value.")
+4		0		extra_data
+4		PGET		commands
+4		0		end commands list
+4		1		specifiers
+4		0		end specifiers list
+
+6		"Value"	name
+32		""		usage ("Sets the value of the BControl.")
+4		0		extra_data
+4		PSET		commands
+4		0		end commands list
+4		1		specifiers
+4		0		end specifiers list
+
+// Start of property_info chunks, only types
+4		BOOL		type
+4		0		end type list
+4		0		end compound list
+
+4		BOOL		type
+4		0		end type list
+4		0		end compound list
+
+4		CSTR		type
+4		0		end type list
+4		0		end compound list
+
+4		LONG		type
+4		0		end type list
+4		0		end compound list
+
+4		LONG		type
+4		0		end type list
+4		0		end compound list
+</PRE>
+
+<P>If there would have been compound types, the layout of the type chunks would
+be like this</P>
+
+<PRE>
+4		BOOL		type
+4		0		end type list
+5		"name"	compound name
+4		LONG		compound type
+4		0		end compound list
+</PRE>
+
+<H3>Message 2:</H3>
+
+<P>Layout of a flattened BPropertyInfo with compound members. Value info is
+still missing, I will look at it when I implement support for it in my
+BPropertyInfo class. BTabView and BRadioButton are coming to cvs soon BTW, I
+only have to find some time to write decent Draw functions ^_^.</P>
+
+<PRE>
+// Header
+4		3			chunk count
+4		1			version
+
+// Start of property_info chunks, without types
+7		"Suites"		name
+1		0			usage
+4		0			extra_data
+4		PGET			commands
+4		0			end commands list
+4		1			specifiers
+4		0			end specifiers list
+
+10		"Messenger"	name
+1		0			usage
+4		0			extra_data
+4		PGET			commands
+4		0			end commands list
+4		1			specifiers
+4		0			end specifiers list
+
+13		"InternalName"	name
+1		0			usage
+4		0			extra_data
+4		PGET			commands
+4		0			end commands list
+4		1			specifiers
+4		0			end specifiers list
+
+// Start of property_info chunks, only types
+4		0			end type list
+7		"suites"		compound name
+4		CSTR			compound type
+4		0			end compound sub list
+9		"messages"		compound name
+4		SCTD			compound type
+4		0			end compound sub list
+4		0			end compound list
+
+4		MSNG		type
+4		0			end type list
+4		0			end compound list
+
+4		CSTR			type
+4		0			end type list
+4		0			end compound list
+</PRE>
+
+<H3>Message 3:</H3>
+
+<P>Some updated information about the flattened BPropertyInfo layout for people
+who are interested ^_^.</P>
+
+<PRE>
+The header contains flags, not a version
+
+flattened header
+
+4		count
+4		flags
+
+0x1 : property_info structs are present
+0x2 : value_info structs are present
+
+flattened value_info chunks are appended at the end as follows
+
+a small header
+4		count
+
+for every value_info
+2		kind
+4		value
+x		name
+x		usage
+4		extra_data
+
+where x is strlen + 1 of course.
+</PRE>
+
+<P>Value info structs are used to publish information about non-Be types and
+scripting commands btw.</P>
+
+<P>I tested my code against the Be implementation, and the flattened data
+matches.</P>
+
+</BODY>
+</HTML>

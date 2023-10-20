@@ -1,0 +1,150 @@
+DF404.0 {
+    __cxa_atexit;
+    __cxa_finalize;
+    _Exit;
+    _nmalloc_thr_prepfork;
+    _nmalloc_thr_parentfork;
+    _nmalloc_thr_childfork;
+    _system;
+    a64l;
+    abort;
+    abs;
+    aligned_alloc;
+    at_quick_exit;
+    atexit;
+    atof;
+    atof_l;
+    atoi;
+    atoi_l;
+    atol;
+    atol_l;
+    atoll;
+    atoll_l;
+    bsearch;
+    calloc;
+    div;
+    free;
+    getenv;
+    getopt;
+    getopt_long;
+    getopt_long_only;
+    getsubopt;
+    grantpt;
+    hcreate;
+    hdestroy;
+    heapsort;
+    hsearch;
+    imaxabs;
+    imaxdiv;
+    initstate;
+    insque;
+    l64a;
+    l64a_r;
+    labs;
+    ldiv;
+    lfind;
+    llabs;
+    lldiv;
+    lsearch;
+    malloc;
+    mergesort;
+    optarg;
+    opterr;
+    optind;
+    optopt;
+    optreset;
+    posix_memalign;
+    posix_openpt;
+    ptsname;
+    putenv;
+    qsort;
+    qsort_r;
+    quick_exit;
+    radixsort;
+    rand;
+    rand_r;
+    random;
+    realloc;
+    reallocf;
+    realpath;
+    remque;
+    setenv;
+    setstate;
+    sradixsort;
+    srand;
+    sranddev;
+    srandom;
+    srandomdev;
+    strfmon;
+    strfmon_l;
+    strtoimax;
+    strtoimax_l;
+    strtol;
+    strtol_l;
+    strtoll;
+    strtoll_l;
+    strtonum;
+    strtoq;
+    strtoul;
+    strtoul_l;
+    strtoull;
+    strtoull_l;
+    strtoumax;
+    strtoumax_l;
+    strtouq;
+    suboptarg;
+    system;
+    tdelete;
+    tfind;
+    tsearch;
+    twalk;
+    unlockpt;
+    unsetenv;
+};
+
+DF410.0 {
+    __calloc;
+    __free;
+    __malloc;
+    __posix_memalign;
+    __realloc;
+};
+
+DF504.0 {
+    strsuftoll;
+    strsuftollx;
+};
+
+DF506.0 {
+    __aligned_alloc;
+    __cxa_thread_atexit_impl;
+    freezero;
+    posix_fadvise;
+    reallocarray;
+    recallocarray;
+};
+
+DF508.0 {
+    abort_handler_s;
+    ignore_handler_s;
+    _libc_thr_init;
+    set_constraint_handler_s;
+};
+
+DF602.0 {
+    clearenv;
+};
+
+DF604.0 {
+    __malloc_usable_size;
+    malloc_usable_size;
+};
+
+/*
+ * ignore WEAK:  __pthread_cxa_finalize;
+ */
+
+DFprivate_1.0 {
+    __cleanup;
+    __system;
+};

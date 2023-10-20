@@ -1,0 +1,51 @@
+SubDir HAIKU_TOP src preferences filetypes ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+UseLibraryHeaders icon ;
+UsePrivateHeaders shared tracker ;
+SubDirSysHdrs $(HAIKU_TOP) src kits tracker ;
+
+Preference FileTypes :
+	FileTypes.cpp
+	FileTypesWindow.cpp
+	ApplicationTypesWindow.cpp
+	AttributeListView.cpp
+	DropTargetListView.cpp
+	MimeTypeListView.cpp
+	NewFileTypeWindow.cpp
+	AttributeWindow.cpp
+	ExtensionWindow.cpp
+
+	ApplicationTypeWindow.cpp
+	FileTypeWindow.cpp
+	TypeListWindow.cpp
+	IconView.cpp
+
+	PreferredAppMenu.cpp
+	StringView.cpp
+	: be tracker [ TargetLibstdc++ ] [ TargetLibsupc++ ] localestub
+	: FileTypes.rdef FileTypes.icons.rdef
+	;
+
+DoCatalogs FileTypes :
+	x-vnd.Haiku-FileTypes
+	:
+	ApplicationTypeWindow.cpp
+	ApplicationTypesWindow.cpp
+	AttributeListView.cpp
+	AttributeWindow.cpp
+	ExtensionWindow.cpp
+	FileTypes.cpp
+	FileTypeWindow.cpp
+	FileTypesWindow.cpp
+	IconView.cpp
+	NewFileTypeWindow.cpp
+	PreferredAppMenu.cpp
+	TypeListWindow.cpp
+;
+
+if $(TARGET_PLATFORM) = libbe_test {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : FileTypes
+		: tests!apps ;
+}

@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src apps deskcalc ;
+
+UsePrivateHeaders interface shared ;
+
+Application DeskCalc :
+	CalcApplication.cpp
+	CalcOptions.cpp
+	CalcView.cpp
+	CalcWindow.cpp
+	DeskCalc.cpp
+	ExpressionTextView.cpp
+	InputTextView.cpp
+	: be [ TargetLibstdc++ ] localestub libexpression_parser.a libmapm.a shared
+	: DeskCalc.rdef
+;
+
+DoCatalogs DeskCalc :
+	x-vnd.Haiku-DeskCalc
+	:
+	CalcApplication.cpp
+	CalcView.cpp
+	CalcWindow.cpp
+;

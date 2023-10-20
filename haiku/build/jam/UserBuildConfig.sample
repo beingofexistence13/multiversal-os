@@ -1,0 +1,38 @@
+# Quick start file for UserBuildConfig. Copy it and uncomment and edit the
+# lines you want. See UserBuildConfig.ReadMe for details.
+
+# Specify image size in MB.
+#HAIKU_IMAGE_SIZE	= 100 ;
+
+# Install Haiku in directory /Haiku.
+#HAIKU_INSTALL_DIR = /Haiku ;
+
+# Install Haiku on device /dev/sda57. Be sure you know what you're doing!
+#HAIKU_IMAGE_DIR	= /dev ;
+#HAIKU_IMAGE_NAME	= sda57 ;
+#HAIKU_DONT_CLEAR_IMAGE = 1 ;
+
+
+# Enable debugging for directory src/system/boot/loader recursively.
+#SetConfigVar DEBUG : HAIKU_TOP src system boot loader : 1 : global ;
+
+
+# Add default Locale settings skipping FirstBootPrompt
+#AddFilesToHaikuImage home config settings
+#	: $(HAIKU_TOP)/data/settings/first_boot/Locale\ settings ;
+
+# Add symlink/file (keymap settings) to the image.
+#AddFilesToHaikuImage home config settings : <keymap>US-International
+#	: Key_map ;
+
+# Copy artwork to the image.
+#CopyDirectoryToHaikuImage home Desktop : $(HAIKU_TOP)/data/artwork : : -x .svn ;
+
+
+# Add the optional package WonderBrush to the image.
+#AddHaikuImagePackages WonderBrush ;
+
+# Add an example optional gfx driver and its accelerant.
+# (Drivers just have a special rule because of the need for the symlink in dev/)
+#AddDriversToHaikuImage graphics : optional_driver ;
+#AddFilesToHaikuImage system add-ons accelerants : optional_driver.accelerant ;

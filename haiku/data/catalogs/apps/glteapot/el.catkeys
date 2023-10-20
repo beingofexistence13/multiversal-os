@@ -1,0 +1,23 @@
+1	greek, modern (1453-)	x-vnd.Haiku-GLTeapot	400822745
+Right	TeapotWindow		Δεξιά
+Backface culling	TeapotWindow		Κλείσιμο οπίσθιας όψης
+Add a teapot	TeapotWindow		Προσθήκη τσαγιέρας
+Yellow	TeapotWindow		Κίτρινο
+Perspective	TeapotWindow		Προοπτική
+Off	TeapotWindow		Κλειστό
+Quit	TeapotWindow		Κλείσιμο
+Green	TeapotWindow		Πράσινο
+Blue	TeapotWindow		Μπλε
+White	TeapotWindow		Άσπρο
+Upper center	TeapotWindow		Πάνω κέντρο
+Filled polygons	TeapotWindow		Γεμισμένα πολύγωνα
+Lower left	TeapotWindow		Κάτω αριστερά
+Fog	TeapotWindow		Ομίχλη
+FPS display	TeapotWindow		Προβολή FPS
+GLTeapot	System name		GL-Τσαγιέρα
+Settings	TeapotWindow		Ρυθμίσεις
+Gouraud shading	TeapotWindow		Σκίαση Gouraud
+Lighting	TeapotWindow		Φωτισμός
+Z-buffered	TeapotWindow		Z-buffered
+Red	TeapotWindow		Κόκκινο
+Lights	TeapotWindow		Φώτα

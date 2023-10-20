@@ -1,0 +1,726 @@
+.\" Copyright (c) 2001 Matthew Dillon.  Terms and conditions are those of
+.\" the BSD Copyright as specified in the file "/usr/src/COPYRIGHT" in
+.\" the source tree.
+.\"
+.Dd August 24, 2018
+.Dt TUNING 7
+.Os
+.Sh NAME
+.Nm tuning
+.Nd performance tuning under DragonFly
+.Sh SYSTEM SETUP
+Modern
+.Dx
+systems typically have just three partitions on the main drive.
+In order, a UFS
+.Pa /boot ,
+.Pa swap ,
+and a HAMMER or HAMMER2
+.Pa root .
+In prior years the installer created separate PFSs for half a dozen
+directories, but now we just put (almost) everything in the root.
+The installer will separate stuff that doesn't need to be backed up into
+a /build subdirectory and create null-mounts for things like /usr/obj, but it
+no longer creates separate PFSs for these.
+If desired, you can make /build its own mount to separate-out the
+components of the filesystem which do not need to be persistent.
+.Pp
+Generally speaking the
+.Pa /boot
+partition should be 1GB in size.  This is the minimum recommended
+size, giving you room for backup kernels and alternative boot schemes.
+.Dx
+always installs debug-enabled kernels and modules and these can take
+up quite a bit of disk space (but will not take up any extra ram).
+.Pp
+In the old days we recommended that swap be sized to at least 2x main
+memory.  These days swap is often used for other activities, including
+.Xr tmpfs 5
+and
+.Xr swapcache 8 .
+We recommend that swap be sized to the larger of 2x main memory or
+1GB if you have a fairly small disk and 16GB or more if you have a
+modestly endowed system.
+If you have a modest SSD + large HDD combination, we recommend
+a large dedicated swap partition on the SSD.  For example, if
+you have a 128GB SSD and 2TB or more of HDD storage, dedicating
+upwards of 64GB of the SSD to swap and using
+.Xr swapcache 8
+will significantly improve your HDD's performance.
+.Pp
+In an all-SSD or mostly-SSD system,
+.Xr swapcache 8
+is not normally used and should be left disabled (the default), but you
+may still want to have a large swap partition to support
+.Xr tmpfs 5
+use.
+Our synth/poudriere build machines run with at least 200GB of
+swap and use tmpfs for all the builder jails.  50-100 GB
+is swapped out at the peak of the build.  As a result, actual
+system storage bandwidth is minimized and performance increased.
+.Pp
+If you are on a minimally configured machine you may, of course,
+configure far less swap or no swap at all but we recommend at least
+some swap.
+The kernel's VM paging algorithms are tuned to perform best when there is
+swap space configured.
+Configuring too little swap can lead to inefficiencies in the VM
+page scanning code as well as create issues later on if you add
+more memory to your machine, so don't be shy about it.
+Swap is a good idea even if you don't think you will ever need it as it
+allows the
+machine to page out completely unused data and idle programs (like getty),
+maximizing the ram available for your activities.
+.Pp
+If you intend to use the
+.Xr swapcache 8
+facility with a SSD + HDD combination we recommend configuring as much
+swap space as you can on the SSD.
+However, keep in mind that each 1GByte of swapcache requires around
+1MByte of ram, so don't scale your swap beyond the equivalent ram
+that you reasonably want to eat to support it.
+.Pp
+Finally, on larger systems with multiple drives, if the use
+of SSD swap is not in the cards or if it is and you need higher-than-normal
+swapcache bandwidth, you can configure swap on up to four drives and
+the kernel will interleave the storage.
+The swap partitions on the drives should be approximately the same size.
+The kernel can handle arbitrary sizes but
+internal data structures scale to 4 times the largest swap partition.
+Keeping
+the swap partitions near the same size will allow the kernel to optimally
+stripe swap space across the N disks.
+Do not worry about overdoing it a
+little, swap space is the saving grace of
+.Ux
+and even if you do not normally use much swap, having some allows the system
+to move idle program data out of ram and allows the machine to more easily
+handle abnormal runaway programs.
+However, keep in mind that any sort of swap space failure can lock the
+system up.
+Most machines are configured with only one or two swap partitions.
+.Pp
+Most
+.Dx
+systems have a single HAMMER or HAMMER2 root.
+PFSs can be used to administratively separate domains for backup purposes
+but tend to be a hassle otherwise so if you don't need the administrative
+separation you don't really need to use multiple PFSs.
+All the PFSs share the same allocation layer so there is no longer a need
+to size each individual mount.
+Instead you should review the
+.Xr hammer 8
+manual page and use the 'hammer viconfig' facility to adjust snapshot
+retention and other parameters.
+By default
+HAMMER1 keeps 60 days worth of snapshots, and HAMMER2 keeps none.
+By convention
+.Pa /build
+is not backed up and contained only directory trees that do not need
+to be backed-up or snapshotted.
+.Pp
+If a very large work area is desired it is often beneficial to
+configure it as its own filesystem in a completely independent partition
+so allocation blowouts (if they occur) do not affect the main system.
+By convention a large work area is named
+.Pa /build .
+Similarly if a machine is going to have a large number of users
+you might want to separate your
+.Pa /home
+out as well.
+.Pp
+A number of run-time
+.Xr mount 8
+options exist that can help you tune the system.
+The most obvious and most dangerous one is
+.Cm async .
+Do not ever use it; it is far too dangerous.
+A less dangerous and more
+useful
+.Xr mount 8
+option is called
+.Cm noatime .
+.Ux
+filesystems normally update the last-accessed time of a file or
+directory whenever it is accessed.
+However, neither HAMMER nor HAMMER2 implement atime so there is usually
+no need to mess with this option.
+The lack of atime updates can create issues with certain programs
+such as when detecting whether unread mail is present, but
+applications for the most part no longer depend on it.
+.Sh SSD SWAP
+The single most important thing you can do to improve performance is to`
+have at least one solid-state drive in your system, and to configure your
+swap space on that drive.
+If you are using a combination of a smaller SSD and a very larger HDD,
+you can use
+.Xr swapcache 8
+to automatically cache data from your HDD.
+But even if you do not, having swap space configured on your SSD will
+significantly improve performance under even modest paging loads.
+It is particularly useful to configure a significant amount of swap
+on a workstation, 32GB or more is not uncommon, to handle bloated
+leaky applications such as browsers.
+.Sh SYSCTL TUNING
+.Xr sysctl 8
+variables permit system behavior to be monitored and controlled at
+run-time.
+Some sysctls simply report on the behavior of the system; others allow
+the system behavior to be modified;
+some may be set at boot time using
+.Xr rc.conf 5 ,
+but most will be set via
+.Xr sysctl.conf 5 .
+There are several hundred sysctls in the system, including many that appear
+to be candidates for tuning but actually are not.
+In this document we will only cover the ones that have the greatest effect
+on the system.
+.Pp
+The
+.Va kern.gettimeofday_quick
+sysctl defaults to 0 (off).  Setting this sysctl to 1 causes
+.Fn gettimeofday
+calls in libc to use a tick-granular time from the kpmap instead of making
+a system call.  Setting this feature can be useful when running benchmarks
+which make large numbers of
+.Fn gettimeofday
+calls, such as postgres.
+.Pp
+The
+.Va kern.ipc.shm_use_phys
+sysctl defaults to 1 (on) and may be set to 0 (off) or 1 (on).
+Setting
+this parameter to 1 will cause all System V shared memory segments to be
+mapped to unpageable physical RAM.
+This feature only has an effect if you
+are either (A) mapping small amounts of shared memory across many (hundreds)
+of processes, or (B) mapping large amounts of shared memory across any
+number of processes.
+This feature allows the kernel to remove a great deal
+of internal memory management page-tracking overhead at the cost of wiring
+the shared memory into core, making it unswappable.
+.Pp
+The
+.Va vfs.write_behind
+sysctl defaults to 1 (on).  This tells the filesystem to issue media
+writes as full clusters are collected, which typically occurs when writing
+large sequential files.  The idea is to avoid saturating the buffer
+cache with dirty buffers when it would not benefit I/O performance.  However,
+this may stall processes and under certain circumstances you may wish to turn
+it off.
+.Pp
+The
+.Va vfs.lorunningspace
+and
+.Va vfs.hirunningspace
+sysctls determines how much outstanding write I/O may be queued to
+disk controllers system wide at any given moment.  The default is
+usually sufficient, particularly when SSDs are part of the mix.
+Note that setting too high a value can lead to extremely poor
+clustering performance.  Do not set this value arbitrarily high!  Also,
+higher write queueing values may add latency to reads occurring at the same
+time.
+The
+.Va vfs.bufcache_bw
+controls data cycling within the buffer cache.  I/O bandwidth less than
+this specification (per second) will cycle into the much larger general
+VM page cache while I/O bandwidth in excess of this specification will
+be recycled within the buffer cache, reducing the load on the rest of
+the VM system at the cost of bypassing normal VM caching mechanisms.
+The default value is 200 megabytes/s (209715200), which means that the
+system will try harder to cache data coming off a slower hard drive
+and less hard trying to cache data coming off a fast SSD.
+.Pp
+This parameter is particularly important if you have NVMe drives in
+your system as these storage devices are capable of transferring
+well over 2GBytes/sec into the system and can blow normal VM paging
+and caching algorithms to bits.
+.Pp
+There are various other buffer-cache and VM page cache related sysctls.
+We do not recommend modifying their values.
+.Pp
+The
+.Va net.inet.tcp.sendspace
+and
+.Va net.inet.tcp.recvspace
+sysctls are of particular interest if you are running network intensive
+applications.
+They control the amount of send and receive buffer space
+allowed for any given TCP connection.
+However,
+.Dx
+now auto-tunes these parameters using a number of other related
+sysctls (run 'sysctl net.inet.tcp' to get a list) and usually
+no longer need to be tuned manually.
+We do not recommend
+increasing or decreasing the defaults if you are managing a very large
+number of connections.
+Note that the routing table (see
+.Xr route 8 )
+can be used to introduce route-specific send and receive buffer size
+defaults.
+.Pp
+As an additional management tool you can use pipes in your
+firewall rules (see
+.Xr ipfw 8 )
+to limit the bandwidth going to or from particular IP blocks or ports.
+For example, if you have a T1 you might want to limit your web traffic
+to 70% of the T1's bandwidth in order to leave the remainder available
+for mail and interactive use.
+Normally a heavily loaded web server
+will not introduce significant latencies into other services even if
+the network link is maxed out, but enforcing a limit can smooth things
+out and lead to longer term stability.
+Many people also enforce artificial
+bandwidth limitations in order to ensure that they are not charged for
+using too much bandwidth.
+.Pp
+Setting the send or receive TCP buffer to values larger than 65535 will result
+in a marginal performance improvement unless both hosts support the window
+scaling extension of the TCP protocol, which is controlled by the
+.Va net.inet.tcp.rfc1323
+sysctl.
+These extensions should be enabled and the TCP buffer size should be set
+to a value larger than 65536 in order to obtain good performance from
+certain types of network links; specifically, gigabit WAN links and
+high-latency satellite links.
+RFC 1323 support is enabled by default.
+.Pp
+The
+.Va net.inet.tcp.always_keepalive
+sysctl determines whether or not the TCP implementation should attempt
+to detect dead TCP connections by intermittently delivering
+.Dq keepalives
+on the connection.
+By default, this is now enabled for all applications.
+We do not recommend turning it off.
+The extra network bandwidth is minimal and this feature will clean-up
+stalled and long-dead connections that might not otherwise be cleaned
+up.
+In the past people using dialup connections often did not want to
+use this feature in order to be able to retain connections across
+long disconnections, but in modern day the only default that makes
+sense is for the feature to be turned on.
+.Pp
+The
+.Va net.inet.tcp.delayed_ack
+TCP feature is largely misunderstood.  Historically speaking this feature
+was designed to allow the acknowledgement to transmitted data to be returned
+along with the response.  For example, when you type over a remote shell
+the acknowledgement to the character you send can be returned along with the
+data representing the echo of the character.   With delayed acks turned off
+the acknowledgement may be sent in its own packet before the remote service
+has a chance to echo the data it just received.  This same concept also
+applies to any interactive protocol (e.g. SMTP, WWW, POP3) and can cut the
+number of tiny packets flowing across the network in half.   The
+.Dx
+delayed-ack implementation also follows the TCP protocol rule that
+at least every other packet be acknowledged even if the standard 100ms
+timeout has not yet passed.  Normally the worst a delayed ack can do is
+slightly delay the teardown of a connection, or slightly delay the ramp-up
+of a slow-start TCP connection.  While we aren't sure we believe that
+the several FAQs related to packages such as SAMBA and SQUID which advise
+turning off delayed acks may be referring to the slow-start issue.
+.Pp
+The
+.Va net.inet.tcp.inflight_enable
+sysctl turns on bandwidth delay product limiting for all TCP connections.
+This feature is now turned on by default and we recommend that it be
+left on.
+It will slightly reduce the maximum bandwidth of a connection but the
+benefits of the feature in reducing packet backlogs at router constriction
+points are enormous.
+These benefits make it a whole lot easier for router algorithms to manage
+QOS for multiple connections.
+The limiting feature reduces the amount of data built up in intermediate
+router and switch packet queues as well as reduces the amount of data built
+up in the local host's interface queue.  With fewer packets queued up,
+interactive connections, especially over slow modems, will also be able
+to operate with lower round trip times.  However, note that this feature
+only affects data transmission (uploading / server-side).  It does not
+affect data reception (downloading).
+.Pp
+The system will attempt to calculate the bandwidth delay product for each
+connection and limit the amount of data queued to the network to just the
+amount required to maintain optimum throughput.  This feature is useful
+if you are serving data over modems, GigE, or high speed WAN links (or
+any other link with a high bandwidth*delay product), especially if you are
+also using window scaling or have configured a large send window.
+.Pp
+For production use setting
+.Va net.inet.tcp.inflight_min
+to at least 6144 may be beneficial.  Note, however, that setting high
+minimums may effectively disable bandwidth limiting depending on the link.
+.Pp
+Adjusting
+.Va net.inet.tcp.inflight_stab
+is not recommended.
+This parameter defaults to 50, representing +5% fudge when calculating the
+bwnd from the bw.  This fudge is on top of an additional fixed +2*maxseg
+added to bwnd.  The fudge factor is required to stabilize the algorithm
+at very high speeds while the fixed 2*maxseg stabilizes the algorithm at
+low speeds.  If you increase this value excessive packet buffering may occur.
+.Pp
+The
+.Va net.inet.ip.portrange.*
+sysctls control the port number ranges automatically bound to TCP and UDP
+sockets.  There are three ranges:  A low range, a default range, and a
+high range, selectable via an IP_PORTRANGE
+.Fn setsockopt
+call.
+Most network programs use the default range which is controlled by
+.Va net.inet.ip.portrange.first
+and
+.Va net.inet.ip.portrange.last ,
+which defaults to 1024 and 5000 respectively.  Bound port ranges are
+used for outgoing connections and it is possible to run the system out
+of ports under certain circumstances.  This most commonly occurs when you are
+running a heavily loaded web proxy.  The port range is not an issue
+when running serves which handle mainly incoming connections such as a
+normal web server, or has a limited number of outgoing connections such
+as a mail relay.  For situations where you may run yourself out of
+ports we recommend increasing
+.Va net.inet.ip.portrange.last
+modestly.  A value of 10000 or 20000 or 30000 may be reasonable.  You should
+also consider firewall effects when changing the port range.  Some firewalls
+may block large ranges of ports (usually low-numbered ports) and expect systems
+to use higher ranges of ports for outgoing connections.  For this reason
+we do not recommend that
+.Va net.inet.ip.portrange.first
+be lowered.
+.Pp
+The
+.Va kern.ipc.somaxconn
+sysctl limits the size of the listen queue for accepting new TCP connections.
+The default value of 128 is typically too low for robust handling of new
+connections in a heavily loaded web server environment.
+For such environments,
+we recommend increasing this value to 1024 or higher.
+The service daemon
+may itself limit the listen queue size (e.g.\&
+.Xr sendmail 8 ,
+apache) but will
+often have a directive in its configuration file to adjust the queue size up.
+Larger listen queues also do a better job of fending off denial of service
+attacks.
+.Pp
+The
+.Va kern.maxvnodes
+specifies how many vnodes and related file structures the kernel will
+cache.
+The kernel uses a modestly generous default for this parameter based on
+available physical memory.
+You generally do not want to mess with this parameter as it directly
+effects how well the kernel can cache not only file structures but also
+the underlying file data.
+.Pp
+However, situations may crop up where you wish to cache less filesystem
+data in order to make more memory available for programs.  Not only will
+this reduce kernel memory use for vnodes and inodes, it will also have a
+tendency to reduce the impact of the buffer cache on main memory because
+recycling a vnode also frees any underlying data that has been cached for
+that vnode.
+.Pp
+It is, in fact, possible for the system to have more files open than the
+value of this tunable, but as files are closed the system will try to
+reduce the actual number of cached vnodes to match this value.
+The read-only
+.Va kern.openfiles
+sysctl may be interrogated to determine how many files are currently open
+on the system.
+.Pp
+The
+.Va vm.swap_idle_enabled
+sysctl is useful in large multi-user systems where you have lots of users
+entering and leaving the system and lots of idle processes.
+Such systems
+tend to generate a great deal of continuous pressure on free memory reserves.
+Turning this feature on and adjusting the swapout hysteresis (in idle
+seconds) via
+.Va vm.swap_idle_threshold1
+and
+.Va vm.swap_idle_threshold2
+allows you to depress the priority of pages associated with idle processes
+more quickly than the normal pageout algorithm.
+This gives a helping hand
+to the pageout daemon.
+Do not turn this option on unless you need it,
+because the tradeoff you are making is to essentially pre-page memory sooner
+rather than later, eating more swap and disk bandwidth.
+In a small system
+this option will have a detrimental effect but in a large system that is
+already doing moderate paging this option allows the VM system to stage
+whole processes into and out of memory more easily.
+.Sh LOADER TUNABLES
+Some aspects of the system behavior may not be tunable at runtime because
+memory allocations they perform must occur early in the boot process.
+To change loader tunables, you must set their values in
+.Xr loader.conf 5
+and reboot the system.
+.Pp
+.Va kern.maxusers
+is automatically sized at boot based on the amount of memory available in
+the system.  The value can be read (but not written) via sysctl.
+.Pp
+You can change this value as a loader tunable if the default resource
+limits are not sufficient.
+This tunable works primarily by adjusting
+.Va kern.maxproc ,
+so you can opt to override that instead.
+It is generally easier formulate an adjustment to
+.Va kern.maxproc
+instead of
+.Va kern.maxusers .
+.Pp
+.Va kern.maxproc
+controls most kernel auto-scaling components.  If kernel resource limits
+are not scaled high enough, setting this tunables to a higher value is
+usually sufficient.
+Generally speaking you will want to set this tunable to the upper limit
+for the number of process threads you want the kernel to be able to handle.
+The kernel may still decide to cap maxproc at a lower value if there is
+insufficient ram to scale resources as desired.
+.Pp
+Only set this tunable if the defaults are not sufficient.
+Do not use this tunable to try to trim kernel resource limits, you will
+not actually save much memory by doing so and you will leave the system
+more vulnerable to DOS attacks and runaway processes.
+.Pp
+Setting this tunable will scale the maximum number processes, pipes and
+sockets, total open files the system can support, and increase mbuf
+and mbuf-cluster limits.  These other elements can also be separately
+overridden to fine-tune the setup.  We rcommend setting this tunable
+first to create a baseline.
+.Pp
+Setting a high value presumes that you have enough physical memory to
+support the resource utilization.  For example, your system would need
+approximately 128GB of ram to reasonably support a maxproc value of
+4 million (4000000).  The default maxproc given that much ram will
+typically be in the 250000 range.
+.Pp
+Note that the PID is currently limited to 6 digits, so a system cannot
+have more than a million processes operating anyway (though the aggregate
+number of threads can be far greater).
+And yes, there is in fact no reason why a very well-endowed system
+couldn't have that many processes.
+.Pp
+.Va kern.nbuf
+sets how many filesystem buffers the kernel should cache.
+Filesystem buffers can be up to 128KB each.
+UFS typically uses an 8KB blocksize while HAMMER and HAMMER2 typically
+uses 64KB.  The system defaults usually suffice for this parameter.
+Cached buffers represent wired physical memory so specifying a value
+that is too large can result in excessive kernel memory use, and is also
+not entirely necessary since the pages backing the buffers are also
+cached by the VM page cache (which does not use wired memory).
+The buffer cache significantly improves the hot path for cached file
+accesses and dirty data.
+.Pp
+The kernel reserves (128KB * nbuf) bytes of KVM.  The actual physical
+memory use depends on the filesystem buffer size.
+It is generally more flexible to manage the filesystem cache via
+.Va kern.maxfiles
+than via
+.Va kern.nbuf ,
+but situations do arise where you might want to increase or decrease
+the latter.
+.Pp
+The
+.Va kern.dfldsiz
+and
+.Va kern.dflssiz
+tunables set the default soft limits for process data and stack size
+respectively.
+Processes may increase these up to the hard limits by calling
+.Xr setrlimit 2 .
+The
+.Va kern.maxdsiz ,
+.Va kern.maxssiz ,
+and
+.Va kern.maxtsiz
+tunables set the hard limits for process data, stack, and text size
+respectively; processes may not exceed these limits.
+The
+.Va kern.sgrowsiz
+tunable controls how much the stack segment will grow when a process
+needs to allocate more stack.
+.Pp
+.Va kern.ipc.nmbclusters
+and
+.Va kern.ipc.nmbjclusters
+may be adjusted to increase the number of network mbufs the system is
+willing to allocate.
+Each normal cluster represents approximately 2K of memory,
+so a value of 1024 represents 2M of kernel memory reserved for network
+buffers.
+Each 'j' cluster is typically 4KB, so a value of 1024 represents 4M of
+kernel memory.
+You can do a simple calculation to figure out how many you need but
+keep in mind that tcp buffer sizing is now more dynamic than it used to
+be.
+.Pp
+The defaults usually suffice but you may want to bump it up on service-heavy
+machines.
+Modern machines often need a large number of mbufs to operate services
+efficiently, values of 65536, even upwards of 262144 or more are common.
+If you are running a server, it is better to be generous than to be frugal.
+Remember the memory calculation though.
+.Pp
+Under no circumstances
+should you specify an arbitrarily high value for this parameter, it could
+lead to a boot-time crash.
+The
+.Fl m
+option to
+.Xr netstat 1
+may be used to observe network cluster use.
+.Sh KERNEL CONFIG TUNING
+There are a number of kernel options that you may have to fiddle with in
+a large-scale system.
+In order to change these options you need to be
+able to compile a new kernel from source.
+The
+.Xr build 7
+manual page and the handbook are good starting points for learning how to
+do this.
+Generally speaking, removing options to trim the size of the kernel
+is not going to save very much memory on a modern system.
+In the grand scheme of things, saving a megabyte or two is in the noise
+on a system that likely has multiple gigabytes of memory.
+.Pp
+If your motherboard is AHCI-capable then we strongly recommend turning
+on AHCI mode in the BIOS if it is not already the default.
+.Sh CPU, MEMORY, DISK, NETWORK
+The type of tuning you do depends heavily on where your system begins to
+bottleneck as load increases.
+If your system runs out of CPU (idle times
+are perpetually 0%) then you need to consider upgrading the CPU or moving to
+an SMP motherboard (multiple CPU's), or perhaps you need to revisit the
+programs that are causing the load and try to optimize them.
+If your system
+is paging to swap a lot you need to consider adding more memory.
+If your
+system is saturating the disk you typically see high CPU idle times and
+total disk saturation.
+.Xr systat 1
+can be used to monitor this.
+There are many solutions to saturated disks:
+increasing memory for caching, mirroring disks, distributing operations across
+several machines, and so forth.
+.Pp
+Finally, you might run out of network suds.
+Optimize the network path
+as much as possible.
+If you are operating a machine as a router you may need to
+setup a
+.Xr pf 4
+firewall (also see
+.Xr firewall 7 .
+.Dx
+has a very good fair-share queueing algorithm for QOS in
+.Xr pf 4 .
+.Sh BULK BUILDING MACHINE SETUP
+Generally speaking memory is at a premium when doing bulk compiles.
+Machines dedicated to bulk building usually reduce
+.Va kern.maxvnodes
+to 1000000 (1 million) vnodes or lower.  Don't get too cocky here, this
+parameter should never be reduced below around 100000 on reasonably well
+endowed machines.
+.Pp
+Bulk build setups also often benefit from a relatively large amount
+of SSD swap, allowing the system to 'burst' high-memory-usage situations
+while still maintaining optimal concurrency for other periods during the
+build which do not use as much run-time memory and prefer more parallelism.
+.Sh SOURCE OF KERNEL MEMORY USAGE
+The primary sources of kernel memory usage are:
+.Bl -tag -width ".Va kern.maxvnodes"
+.It Va kern.maxvnodes
+The maximum number of cached vnodes in the system.
+These can eat quite a bit of kernel memory, primarily due to auxiliary
+structures tracked by the HAMMER filesystem.
+It is relatively easy to configure a smaller value, but we do not
+recommend reducing this parameter below 100000.
+Smaller values directly impact the number of discrete files the
+kernel can cache data for at once.
+.It Va kern.ipc.nmbclusters , Va kern.ipc.nmbjclusters
+Calculate approximately 2KB per normal cluster and 4KB per jumbo
+cluster.
+Do not make these values too low or you risk deadlocking the network
+stack.
+.It Va kern.nbuf
+The number of filesystem buffers managed by the kernel.
+The kernel wires the underlying cached VM pages, typically 8KB (UFS) or
+64KB (HAMMER) per buffer.
+.It swap/swapcache
+Swap memory requires approximately 1MB of physical ram for each 1GB
+of swap space.
+When swapcache is used, additional memory may be required to keep
+VM objects around longer (only really reducable by reducing the
+value of
+.Va kern.maxvnodes
+which you can do post-boot if you desire).
+.It tmpfs
+Tmpfs is very useful but keep in mind that while the file data itself
+is backed by swap, the meta-data (the directory topology) requires
+wired kernel memory.
+.It mmu page tables
+Even though the underlying data pages themselves can be paged to swap,
+the page tables are usually wired into memory.
+This can create problems when a large number of processes are
+.Fn mmap Ns ing
+very large files.
+Sometimes turning on
+.Va machdep.pmap_mmu_optimize
+suffices to reduce overhead.
+Page table kernel memory use can be observed by using 'vmstat -z'
+.It Va kern.ipc.shm_use_phys
+It is sometimes necessary to force shared memory to use physical memory
+when running a large database which uses shared memory to implement its
+own data caching.
+The use of sysv shared memory in this regard allows the database to
+distinguish between data which it knows it can access instantly (i.e.
+without even having to page-in from swap) verses data which it might require
+and I/O to fetch.
+.Pp
+If you use this feature be very careful with regards to the database's
+shared memory configuration as you will be wiring the memory.
+.El
+.Sh SEE ALSO
+.Xr netstat 1 ,
+.Xr systat 1 ,
+.Xr dm 4 ,
+.Xr dummynet 4 ,
+.Xr nata 4 ,
+.Xr pf 4 ,
+.Xr login.conf 5 ,
+.Xr pf.conf 5 ,
+.Xr rc.conf 5 ,
+.Xr sysctl.conf 5 ,
+.Xr build 7 ,
+.Xr firewall 7 ,
+.Xr hier 7 ,
+.Xr boot 8 ,
+.Xr ccdconfig 8 ,
+.Xr disklabel 8 ,
+.Xr fsck 8 ,
+.Xr ifconfig 8 ,
+.Xr ipfw 8 ,
+.Xr loader 8 ,
+.Xr mount 8 ,
+.Xr newfs 8 ,
+.Xr route 8 ,
+.Xr sysctl 8 ,
+.Xr tunefs 8
+.Sh HISTORY
+The
+.Nm
+manual page was inherited from
+.Fx
+and first appeared in
+.Fx 4.3 ,
+May 2001.
+.Sh AUTHORS
+The
+.Nm
+manual page was originally written by
+.An Matthew Dillon .

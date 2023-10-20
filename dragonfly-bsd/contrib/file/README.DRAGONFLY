@@ -1,0 +1,24 @@
+FILE 5.43
+=========
+
+This directory contains a selected set of files from file 5.41
+
+Original source can be downloaded from:
+http://ftp.astron.com/pub/file/
+
+file = file-5.43.tar.gz
+date = 13 September 2022
+size = 1162786
+sha1 = 8cb1a01257e9d9b15bb58dae409e1cb6710c5947
+
+A list of the omitted files and directories can be found in
+README.DELETED.
+
+This is used in lib/libmagic and usr.bin/file.  When upgrading, remember
+to update config.h in lib/libmagic/libmagic.
+
+NOTE: Not all current header files are present in older versions of DFly,
+      which may present bootstrapping issues when building from sources.
+      The generated config.h may not be able to be used as-is.  See
+      conditionals around (for example) HAVE_BYTESWAP_H, which themselves
+      may also require <sys/param.h> to be included.

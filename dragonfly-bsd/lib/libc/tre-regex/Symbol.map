@@ -1,0 +1,19 @@
+DF404.0 {
+    regcomp;
+    regcomp_l;
+    regerror;
+    regexec;
+    regfree;
+    regncomp;
+    regncomp_l;
+    regnexec;
+    regwcomp;
+    regwcomp_l;
+    regwexec;
+    regwncomp;
+    regwncomp_l;
+    regwnexec;
+    tre_version;
+    tre_config;
+    tre_have_backrefs;
+};

@@ -1,0 +1,56 @@
+SubDir HAIKU_TOP src system boot arch riscv64 ;
+
+SubDirC++Flags -fno-rtti ;
+
+# Optimizations create infinite recursion otherwise.
+SubDirCcFlags -fno-builtin ;
+
+local librootArchSources =
+	byteorder.S
+;
+
+local librootGenericSources =
+	memcpy.c
+	memset.c
+;
+
+local kernelArchDriverSources =
+	arch_elf.cpp
+	arch_uart_sifive.cpp
+	sbi_syscalls.S
+;
+
+local kernelGenericDriverSources =
+	debug_uart.cpp
+	debug_uart_8250.cpp
+;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup efi riscv ] {
+	on $(platform) {
+		BootMergeObject [ FGristFiles boot_arch_$(TARGET_KERNEL_ARCH).o ] :
+			$(kernelArchDriverSources)
+			$(kernelGenericDriverSources)
+
+			$(librootArchSources)
+			$(librootGenericSources)
+
+			arch_cpu.cpp
+			: # additional flags
+			:
+			$(kernelArchObjects)
+		;
+
+		SEARCH on [ FGristFiles $(librootArchSources) ]
+			= [ FDirName $(HAIKU_TOP) src system libroot os arch riscv64 ] ;
+		SEARCH on [ FGristFiles $(librootGenericSources) ]
+			= [ FDirName $(HAIKU_TOP) src system libroot posix string arch generic ] ;
+
+		SEARCH on [ FGristFiles $(kernelArchDriverSources) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+		SEARCH on [ FGristFiles $(kernelGenericDriverSources) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel arch generic ] ;
+		SEARCH on [ FGristFiles $(kernelDebugSources) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel debug ] ;
+	}
+}

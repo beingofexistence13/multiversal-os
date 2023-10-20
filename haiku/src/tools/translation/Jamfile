@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src tools translation ;
+
+SubInclude HAIKU_TOP src tools translation bitsinfo ;
+SubInclude HAIKU_TOP src tools translation bmpinfo ;
+SubInclude HAIKU_TOP src tools translation inspector ;
+SubInclude HAIKU_TOP src tools translation pnginfo ;
+SubInclude HAIKU_TOP src tools translation stxtinfo ;
+SubInclude HAIKU_TOP src tools translation tgainfo ;
+SubInclude HAIKU_TOP src tools translation tiffinfo ;
+

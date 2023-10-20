@@ -1,0 +1,12 @@
+#	$NetBSD: Makefile.sdboot,v 1.4 2014/01/12 15:26:28 tsutsui Exp $
+
+PROG=	sdboot
+SRCS=	sdboot.S
+NOMAN=	# defined
+LIBCRT0=
+LIBCRTI=
+
+.PATH: ${.CURDIR}/..
+
+.include <../../Makefile.xxboot>
+.include <bsd.prog.mk>

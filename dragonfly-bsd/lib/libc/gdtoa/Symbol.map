@@ -1,0 +1,8 @@
+DF404.0 {
+    strtod;
+    strtod_l;
+    strtof;
+    strtof_l;
+    strtold;
+    strtold_l;
+};

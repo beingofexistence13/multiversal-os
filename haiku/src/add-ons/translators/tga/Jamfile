@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src add-ons translators tga ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources TGATranslator : TGATranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles TGATranslator ] :
+			TGAMain.cpp
+			TGATranslator.cpp
+			TGAView.cpp
+			: be translation 
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			[ TargetLibsupc++ ] localestub
+			: true
+		;
+	}
+}
+
+DoCatalogs TGATranslator :
+	x-vnd.Haiku-TGATranslator
+	:
+	TGAMain.cpp
+	TGATranslator.cpp
+	TGAView.cpp
+;

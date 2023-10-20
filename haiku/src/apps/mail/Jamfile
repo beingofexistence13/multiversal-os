@@ -1,0 +1,59 @@
+SubDir HAIKU_TOP src apps mail ;
+
+UsePrivateHeaders interface ;
+UsePrivateHeaders mail ;
+UsePrivateHeaders textencoding ;
+UsePrivateHeaders shared ;
+UsePrivateHeaders storage ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src apps webpositive autocompletion ] ;
+
+AddResources Mail : pictures.rdef  ;
+
+Application Mail :
+	AddressTextControl.cpp
+	Content.cpp
+	Enclosures.cpp
+	FindWindow.cpp
+	Header.cpp
+	MailApp.cpp
+	MailPopUpMenu.cpp
+	MailSupport.cpp
+	MailWindow.cpp
+	MessageStatus.cpp
+	People.cpp
+	Prefs.cpp
+	QueryList.cpp
+	QueryMenu.cpp
+	Signature.cpp
+	Status.cpp
+	Utilities.cpp
+	WIndex.cpp
+	Words.cpp
+	KUndoBuffer.cpp
+
+	# autocompletion
+	AutoCompleter.cpp
+	AutoCompleterDefaultImpl.cpp
+	TextViewCompleter.cpp
+
+	: shared be tracker [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+		localestub libmail.so libtextencoding.so
+	: Mail.rdef
+;
+
+DoCatalogs Mail :
+	x-vnd.Be-MAIL
+	:
+	Content.cpp
+	Enclosures.cpp
+	FindWindow.cpp
+	Header.cpp
+	LocalizedFolders.h
+	MailApp.cpp
+	MailPopUpMenu.cpp
+	MailWindow.cpp
+	Prefs.cpp
+	Signature.cpp
+	Status.cpp
+;

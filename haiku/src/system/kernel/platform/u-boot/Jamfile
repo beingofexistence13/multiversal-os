@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src system kernel platform u-boot ;
+
+SubDirHdrs $(HAIKU_TOP) headers private kernel platform $(TARGET_KERNEL_PLATFORM) ;
+UseLibraryHeaders [ FDirName libfdt ] ;
+
+SubDirCcFlags $(TARGET_KERNEL_PIC_CCFLAGS) ;
+SubDirC++Flags $(TARGET_KERNEL_PIC_CCFLAGS) ;
+
+KernelMergeObject kernel_platform_u-boot.o :
+	platform.cpp
+;

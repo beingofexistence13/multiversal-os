@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src add-ons input_server devices virtualkeyboard ;
+
+UsePrivateHeaders input interface shared tracker ;
+UsePrivateSystemHeaders ;
+
+SubDirC++Flags -DVIRTUAL_KEYBOARD_DEVICE ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src preferences keymap ] ;
+
+AddResources <input>virtualkeyboard : VirtualKeyboard.rdef ;
+
+Addon <input>virtualkeyboard :
+
+	KeyboardLayout.cpp
+	KeyboardLayoutView.cpp
+	Keymap.cpp
+	KeymapListItem.cpp
+	VirtualKeyboardInputDevice.cpp
+	VirtualKeyboardWindow.cpp
+
+	: be tracker input_server localestub shared [ TargetLibstdc++ ]
+;
+

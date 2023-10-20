@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src add-ons kernel drivers disk scsi scsi_disk ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders drivers ;
+SubDirHdrs $(HAIKU_TOP) src system kernel device_manager ;
+
+KernelAddon scsi_disk :
+	scsi_disk.cpp
+;

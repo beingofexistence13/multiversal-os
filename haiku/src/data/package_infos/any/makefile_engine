@@ -1,0 +1,20 @@
+name			makefile_engine
+version			%HAIKU_VERSION%
+architecture	any
+summary			"The Makefile engine"
+description 	"A simple generic makefile-engine and Makefile template."
+
+packager		"The Haiku build system"
+vendor			"Haiku Project"
+
+copyrights		"? Be Inc. 2001-2020 Haiku, Inc."
+licenses		MIT
+
+provides {
+	makefile_engine=%HAIKU_VERSION%
+}
+
+requires {
+	cmd:make
+	cmd:mkdepend
+}

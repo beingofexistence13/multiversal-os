@@ -1,0 +1,28 @@
+SubDir HAIKU_TOP src tools package ;
+
+UsePrivateBuildHeaders libroot shared kernel storage support ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src bin package ] ;
+
+USES_BE_API on <build>package = true ;
+
+if [ FIsBuildFeatureEnabled zstd ] {
+	SubDirC++Flags -DZSTD_DEFAULT ;
+}
+
+BuildPlatformMain <build>package :
+	command_add.cpp
+	command_checksum.cpp
+	command_create.cpp
+	command_dump.cpp
+	command_extract.cpp
+	command_info.cpp
+	command_list.cpp
+	command_recompress.cpp
+	package.cpp
+	PackageWriterListener.cpp
+	PackageWritingUtils.cpp
+
+	:
+	libpackage_build.so $(HOST_LIBBE) $(HOST_LIBSUPC++)
+;

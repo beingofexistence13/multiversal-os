@@ -1,0 +1,19 @@
+SubDir HAIKU_TOP src add-ons accelerants common ;
+
+SetSubDirSupportedPlatforms haiku haiku_host libbe_test ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics radeon ] ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+
+StaticLibrary libaccelerantscommon.a :
+	compute_display_timing.cpp
+	create_display_modes.cpp
+	ddc.c
+	decode_edid.c
+	dp.cpp
+	dump_edid.c
+	i2c.c
+	validate_display_mode.cpp
+	video_configuration.cpp
+;

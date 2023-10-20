@@ -1,0 +1,31 @@
+SubDir HAIKU_TOP src apps diskprobe ;
+
+UsePrivateHeaders interface shared ;
+
+Application DiskProbe :
+	DiskProbe.cpp
+	DataEditor.cpp
+	DataView.cpp
+	ProbeWindow.cpp
+	FileWindow.cpp
+	AttributeWindow.cpp
+	TypeEditors.cpp
+	ProbeView.cpp
+	OpenWindow.cpp
+	FindWindow.cpp
+	: be localestub tracker translation libexpression_parser.a
+		libmapm.a [ TargetLibsupc++ ]
+	: DiskProbe.rdef
+;
+
+DoCatalogs DiskProbe :
+	x-vnd.Haiku-DiskProbe
+	:
+	AttributeWindow.cpp
+	DiskProbe.cpp
+	FindWindow.cpp
+	FileWindow.cpp
+	OpenWindow.cpp
+	ProbeView.cpp
+	TypeEditors.cpp
+;

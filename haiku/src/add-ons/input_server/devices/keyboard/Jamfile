@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src add-ons input_server devices keyboard ;
+
+UsePrivateHeaders input interface shared tracker ;
+UsePrivateSystemHeaders ;
+
+AddResources <input>keyboard : Keyboard.rdef ;
+
+Addon <input>keyboard :
+	KeyboardInputDevice.cpp
+	Keymap.cpp
+
+	TeamMonitorWindow.cpp
+	TeamListItem.cpp
+
+	: input_server be shared localestub [ TargetLibsupc++ ] ;
+
+DoCatalogs <input>keyboard :
+	x-vnd.Haiku-KeyboardInputServerDevice
+	:
+	TeamMonitorWindow.cpp
+;
+

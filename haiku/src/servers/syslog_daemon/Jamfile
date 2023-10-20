@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src servers syslog_daemon ;
+
+UsePrivateHeaders app syslog_daemon ;
+UsePrivateSystemHeaders ;
+
+AddResources syslog_daemon : SyslogDaemon.rdef ;
+
+Server syslog_daemon :
+	SyslogDaemon.cpp
+	syslog_output.cpp
+	listener_output.cpp
+	:
+	be [ TargetLibsupc++ ] localestub
+;
+
+DoCatalogs syslog_daemon :
+	x-vnd.Haiku-SystemLogger
+	:
+	SyslogDaemon.cpp
+;

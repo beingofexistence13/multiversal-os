@@ -1,0 +1,117 @@
+1	english	x-vnd.haiku-icon_o_matic	1244334028
+None	Icon-O-Matic-Properties		无
+Add empty	Icon-O-Matic-ShapesList		添加空白
+Opening the icon failed!	Icon-O-Matic-Main		打开图标失败！
+Add with path	Icon-O-Matic-ShapesList		添加路径
+Copy	Icon-O-Matic-Properties		复制
+Color	Icon-O-Matic-PropertyNames		颜色
+Format	Icon-O-Matic-SavePanel		格式
+Color	Icon-O-Matic-StyleTypes		颜色
+Select	Icon-O-Matic-Properties		选择
+Reset transformation	Icon-O-Matic-ShapesList		重设转换
+Duplicate	Icon-O-Matic-StylesList		副本
+Rotate	Icon-O-Matic-TransformationBoxStates		旋转
+Shorten	Icon-O-Matic-PropertyNames		缩短
+The text you are trying to import is quite long, are you sure?	Icon-O-Matic-StyledTextImport		您希望导入的文本文件太长，是否确定？
+Paste	Icon-O-Matic-Properties		粘贴
+Close	Icon-O-Matic-Menu-File		关闭
+Add rect	Icon-O-Matic-PathsList		添加矩形
+Rotation	Icon-O-Matic-PropertyNames		旋转
+Transform	Icon-O-Matic-PathManipulator		转换
+Add shape with style	Icon-O-Matic-Menu-Shape		添加模型（包含样式）
+Remove	Icon-O-Matic-StylesList		删除
+Cancel	Icon-O-Matic-Menu-Settings		取消
+Transformation	Icon-O-Matic-TransformationBoxStates		转换
+Closed	Icon-O-Matic-PropertyNames		关闭
+<nothing to redo>	Icon-O-Matic-Menu-Edit		<无恢复内容>
+Height	Icon-O-Matic-PropertyNames		高度
+warning	Icon-O-Matic-SVGExport		警告
+File	Icon-O-Matic-Menus		文件
+Properties	Icon-O-Matic-Menus		属性
+Path	Icon-O-Matic-PropertyNames		路径
+Path	Icon-O-Matic-Menus		路径
+Stroke	Transformation		描边
+Flip	Icon-O-Matic-PathManipulator		翻转
+Opacity	Icon-O-Matic-PropertyNames		透明度
+OK	Icon-O-Matic-ColorPicker		确定
+Error: 	Icon-O-Matic-Main		错误：
+Saving your document failed!	Icon-O-Matic-Exporter		文档保存失败！
+Snap to grid	Icon-O-Matic-Menu-Settings		对齐网格
+Opening the document failed!	Icon-O-Matic-Main		打开文档失败！
+Add with path & style	Icon-O-Matic-ShapesList		添加路径与样式
+Shape	Icon-O-Matic-Menus		模型
+<unavailable>	Icon-O-Matic-StyleTypes		<不可用>
+Min LOD	Icon-O-Matic-PropertyNames		最小层次细节
+Add	Icon-O-Matic-TransformersList		添加
+Settings	Icon-O-Matic-Menus		设置
+Scale X	Icon-O-Matic-PropertyNames		比例 X
+Add	Icon-O-Matic-PathsList		添加
+Remove	Icon-O-Matic-PathManipulator		删除
+Duplicate	Icon-O-Matic-ShapesList		副本
+Contour	Transformation		轮廓
+Rounding	Icon-O-Matic-PropertyNames		倒角
+Joins	Icon-O-Matic-PropertyNames		连接
+Cancel	Icon-O-Matic-ColorPicker		取消
+Duplicate	Icon-O-Matic-PathsList		副本
+Save	Icon-O-Matic-Menu-Settings		保存
+Export as…	Icon-O-Matic-Menu-File		导出为...
+Diamond	Icon-O-Matic-StyleTypes		菱形
+Don't save	Icon-O-Matic-Menu-Settings		不保存
+Add shape with path	Icon-O-Matic-Menu-Shape		添加模型（包含路径）
+Translation X	Icon-O-Matic-PropertyNames		平移 X
+Icon-O-Matic might not have interpreted all data from the SVG when it was loaded. By overwriting the original file, this information would now be lost.	Icon-O-Matic-SVGExport		数据加载时，图标套件 并未从 SVG 中解析所有数据。覆盖原文件，将不会再显示该信息。
+Rotate indices backwards	Icon-O-Matic-PathsList		逆时针旋转
+Overwrite	Icon-O-Matic-SVGExport		覆盖
+Cancel	Icon-O-Matic-SVGExport		取消
+Open…	Icon-O-Matic-Menu-File		打开...
+Remove	Icon-O-Matic-ShapesList		删除
+Drop shapes	Icon-O-Matic-ShapesList		拽入样式
+Linear	Icon-O-Matic-StyleTypes		线性
+Clean up	Icon-O-Matic-PathsList		清理
+Split	Icon-O-Matic-PathManipulator		分割
+Move	Icon-O-Matic-TransformationBoxStates		移动
+Conic	Icon-O-Matic-StyleTypes		圆锥线
+Name	Icon-O-Matic-PropertyNames		名称
+Reset transformation	Icon-O-Matic-StylesList		重置转换
+Reverse	Icon-O-Matic-PathsList		撤销
+Remove	Icon-O-Matic-PathsList		删除
+Style type	Icon-O-Matic-StyleTypes		样式类型
+Quit	Icon-O-Matic-Menu-File		退出
+Gradient	Icon-O-Matic-StyleTypes		渐变
+Add shape with path & style	Icon-O-Matic-Menu-Shape		添加模型包含路径与样式
+Radial	Icon-O-Matic-StyleTypes		射线
+Text too long	Icon-O-Matic-StyledTextImport		文本太长
+Caps	Icon-O-Matic-PropertyNames		大写
+OK	Icon-O-Matic-SVGImport		确定
+Append…	Icon-O-Matic-Menu-File		附加...
+Scale Y	Icon-O-Matic-PropertyNames		比例 Y
+Rotate indices forwards	Icon-O-Matic-PathsList		顺时针旋转
+Save	Icon-O-Matic-Menu-File		保存
+Add circle	Icon-O-Matic-PathsList		添加圆形
+Freeze transformation	Icon-O-Matic-ShapesList		冻结转换
+Untitled	Icon-O-Matic-Main		未命名
+Max LOD	Icon-O-Matic-PropertyNames		最大层次细节
+Save changes to current icon before closing?	Icon-O-Matic-Menu-Settings		关闭前是否保存当前图标修改？
+Failed to open the file '%s' as an SVG document.\n\n	Icon-O-Matic-SVGImport		打开SVG文档 '%s' 出错。\n\n
+Save as…	Icon-O-Matic-Menu-File		保存为...
+Swatches	Icon-O-Matic-Menus		调色板
+<modify path>	Icon-O-Matic-PathCmd		<修改路径>
+Icon-O-Matic	System name		图标套件
+<nothing to undo>	Icon-O-Matic-Menu-Edit		<无撤销任务>
+Add	Icon-O-Matic-StylesList		添加
+Translation Y	Icon-O-Matic-PropertyNames		平移 Y
+Scale	Icon-O-Matic-TransformationBoxStates		比例
+All	Icon-O-Matic-Properties		全部
+Transformer	Icon-O-Matic-Menus		转换器
+Invert selection	Icon-O-Matic-Properties		反向选择
+<unkown property>	Icon-O-Matic-PropertyNames		<未知属性>
+Pick a color	Icon-O-Matic-ColorPicker		选择颜色
+Settings…	Icon-O-Matic-SavePanel		设置...
+Add with style	Icon-O-Matic-ShapesList		添加包含样式
+New	Icon-O-Matic-Menu-File		新建
+Gradient type	Icon-O-Matic-StyleTypes		渐变类型
+Export	Icon-O-Matic-Menu-File		导出
+Width	Icon-O-Matic-PropertyNames		宽度
+Style	Icon-O-Matic-Menus		样式
+Off	Icon-O-Matic-Menu-Settings		关闭
+Edit	Icon-O-Matic-Menus		编辑

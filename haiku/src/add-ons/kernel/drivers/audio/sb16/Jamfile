@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio sb16 ;
+
+UsePrivateHeaders audio ;
+
+KernelAddon sb16 :
+	driver.c
+	hooks.c
+	sb16_hw.c
+	sb16_multi_audio.c
+;

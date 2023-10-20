@@ -1,0 +1,30 @@
+#	from: Makefile.inc,v 1.1 1993/09/03 19:04:23 jtc Exp
+# $FreeBSD: src/lib/libc/amd64/sys/Makefile.inc,v 1.29 2003/10/23 06:07:09 peter Exp $
+
+SRCS+=	amd64_get_fsbase.c amd64_get_gsbase.c amd64_set_fsbase.c amd64_set_gsbase.c
+
+MDASM=	vfork.S cerror.S exect.S getcontext.S pipe.S pipe2.S ptrace.S \
+	reboot.S fake_sbrk.S setlogin.S sigreturn.S
+
+# Don't generate default code for these syscalls:
+NOASM=	exit.o ftruncate.o getlogin.o \
+	lseek.o mmap.o openbsd_poll.o pread.o \
+	pwrite.o sstk.o truncate.o vfork.o yield.o \
+	fork.o
+
+PSEUDO=	_getlogin.o _exit.o
+
+# getcontext.S needs certain offsets
+#
+# XXX this should be moved to a non-arch directory
+SRCS+= asmcontext.h
+CLEANFILES+= asmcontext.h asmcontext.o
+
+GENASSYM= NM=nm sh ${.CURDIR}/../../sys/kern/genassym.sh
+
+asmcontext.o: asmcontext.c
+	${CC} ${CFLAGS} -fcommon -c ${.IMPSRC}
+
+asmcontext.h: asmcontext.o
+	${GENASSYM} ${.ALLSRC} > ${.TARGET}
+

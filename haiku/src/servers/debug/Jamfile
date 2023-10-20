@@ -1,0 +1,29 @@
+SubDir HAIKU_TOP src servers debug ;
+
+UsePrivateHeaders app ;
+UsePrivateHeaders debug ;
+UsePrivateHeaders kernel ;
+UsePrivateHeaders shared ;
+UsePrivateHeaders storage ;
+
+AddResources debug_server : debug_server.rdef ;
+
+Server debug_server
+ 	:
+ 	DebugServer.cpp
+	DebugWindow.cpp
+	:
+	be
+	libdebug.so
+	shared
+	[ TargetLibstdc++ ]
+	localestub
+;
+
+DoCatalogs debug_server :
+	x-vnd.Haiku-debug_server
+	:
+	DebugServer.cpp
+	DebugWindow.cpp
+;
+

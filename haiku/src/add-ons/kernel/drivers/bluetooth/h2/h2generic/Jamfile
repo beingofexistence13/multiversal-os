@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons kernel drivers bluetooth h2 h2generic ;
+
+UsePrivateHeaders net kernel bluetooth ;
+UsePrivateKernelHeaders ;
+
+KernelAddon h2generic :
+	h2generic.cpp
+	h2transactions.cpp
+	h2upper.cpp
+	h2util.cpp
+	snet_buffer.cpp
+	;

@@ -1,0 +1,4 @@
+SubDir HAIKU_TOP src tests servers input msgspy ;
+
+Addon MsgSpy : MsgSpy.cpp : be /system/servers/input_server ;
+

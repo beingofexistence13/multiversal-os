@@ -1,0 +1,173 @@
+SubDir HAIKU_TOP src system kernel lib ;
+
+UsePrivateHeaders shared ;
+UsePrivateHeaders [ FDirName libroot locale ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) headers compatibility gnu ] : true ;
+
+# force inclusion of kernel_lib.h
+local kernelLibHeader = [ FDirName $(SUBDIR) kernel_lib.h ] ;
+CCFLAGS += -include $(kernelLibHeader) ;
+C++FLAGS += -include $(kernelLibHeader) ;
+
+
+local gnuSources = [ FDirName $(HAIKU_TOP) src libs gnu ] ;
+local librootSources = [ FDirName $(HAIKU_TOP) src system libroot ] ;
+local librootOSSources = [ FDirName $(librootSources) os ] ;
+local posixSources = [ FDirName $(librootSources) posix ] ;
+
+
+# kernel libroot os files
+
+local sources =
+	driver_settings.cpp
+	find_directory.cpp
+	fs_info.cpp
+	system_revision.c
+	wait_for_objects.cpp
+	;
+
+SourceHdrs $(sources) : $(librootOSSources) ;
+
+KernelMergeObject kernel_os_main.o : $(sources)
+	: $(TARGET_KERNEL_PIC_CCFLAGS)
+;
+
+SEARCH on [ FGristFiles $(sources) ]
+	= [ FDirName $(HAIKU_TOP) src system libroot os ] ;
+
+# kernel libroot posix files
+
+SEARCH_SOURCE += [ FDirName $(posixSources) ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) locale ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) stdio ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) stdlib ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) string ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) sys ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) time ] ;
+SEARCH_SOURCE += [ FDirName $(posixSources) unistd ] ;
+SEARCH_SOURCE += [ FDirName $(gnuSources) ] ;
+
+local muslSources =
+	ffs.c
+	rand.c
+	rand_r.c
+
+	strchrnul.c
+	strcspn.c
+	;
+
+SourceHdrs $(muslSources) :
+	[ FDirName $(posixSources) musl include ]
+	[ FDirName $(posixSources) musl internal ]
+	[ FDirName $(posixSources) musl arch $(TARGET_KERNEL_ARCH_DIR) ] ;
+
+KernelMergeObject kernel_lib_posix.o :
+	kernel_errno.cpp
+	kernel_vsprintf.cpp
+	stack_protector.cpp
+
+	# main
+	dirent.cpp
+	fcntl.cpp
+	poll.cpp
+	utime.c
+	# locale
+	ctype_loc.cpp
+	ctype_l.cpp
+	ctype.cpp
+	localeconv.cpp
+	LocaleData.cpp
+	# stdlib
+	abs.c
+	atoi.c
+	bsearch.c
+	merge.c
+	qsort.c
+	random.c
+	strtod.c
+	strtol.c
+	strtoll.c
+	strtoul.c
+	strtoull.c
+	# sys
+	chmod.c
+	stat.c
+	mkdir.c
+	select.cpp
+	gettimeofday.c
+	uio.c
+	# time
+	time.c
+	# unistd
+	access.c
+	chown.c
+	close.c
+	#conf.c
+	directory.c
+	dup.c
+	ioctl.c
+	link.c
+	lseek.c
+	mount.c
+	read.c
+	sync.c
+	truncate.c
+	usergroup.cpp
+	write.c
+	# string
+	memchr.c
+	memcmp.c
+	memmem.c
+	memmove.c
+	strcasecmp.c
+	strcasestr.c
+	strcat.c
+	strchr.c
+	strcmp.c
+	strcpy.c
+	strdup.cpp
+	strerror.c
+	strlcat.c
+	strlcpy.c
+	strlen.cpp
+	strncat.c
+	strncmp.c
+	strncpy.cpp
+	strndup.cpp
+	strnlen.cpp
+	strpbrk.c
+	strrchr.c
+	strspn.c
+	strstr.c
+	strtok.c
+	strupr.c
+	stpcpy.c
+
+	$(muslSources)
+	: $(TARGET_KERNEL_PIC_CCFLAGS)
+;
+
+SEARCH on [ FGristFiles $(muslSources) ] += [ FDirName $(posixSources) musl misc ] ;
+SEARCH on [ FGristFiles $(muslSources) ] += [ FDirName $(posixSources) musl prng ] ;
+SEARCH on [ FGristFiles $(muslSources) ] += [ FDirName $(posixSources) musl string ] ;
+
+# misc
+
+SEARCH_SOURCE =
+	[ FDirName $(HAIKU_TOP) src kits support ]
+	[ FDirName $(HAIKU_TOP) src kits shared ]
+	;
+
+KernelMergeObject kernel_misc.o :
+	DataIO.cpp
+	Referenceable.cpp
+	WeakReferenceable.cpp
+
+	: $(TARGET_KERNEL_PIC_CCFLAGS)
+;
+
+HaikuSubInclude arch $(TARGET_ARCH) ;
+HaikuSubInclude zlib ;
+if [ FIsBuildFeatureEnabled zstd ] {
+	HaikuSubInclude zstd ;
+}

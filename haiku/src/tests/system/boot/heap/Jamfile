@@ -1,0 +1,18 @@
+SubDir HAIKU_TOP src tests system boot heap ;
+
+UsePrivateKernelHeaders ;
+
+ObjectDefines heap.cpp : malloc=heap_malloc free=heap_free realloc=heap_realloc
+	HEAP_TEST=1 ;
+
+SimpleTest heapTest :
+	heapTest.cpp
+
+	# from the boot loader:
+	heap.cpp
+;
+
+# Tell Jam where to find the utility sources
+SEARCH on [ FGristFiles
+		heap.cpp
+	] = [ FDirName $(HAIKU_TOP) src system boot loader ] ;

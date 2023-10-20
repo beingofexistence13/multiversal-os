@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src tests kits opengl demos gears ;
+UseBuildFeatureHeaders mesa ;
+UseBuildFeatureHeaders glu ;
+UseLibraryHeaders glut ;
+
+local sources =
+	gears.c
+;
+
+Includes [ FGristFiles $(sources) ]
+	:
+	[ BuildFeatureAttribute mesa : headers ]
+	[ BuildFeatureAttribute glu : headers ]
+;
+
+
+SimpleTest GLGears :
+	$(sources)
+	:
+	be libglut.so
+	[ BuildFeatureAttribute mesa : library ]
+	[ BuildFeatureAttribute glu : library ]
+;

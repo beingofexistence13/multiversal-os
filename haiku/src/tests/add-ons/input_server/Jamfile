@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src tests add-ons input_server ;
+
+SubDirHdrs $(HAIKU_TOP) src add-ons input_server devices keyboard ;
+UsePrivateHeaders input shared tracker  ;
+UsePrivateSystemHeaders ;
+
+SimpleTest TeamMonitorTest :
+	TeamMonitorTest.cpp
+	TeamMonitorWindow.cpp
+	TeamListItem.cpp
+	: be localestub shared
+	;
+
+SEARCH on [ FGristFiles
+		TeamMonitorWindow.cpp TeamListItem.cpp
+	] = [ FDirName $(HAIKU_TOP) src add-ons input_server devices keyboard ] ;
+

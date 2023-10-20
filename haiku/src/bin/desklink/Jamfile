@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src bin desklink ;
+
+UsePrivateHeaders app interface shared ;
+
+BinCommand desklink :
+	desklink.cpp
+	DeskButton.cpp
+	MediaReplicant.cpp
+	MixerControl.cpp
+	VolumeControl.cpp
+	VolumeWindow.cpp
+
+	: be libmedia.so localestub [ TargetLibsupc++ ]
+	: desklink.rdef SpeakerBox.rdef
+;
+
+DoCatalogs desklink :
+	x-vnd.Haiku-desklink
+	:
+	DeskButton.cpp
+	MediaReplicant.cpp
+	VolumeControl.cpp
+;

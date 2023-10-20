@@ -1,0 +1,327 @@
+/*
+ * Copyright 2011 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Axel Dörfler, axeld@pinc-software.de
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/locale/UnicodeChar.h	 rev 42274
+ *		src/kits/locale/UnicodeChar.cpp	 rev 42274
+ */
+
+
+/*!
+	\file UnicodeChar.h
+	\ingroup locale
+	\ingroup libbe
+	\brief Provides the BUnicodeChar class.
+*/
+
+
+/*!
+	\class BUnicodeChar
+	\ingroup locale
+	\ingroup libbe
+	\brief Management of all information about characters.
+
+	This class provide a set of tools for managing the whole set of characters
+	defined by unicode. This include information about special sets of
+	characters such as if the character is whitespace, or alphanumeric. It also
+	provides the uppercase equivalent of a character and determines whether a
+	character can be ornamented with accents.
+
+	This class consists entirely of static methods, so you do not have to
+	instantiate it. You can call one of the methods passing in the character
+	that you want to be examined.
+
+	Note all the function work with chars encoded in UTF-32. This is not the
+	most usual way to handle characters, but it is the fastest. To convert an
+	UTF-8 string to an UTF-32 character use the FromUTF8() method.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsAlpha(uint32 c)
+	\brief Determine if \a c is alphabetic.
+
+	\returns \c true if the specified unicode character is an
+	         alphabetic character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsAlNum(uint32 c)
+	\brief Determine if \a c is alphanumeric.
+
+	\returns \c true if the specified unicode character is a
+	         alphabetic or numeric character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsDigit(uint32 c)
+	\brief Determine if \a c is numeric.
+
+	\returns \c true if the specified unicode character is a
+	         number character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsHexDigit(uint32 c)
+	\brief Determine if \a c is a hexadecimal digit.
+
+	\returns \c true if the specified unicode character is a
+	         hexadecimal number character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsUpper(uint32 c)
+	\brief Determine if \a c is uppercase.
+
+	\returns \c true if the specified unicode character is an
+	         uppercase character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsLower(uint32 c)
+	\brief Determine if \a c is lowercase.
+
+	\returns \c true if the specified unicode character is a
+	         lowercase character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsSpace(uint32 c)
+	\brief Determine if \a c is a space.
+
+	Unlike IsWhitespace() this function will return \c true for non-breakable
+	spaces. This method is useful for determining if the character will render
+	as an empty space which can be stretched on-screen.
+
+	\returns \c true if the specified unicode character is some
+	         kind of a space character.
+
+	\sa IsWhitespace()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsWhitespace(uint32 c)
+	\brief Determine if \a c is whitespace.
+
+	This method is essentially the same as IsSpace(), but excludes all
+	non-breakable spaces.
+
+	\returns \c true if the specified unicode character is a whitespace
+	         character.
+
+	\sa IsSpace()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsControl(uint32 c)
+	\brief Determine if \a c is a control character.
+
+	Example control characters are the non-printable ASCII characters from
+	0x0 to 0x1F.
+
+	\returns \c true if the specified unicode character is a control
+	         character.
+
+	\sa IsPrintable()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsPunctuation(uint32 c)
+	\brief Determine if \a c is punctuation character.
+
+	\returns \c true if the specified unicode character is a
+	         punctuation character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsPrintable(uint32 c)
+	\brief Determine if \a c is printable.
+
+	Printable characters are not control characters.
+
+	\returns \c true if the specified unicode character is a printable
+	         character.
+
+	\sa IsControl()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsTitle(uint32 c)
+	\brief Determine if \a c is title case.
+
+	Title case characters are a smaller version of normal uppercase letters.
+
+	\returns \c true if the specified unicode character is a title case
+	         character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsDefined(uint32 c)
+	\brief Determine if \a c is defined.
+
+	In unicode some codes are not valid or not attributed yet.
+	For these codes this method will return \c false.
+
+	\returns \c true if the specified unicode character is defined.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static bool BUnicodeChar::IsBase(uint32 c)
+	\brief Determine if \a c can be used with a diacritic.
+
+	\note IsBase() does not determine if a unicode character is distinct.
+
+	\returns \c true if the specified unicode character is a base
+	         form character that can be used with a diacritic.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn static int8 BUnicodeChar::Type(uint32 c)
+	\brief Gets the type of a character.
+
+	\returns A member of the \c unicode_char_category enum.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn uint32  BUnicodeChar::ToLower(uint32 c)
+	\brief Transforms \a c to lowercase.
+
+	\returns The lowercase version of the specified unicode character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn uint32 BUnicodeChar::ToUpper(uint32 c)
+	\brief Transforms \a c to uppercase.
+
+	\returns The uppercase version of the specified unicode character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn uint32 BUnicodeChar::ToTitle(uint32 c)
+	\brief Transforms \a c to title case.
+
+	\returns The title case version of the specified unicode character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int32 BUnicodeChar::DigitValue(uint32 c)
+	\brief Gets the numeric value \a c.
+
+	\returns The numeric version of the specified unicode character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BUnicodeChar::ToUTF8(uint32 c, char** out)
+	\brief Transform a character to UTF-8 encoding.
+
+	\returns The UTF-8 encoding of the specified unicode character.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn uint32 BUnicodeChar::FromUTF8(const char** in)
+	\brief Transform a UTF-8 string to an UTF-32 character.
+
+	If the string contains multiple characters, only the fist one is used.
+	This function updates the in pointer so that it points on the next
+	character for the following call.
+
+	\returns The UTF-32 encoded version of \a in.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn size_t BUnicodeChar::UTF8StringLength(const char* string)
+	\brief Counts the characters in the given \c NUL terminated string.
+
+	\returns the number of UTF-8 characters in the \c NUL terminated string.
+
+	\sa BString::CountChars()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn size_t BUnicodeChar::UTF8StringLength(const char* string,
+		size_t maxLength)
+	\brief Counts the characters in the given string up to \a maxLength
+		characters.
+
+	\param string does not need to be \c NUL terminated if you specify a
+	       \a maxLength that is shorter than the maximum length of the string.
+	\param maxLength The maximum length of the string in bytes.
+
+	\returns the number of UTF-8 characters in the \c NUL terminated string
+	         up to \a maxLength characters.
+
+	\since Haiku R1
+*/

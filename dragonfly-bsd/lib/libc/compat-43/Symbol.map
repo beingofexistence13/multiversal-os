@@ -1,0 +1,10 @@
+DF404.0 {
+    sethostid;
+    setpgrp;
+    setrgid;
+    setruid;
+    sigblock;
+    sigpause;
+    sigsetmask;
+    sigvec;
+};

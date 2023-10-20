@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src add-ons kernel network ppp pppoe ;
+
+SubDirC++Flags -fno-rtti ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+UsePrivateHeaders [ FDirName kernel ] ;
+UsePrivateHeaders [ FDirName kernel util ] ;
+UseHeaders [ FDirName $(HAIKU_TOP) src add-ons kernel network ppp shared
+	libkernelppp headers ] : true ;
+
+KernelAddon pppoe :
+	pppoe.cpp
+	PPPoEDevice.cpp
+	DiscoveryPacket.cpp
+;
+
+LinkAgainst pppoe : libkernelppp.a ;
+
+# Installation
+HaikuInstall install-ppp
+	: /boot/home/config/non-packaged/add-ons/kernel/network/ppp
+	: pppoe ;

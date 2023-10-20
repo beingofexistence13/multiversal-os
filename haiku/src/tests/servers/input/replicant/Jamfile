@@ -1,0 +1,18 @@
+SubDir HAIKU_TOP src tests servers input replicant ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) src servers input ] ;
+UsePrivateHeaders input ;
+AddResources ReplicantTest : replicant.rdef ;
+
+SimpleTest ReplicantTest :
+	MethodReplicant.cpp
+	MethodMenuItem.cpp
+	main.cpp
+	: be tracker [ TargetLibsupc++ ] ;
+
+SEARCH on [ FGristFiles
+	MethodReplicant.cpp
+	MethodMenuItem.cpp
+	]
+	= [ FDirName $(HAIKU_TOP) src servers input ] ;
+

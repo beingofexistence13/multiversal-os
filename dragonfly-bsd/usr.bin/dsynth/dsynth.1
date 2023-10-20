@@ -1,0 +1,615 @@
+.\"
+.\" Copyright (c) 2021 The DragonFly Project.  All rights reserved.
+.\"
+.\" This code is derived from software contributed to The DragonFly Project
+.\" by Matthew Dillon <dillon@backplane.com>
+.\" This code is based on a concept originally developed by John R. Marino.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\" 3. Neither the name of The DragonFly Project nor the names of its
+.\"    contributors may be used to endorse or promote products derived
+.\"    from this software without specific, prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+.\" FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+.\" COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING,
+.\" BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+.\" AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+.\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+.\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd August 21, 2021
+.Dt DSYNTH 1
+.Os
+.Sh NAME
+.Nm dsynth
+.Nd dsynth bulk dports builder utility
+.Sh SYNOPSIS
+.Nm
+.Op Fl dfhvxyDNPS
+.Op Fl p Ar profile
+.Op Fl s Ar n
+.Op Fl m Ar gb
+.Op Fl M Ar scale
+.Ar directive
+.Op origins
+.Nm
+.Ar help
+.Sh DESCRIPTION
+The
+.Nm
+utility allows a user to build and maintain part or all of dports
+locally.
+.Nm
+figures out the dependency topology of the dport(s) for you and
+is capable of building any number of ports concurrently based
+on the configuration parameters you supply.
+.Pp
+also detects changes made to the ports tree and rebuilds packages
+and anything that depends on those packages as needed.
+.Pp
+.Nm
+is based on an application called
+.Xr synth 1
+which was written by John Marino in Ada and served as the conceptual base
+for this program.
+.Nm
+is written in C and designed to be as portable as possible given a
+ports-style infrastructure.
+.Pp
+Our recommended build topology is with a configuration as follows:
+.Bd -literal
+[Global Configuration]
+profile_selected= LiveSystem
+
+[LiveSystem]
+Operating_system= DragonFly
+Directory_packages= /build/synth/live_packages
+Directory_repository= /build/synth/live_packages/All
+Directory_portsdir= /build/synth/dports
+Directory_options= /build/synth/options
+Directory_distfiles= /build/synth/distfiles
+Directory_buildbase= /build/synth/build
+Directory_logs= /build/synth/logs
+Directory_ccache= disabled
+Directory_system= /
+Package_suffix= .txz
+; Meta_version= 2	(this is the default)
+; Check_plist= false	(this is the default)
+; Numa_setsize= 0	(this is the default. 0, 2, or 4)
+Number_of_builders= 8
+Max_jobs_per_builder= 8
+Display_with_ncurses= true
+.Ed
+.Pp
+This places all major directories under
+.Pa /build/synth .
+If you want to use the same dports and the same distfiles as your base
+system, you can null-mount /usr/distfiles onto /build/synth/distfiles
+and /usr/dports onto /build/synth/dports with
+.Pa /etc/fstab
+entries as follows:
+.Bd -literal
+# Device              Mountpoint		FStype  Options DumpPass#
+/usr/distfiles        /build/synth/distfiles	null    rw      4 4
+/usr/dports           /build/synth/dports	null    rw      4 4
+.Ed
+.Pp
+Please set the number of builders and the maximum number of jobs per
+builder according to available system resources.
+Remember that the total
+load on the system can be as high as (builders x jobs), and at least 4x
+that value in processes.
+Systems are typically restricted by memory and CPU horsepower.
+Start conservative and ramp up according to what your system can handle.
+A good rule of thumb is to set workers to the number of CPU threads your
+machine has or to 1/2 the number of gigabytes of memory your system has,
+whichever is lower.
+Then set the jobs per worker to no more than the
+number of CPU threads your machine has.
+.Pp
+.Nm
+has numerous features to manage machine load and swap usage to
+prevent a machine from being overloaded, allowing more workers
+to be configured than you might otherwise think is reasonable
+(which helps a lot when building the smaller ports).
+However, users running this program should be aware that very high loads
+and modest swap use are still likely to develop when building a large
+number of ports or when building very large ports like chromium.
+If the system is not dedicated to building packages you can reduce the
+impact to the rest of the system by running
+.Nm
+at nice +20 and also by reducing the number of workers and number of
+jobs per worker somewhat.
+.Pp
+We recommend that a minimum of 64GB of SSD-based swap be configured,
+or twice as much swap as main memory, whichever is the higher value.
+.Pp
+We recommend a minimum of 500GB of storage be configured in
+.Pa /build
+or wherever you have configured various directories.
+A full set of distfiles requires at least 120GB, a full dports including
+the git repo requires at least 1.5GB, and a full set of built packages
+requires at least 75GB.
+If using a filesystem such as HAMMER or HAMMER2
+which frees space overnight, double all of those numbers.
+.Pp
+The actual build infrastructure uses tmpfs... memory and swap, and does
+not use regular filesystem space.
+.Sh OPTIONS
+.Bl -tag -width indent
+.It Fl d[d...]
+Run in debug mode.
+If specified two or more times this will turn off
+ncurses and output the primary log (00_last_results.log) to the standard
+output, along with additional spew.
+.It Fl f
+Force dangerous directives to run despite pkglist scan errors.  Applies only
+to purge-distfiles at the moment.
+.It Fl h
+Quickly output a synopsis of options and directives and exit.
+.It Fl m Ar gb
+Override the default package dependency memory target, in gigabytes.
+The default is 1/2 physical memory.
+The number of workers will be limited
+such that the aggregate size of package dependencies installed in each
+worker slot does not exceed this value.
+.Pp
+This handles a well-known effect where the sheer amount of data that has
+to be installed in tmpfs filesystems for large ports, when multiplied by
+the number of worker slots, can force excessive paging to occur and leave
+preciously little memory available to actually run compiles.
+Some paging
+is necessary to maintain maximum CPU utilization, but excessive paging
+can cause the whole machine to essentially become idle for extended
+periods of time.
+.It Fl M Ar scale
+Override dynamic workers calculation by a specific scale factor.
+Specifying 1.0 leaves it unchanged, 0.8 will reduce the number of jobs by
+20%, and 1.2 will increase the number of jobs by 20%.  And so forth.
+.Pp
+This option may be specified in the range 0.01 to 99.0.  Out of range values
+will simply be clipped.
+.It Fl p Ar profile
+Override the global profile default in
+.Pa /etc/dsynth/dsynth.ini ,
+allowing you to trivially run whatever profile you like without having to
+edit the configuration file when switching.
+In addition, you can now run any number of dsynth's concurrently on the same
+machine without having to use a jail, each with a different profile,
+as long as the packages, repository, buildbase, and logs directories
+are different.
+.Pp
+Note that the distfiles directory can be shared and will not conflict
+or get confused with concurrent fetches.
+.It Fl s Ar n
+.Nm
+usually slow-starts the worker slots, beginning with one slot and increasing
+by one every 5 seconds until the maximum configured number of workers is
+reached.
+This gives
+.Nm
+a slower ramp that it can load manage against.
+Specifying 0 disables the slow-start feature and the maximum number of
+worker slots (limited by the dependency graph) will be loaded immediately.
+.It Fl v
+Quickly output the version and exit.
+.It Fl x
+.It Fl xx
+Normally dsynth builds a package for any of three reasons: (1) If the contents
+of the ports directory changes, (2) If anything the port depends on requires
+rebuilding so to will the port be rebuilt, (3) If there is no binary package
+already built for the port.
+.Pp
+If this option is specified, the first test is ignored.
+If this option is specified twice, the first and second tests are ignored.
+.It Fl y
+Automatically answer 'y'es to any questions.
+.It Fl D
+Turn on DEVELOPER mode when building ports.
+.It Fl P
+Include the check-plist stage.
+This is the default for the
+.Cm everything
+and
+.Cm test
+directives.
+This feature may also be turned on via the
+.Va Check_plist
+option in the configuration file.
+.It Fl S[S]
+Turn off curses for script friendliness.
+The output will be log 00 and
+should be redirected to /dev/null or something similar.
+If you supply the options twice, color output escapes will also be
+turned off.
+You may also wish to use the
+.Fl y
+option for scripting dsynth.
+.It Fl N
+Normally
+.Nm
+nices its sub-processes to +10.
+This option disables the feature.
+.El
+.Sh DIRECTIVES
+Generally
+.Nm
+is run with a directive and some directives allow a list of ports to be
+specified.
+This list should be space-delimited in DIR/SUBDIR format, for example:
+.Ar www/chromium .
+For directives with an optional ports list, your current installed set
+of ports will be used if you do not specify a list.  You may also
+specify a filename instead of a port to have dsynth read the ports list
+from a text file.  Ports are specified by dports directory and subdirectory.
+For example "www/chromium".
+.Bl -tag -width indent
+.It Cm init
+Creates and initializes the
+.Pa /etc/dsynth
+directory if it does not exist.
+This directive will complain and exit if either
+.Pa /etc/dsynth
+or
+.Pa /usr/local/etc/dsynth
+exists.
+It will not create
+.Pa /etc/dsynth
+in this situation.
+.It Cm status
+This will do a dry-run of
+.Cm upgrade-system
+but not actually build anything.
+.It Cm cleanup
+This will clean up any left-over mounts from prior builds.
+.Nm
+attempts to clean up all processes and mounts when you interrupt
+a build but doesn't always succeed.
+.It Cm configure
+NOT CURRENTLY IMPLEMENTED
+.It Cm fetch-only Op Ar ports/everything
+Fetch all source distributions required to build
+the specified target.  Specifying 'everything' fetches
+all source distributions required to build the whole
+of dports.
+.Pp
+Any existing distfiles which do not match the expected
+signature will be re-fetched.
+.It Cm upgrade-system
+NOT CURRENTLY IMPLEMENTED.
+Incrementally build and upgrade your locally
+installed packages, then upgrade your local system with them.
+.It Cm list-system
+Write a build list to the file "build.txt".  Do not build anything.
+This is typically used on your target system to generate a list for
+dsynth to use as a build list on another system.
+.It Cm prepare-system
+Incrementally build and upgrade your locally installed packages, but
+do not upgrade your system with them.
+.It Cm rebuild-repository
+Build or rebuild the database files for the configured repository.
+.It Cm purge-distfiles
+Delete any obsolete source distribution files.  This command fails if
+the pkglist scan has errors due to corrupt Makefile's or missing
+dependencies in the dports/ tree.
+The
+.Fl f
+option may be used to force the purge to occur anyway, with the provisio
+that it may end up removing distfiles that you actually need and force
+them to be refetched later.
+.It Cm reset-db
+Delete ports_crc.db from the build directory.
+This database is used to detect changes made to the dports tree.
+It will be regenerated on your next build without forcing any packages to be rebuilt.
+.It Cm status-everything
+This will do a dry-run of a full bulk build of everything,
+but not actually build anything.
+.It Cm everything
+This will build the entire dports tree and then rebuild the repository
+when it finishes.
+.It Cm version
+This is for synth compatibility.
+The version of
+.Nm
+will be printed and the program will exit.
+.It Cm help
+Output a synopsis of options and directives and exit.
+.It Cm status Op Ar ports
+Do a dry-run with 'build' of the given list.
+.It Cm add Op Ar ports
+This directive may be used when the user wishes to add additional
+ports to an existing dsynth run without interrupting and restarting
+the dsynth.
+It can be useful when the user intends to leave dsynth unattended for
+a long period of time and does not wish to interrupt potentially very
+long builds that are already in progress.
+.Pp
+When dsynth completes the current run it will re-exec itself with
+the same primary directive along with all ports specified by any
+.Cm add
+directives made in the interim.
+.Nm
+will still rebuild the repository after the initial run if it would
+normally have done so, but if so it will do it without asking first.
+Only the last rebuild request will potentially be interactive.
+.Pp
+Note that interrupting or killing the running dsynth cleans out any
+ports that might have been added while it was running.  This directive
+also has numerous exit/exec lock-file races and is intended to only be used
+manually by the user.
+.It Cm build Op Ar ports
+Incrementally build dports based on the given list.
+When done, ask whether the repository should be rebuilt or not.
+.It Cm just-build Op Ar ports
+Incrementally build dports based on the given list, then
+exits.
+No post-build steps will be taken.
+.It Cm install Op Ar ports
+NOT CURRENTLY IMPLEMENTED.  'build' based on the supplied
+list (or using currently installed packages), then rebuild
+the repository and upgrade the system without asking any further
+questions.
+.It Cm force Op Ar ports
+This is the same as 'build' but will delete existing packages first.
+Dependencies are not deleted unless they are out of date.
+.It Cm test Op Ar ports
+This is the same as 'build' but sets the environment variable
+.Ev DEVELOPER
+to
+.Sq yes
+and pre-deletes specified packages.
+Dependencies are not deleted unless they are out of date.
+.It Cm debug Op Ar ports
+This is the same as 'build' but leaves the chroot mounts intact
+upon completion.
+.It Cm monitor Op Ar datfile
+Monitors a running dsynth instance.
+.El
+.Sh PER-PORT OPTIONS
+The
+.Va Directory_options
+configuration variable in
+.Pa /etc/dsynth/dsynth.ini
+points to the configured options directory tree.
+In the base system dports this would be
+.Pa /var/db/ports ,
+but you can supply an independent set of ports options for your dsynth
+build if you like.
+The format of the structure in this directory is best described simply by
+CD'ing into a dport, say www/chromium, typing 'make config', and it will
+create a sub-directory and write out a file called
+.Pa /var/db/ports/www_chromium/options .
+.Pp
+For
+.Nm
+you can either point your configuration variable to the system default,
+or you can point it at a dsynth-specific directory and copy the options
+to or construct the options in your dsynth-specific directory tree.
+.Sh HOOKS
+.Nm
+provides several hooks that trigger at specific stages during the
+package building process.
+.Pp
+At the moment hooks are not configurable so the exact executable file is
+expected in the configuration directory with one of the names in the
+list below.
+Hooks are run via
+.Xr execve 2 .
+.Bl -tag -width indent
+.It Pa hook_run_start
+This hook triggers when the overall build process starts.
+.It Pa hook_run_end
+This hook is called when the overall build process ends.
+.It Pa hook_pkg_success
+For each successful port built this hook will trigger.
+.It Pa hook_pkg_failure
+This hook will trigger for each port that fails to build.
+.It Pa hook_pkg_ignored
+Each port that is marked as ignored will make this hook to trigger.
+.It Pa hook_pkg_skipped
+Each skipped port will trigger this hook.
+.El
+.Pp
+A number of environment variables are available for hooks, always in the context
+of an ongoing build and within a specific configuration profile, unless
+overridden from the command-line.
+Some are only available for a specific hook.
+.Bl -tag -width DIR_REPOSITORY
+.It Ev PROFILE
+The configuration profile.
+.It Ev DIR_PACKAGES
+The packages base directory, i.e where index files are generated.
+.It Ev DIR_REPOSITORY
+The packages repository, where the actual package files are stored.
+.It Ev DIR_PORTS
+The ports directory.
+.It Ev DIR_OPTIONS
+The options directory.
+.It Ev DIR_DISTFILES
+The distfiles directory, where the distribution files are stored.
+.It Ev DIR_LOGS
+The logs directory, which is also where the html Report is generated.
+.It Ev DIR_BUILDBASE
+The build base directory.
+.It Ev PORTS_QUEUED
+The number of ports queued to be built (only for
+.Pa hook_run_start ) .
+.It Ev PORTS_BUILT
+The number of successfully built ports (only for
+.Pa hook_run_end ) .
+.It Ev PORTS_FAILED
+The number of ports for which the build failed (only for
+.Pa hook_run_end ) .
+.It Ev PORTS_IGNORED
+The number of ports that where ignored and, hence, not built
+(only for
+.Pa hook_run_end ) .
+.It Ev PORTS_SKIPPED
+The number of ports that were skipped in the build (only for
+.Pa hook_run_end ) .
+.It Ev RESULT
+The result (success, failure, ignored, skipped) for the build of an individual
+port (only for
+.Pa hook_pkg_* ) .
+.It Ev ORIGIN
+The origin of a port (only for
+.Pa hook_pkg_* ) .
+.It Ev FLAVOR
+The flavor of a port (only for
+.Pa hook_pkg_* ) .
+.It Ev PKGNAME
+The port name (only for
+.Pa hook_pkg_* ) .
+.El
+.Sh MISC
+.Pp
+The default setting for
+.Va Meta_version
+is now 2.  You can override it with this configuration variable.
+.Pp
+The default setting for
+.Va Check_plist
+is false.  You can override it with the
+.Fl P
+option or by setting this configuration variable to true.
+.Pp
+The default setting for
+.Va Numa_setsize
+is 0, disabling any NUMA related CPU partitioning.  This is the recommended
+setting as it allows the scheduler the freedom to maximize CPU utilization,
+particularly when doing incremental bulks.  The only other values that have
+a decent chance of improving full bulk performance are 2 or 4.  Any higher
+and CPU utilization will suffer from periods of high idle.
+.Sh FILES
+.Bl -tag -width ".It Pa <fs>/abc/defghi/<name>" -compact
+.It Pa /etc/dsynth/dsynth.ini
+The primary configuration file.
+If not found,
+.Nm
+will also look in
+.Pa /usr/local/etc/dsynth/dsynth.ini .
+.Pp
+.It Pa /etc/dsynth/LiveSystem-make.conf
+Typically contains the environment variables that will be set in
+the workers.
+.Nm
+firewalls the environment it is run under from the environment it
+provides to the workers.
+.Pp
+.It Pa /build/synth/build
+Recommended setting for
+.Va Directory_buildbase ,
+contains the build infrastructure... typically a template, mirrored
+system directories, and mount points for all the worker slots.
+The template will be [re]generated if 'pkg' needs to be built or
+if the
+.Pa .template.good
+file in this directory is deleted.
+.Pp
+.It Pa /build/synth/distfiles
+Recommended setting for
+.Va Directory_distfiles ,
+ports to a directory into which
+.Nm
+will download any source distribution files required for building.
+.Pp
+.It Pa /build/synth/dports
+Recommended setting for
+.Va Directory_portsdir ,
+points to a checked out dports repo.
+Note that
+.Nm
+does not automatically 'git pull' or otherwise synchronize the dports repo,
+you must do that yourself prior to starting a build.
+.Pp
+.It Pa /build/synth/live_packages
+Recommended setting for
+.Va Directory_packages ,
+points to a directory which will contain the completed application
+packages.
+.Pp
+.It Pa /build/synth/logs
+Recommended setting for
+.Va Directory_logs ,
+all log files will be placed in this directory.
+Special management logfiles begin with the numeral '0' for easily
+location.
+The logfiles for ports while and after building are stored in the
+form subdir____portname.log, with three underscores.
+.Pp
+.It Pa /build/synth/options
+Recommended setting for
+.Va Directory_options ,
+where options overrides for specific ports may be located.
+Then either null-mount the system /var/db/ports to this location, or
+construct your own dsynth-specific options.
+See the PER-PORT OPTIONS section above for more information.
+.Pp
+.It Pa /
+Recommended setting for
+.Va Directory_system ,
+which
+.Nm
+uses as a basis for creating the jails or chroots in each worker slot
+during building.
+No part of the system root is ever NULL-mounted read-write... it is always
+NULL-mounted read-only.
+Some elements from the system base will be mirrored in the build-base
+as an optimization.
+.Pp
+Note that the packages directory and the distfiles directory is mounted
+read-write in jails or chroots.
+All other r/w filesystems in the workers are
+.Xr tmpfs 5
+based filesystems and will be created and torn-down for each port.
+.Pp
+.It Pa .txz
+.It Pa .tgz
+.It Pa .tar
+.It Pa .tbz
+.It Pa .tzst
+The recommended setting for
+.Va Package_suffix
+is either
+.Pa .txz
+or
+.Pa .tgz .
+Use
+.Pa .txz
+for better compression at the cost of somewhat slower bulk builds due
+to the time overhead for compression and decompression, or
+use
+.Pa .tgz
+for modest compression and very fast compression and decompression.
+Due to the way the builder works, package dependencies are fresly
+installed into the chroot slot for each package being built, so
+decompression time matters.
+.Pp
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh SEE ALSO
+.Xr synth 1 ,
+.Xr dports 7
+.Sh HISTORY
+The
+.Nm
+utility first appeared in
+.Dx 5.7 .
+.Sh AUTHORS
+.An Matthew Dillon Aq Mt dillon@backplane.com

@@ -1,0 +1,23 @@
+SubDir HAIKU_TOP src add-ons disk_systems bfs ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders shared storage ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src add-ons kernel file_systems bfs ] ;
+
+AddResources <disk_system>bfs : BFSAddOn.rdef ;
+
+Addon <disk_system>bfs :
+	BFSAddOn.cpp
+	InitializeParameterEditor.cpp
+
+	bfs_disk_system.cpp
+
+	: be localestub [ TargetLibsupc++ ] shared
+;
+
+DoCatalogs <disk_system>bfs :
+	x-vnd.Haiku-BFSAddOn
+	:
+	InitializeParameterEditor.cpp
+;

@@ -1,0 +1,519 @@
+/*-
+ * Copyright (c) 1982, 1988, 1991, 1993
+ *	The Regents of the University of California.  All rights reserved.
+ * (c) UNIX System Laboratories, Inc.
+ * All or some portions of this file are derived from material licensed
+ * to the University of California by American Telephone and Telegraph
+ * Co. or Unix System Laboratories, Inc. and are reproduced herein with
+ * the permission of UNIX System Laboratories, Inc.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ * 1. Redistributions of source code must retain the above copyright
+ *    notice, this list of conditions and the following disclaimer.
+ * 2. Redistributions in binary form must reproduce the above copyright
+ *    notice, this list of conditions and the following disclaimer in the
+ *    documentation and/or other materials provided with the distribution.
+ * 3. Neither the name of the University nor the names of its contributors
+ *    may be used to endorse or promote products derived from this software
+ *    without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ * ARE DISCLAIMED.  IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE
+ * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+ * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+ * OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+ * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+ * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+ * SUCH DAMAGE.
+ *
+ *	@(#)systm.h	8.7 (Berkeley) 3/29/95
+ * $FreeBSD: src/sys/sys/systm.h,v 1.111.2.18 2002/12/17 18:04:02 sam Exp $
+ */
+
+#ifndef _SYS_SYSTM_H_
+#define	_SYS_SYSTM_H_
+
+#ifndef _KERNEL
+#error "This file should not be included by userland programs."
+#endif
+
+#ifndef _MACHINE_TYPES_H_
+#include <machine/types.h>
+#endif
+#include <machine/stdarg.h>
+#include <machine/atomic.h>
+#include <machine/cpufunc.h>
+#include <machine/int_limits.h>
+
+extern int securelevel;		/* system security level (see init(8)) */
+extern int kernel_mem_readonly;	/* disable writes to kernel memory */
+
+extern int cold;		/* nonzero if we are doing a cold boot */
+extern int tsleep_now_works;	/* tsleep won't just return any more */
+extern const char *panicstr;	/* panic message */
+extern int dumping;		/* system is dumping */
+extern int safepri;		/* safe ipl when cold or panicing */
+extern int osreldate;		/* System release date */
+extern char version[];		/* system version */
+extern char copyright[];	/* system copyright */
+
+extern u_char curpriority;	/* priority of current process */
+extern int cpu_mwait_spin;	/* typically set in machdep, used by lwkt */
+
+extern long physmem;		/* physical memory */
+
+extern cdev_t dumpdev;		/* dump device */
+extern u_int64_t dumplo64;	/* block number into dumpdev, start of dump */
+
+extern cdev_t rootdev;		/* root device */
+extern cdev_t rootdevs[2];	/* possible root devices */
+extern char *rootdevnames[2];	/* names of possible root devices */
+extern char *ZeroPage;
+
+extern int boothowto;		/* reboot flags, from console subsystem */
+extern int bootverbose;		/* nonzero to print verbose messages */
+
+extern int maxusers;		/* system tune hint */
+
+extern int ncpus;		/* total number of cpus (real, hyper, virtual)*/
+extern int ncpus_fit;		/* round up to a power of 2 */
+extern int ncpus_fit_mask;	/* ncpus_fit - 1 */
+extern int clocks_running;	/* timing/timeout subsystem is operational */
+
+/* XXX TGEN these don't belong here, they're MD on pc64 */
+extern u_int cpu_feature;	/* CPUID_* features */
+extern u_int cpu_feature2;	/* CPUID2_* features */
+extern u_int cpu_mi_feature;	/* CPU_MI_XXX machine-nonspecific features */
+extern cpumask_t usched_global_cpumask;
+
+extern int nfs_diskless_valid;	/* NFS diskless params were obtained */
+extern vm_paddr_t Maxmem;	/* Highest physical memory address in system */
+
+#ifdef	INVARIANTS		/* The option is always available */
+#define	KASSERT(exp,msg)	do { if (__predict_false(!(exp)))	  \
+					panic msg; } while (0)
+
+#define	KKASSERT(exp)		do { if (__predict_false(!(exp)))	  \
+					panic("assertion \"%s\" failed "  \
+					"in %s at %s:%u", #exp, __func__, \
+					__FILE__, __LINE__); } while (0)
+
+#define	KKASSERT_UNSPIN(exp, spin)					  \
+				do { if (__predict_false(!(exp))) { 	  \
+					spin_unlock_any(spin);		  \
+					panic("assertion \"%s\" failed "  \
+					"in %s at %s:%u", #exp, __func__, \
+					__FILE__, __LINE__); } } while (0)
+#define	__debugvar
+#define	__assert_unreachable()						  \
+				do {					  \
+					panic("executing segment marked " \
+					"as unreachable at %s:%d (%s)\n", \
+					__FILE__, __LINE__, __func__);    \
+				} while (0)
+#else
+#define	KASSERT(exp,msg)		do { } while (0)
+#define	KKASSERT(exp)			do { } while (0)
+#define	KKASSERT_UNSPIN(exp, spin)	do { } while (0)
+#define	__debugvar		__attribute__((__unused__))
+#define	__assert_unreachable()	__unreachable()
+#endif
+
+/*
+ * Align variables.
+ */
+#define	__read_mostly		__section(".data.read_mostly")
+#define	__read_frequently	__section(".data.read_frequently")
+#define	__exclusive_cache_line	__aligned(__VM_CACHELINE_SIZE*2)	\
+				__section(".data.exclusive_cache_line")
+
+/*
+ * General function declarations.
+ */
+
+struct intrframe;
+struct spinlock;
+struct lock;
+struct mtx;
+struct lwkt_serialize;
+struct malloc_type;
+struct proc;
+struct timeval;
+struct tty;
+struct uio;
+struct globaldata;
+struct thread;
+struct trapframe;
+struct user;
+struct vmspace;
+struct savetls;
+struct krate;
+struct _jmp_buf;
+
+void	Debugger (const char *msg);
+void	print_backtrace(int count);
+void	mi_gdinit (struct globaldata *gd, int cpu);
+void	slab_gdinit (struct globaldata *gd);
+void	mi_proc0init(struct globaldata *gd, struct user *proc0paddr);
+int	setjmp(struct _jmp_buf *) __returns_twice;
+void	longjmp(struct _jmp_buf *, int) __dead2;
+int	nullop (void);
+int	seltrue (cdev_t dev, int which);
+int	ureadc (int, struct uio *);
+void	*hashinit (int count, struct malloc_type *type, u_long *hashmask);
+void	hashdestroy(void *vhashtbl, struct malloc_type *type, u_long hashmask);
+void	*phashinit (int count, struct malloc_type *type, u_long *nentries);
+void	*hashinit_ext (int count, size_t size,
+			struct malloc_type *type, u_long *hashmask);
+void	*phashinit_ext (int count, size_t size,
+			struct malloc_type *type, u_long *nentries);
+
+int	cpu_sanitize_frame (struct trapframe *);
+int	cpu_sanitize_tls (struct savetls *);
+void	cpu_spinlock_contested(void);
+void	cpu_halt (void) __dead2;
+void	cpu_idle_halt (void);
+void	cpu_reset (void);
+void	cpu_boot (int);
+void	cpu_rootconf (void);
+void	cpu_vmspace_alloc(struct vmspace *);
+void	cpu_vmspace_free(struct vmspace *);
+void	cpu_vkernel_trap(struct trapframe *, int);
+enum vmm_guest_type detect_virtual(void);
+void	set_user_TLS(void);
+void	set_vkernel_fp(struct trapframe *);
+int	kvm_access_check(vm_offset_t, vm_offset_t, int);
+
+/*
+ * Old CRC32 API
+ */
+extern const uint32_t crc32_tab[];
+uint32_t crc32(const void *buf, size_t size);
+uint32_t crc32_ext(const void *buf, size_t size, uint32_t ocrc);
+
+/*
+ * Newer (fast) iscsi CRC32 APIs.
+ *
+ * NOTE: iscsi_crc32_ext() inverts ocrc input and output as expected,
+ *	 pass a seed of 0 for the equivalent of iscsi_crc32().
+ *
+ *	 calculate_crc32c() does not invert crc32c input and output
+ *	 to maintain FreeBSD API compatibility.
+ */
+uint32_t iscsi_crc32(const void *buf, size_t size);
+uint32_t iscsi_crc32_ext(const void *buf, size_t size, uint32_t ocrc);
+uint32_t calculate_crc32c(uint32_t crc32c, const unsigned char *buffer,
+			unsigned int length);
+
+void	init_param1 (void);
+void	init_param2 (int physpages);
+void	tablefull (const char *);
+int	kvcprintf (char const *, void (*)(int, void*), void *,
+		      __va_list) __printf0like(1, 0);
+void	kvcreinitspin(void);
+int	log (int, const char *, ...) __printflike(2, 3);
+void	logwakeup (void);
+void	log_console (struct uio *);
+int	kprintf (const char *, ...) __printflike(1, 2);
+void	kprintf0 (const char *, ...) __printflike(1, 2);
+int	krateprintf (struct krate *, const char *, ...) __printflike(2, 3);
+int	ksnprintf (char *, size_t, const char *, ...) __printflike(3, 4);
+int	ksprintf (char *buf, const char *, ...) __printflike(2, 3);
+int	uprintf (const char *, ...) __printflike(1, 2);
+int	kvprintf (const char *, __va_list) __printflike(1, 0);
+int	kvsnprintf (char *, size_t, const char *,
+			__va_list) __printflike(3, 0);
+int	kvasnprintf (char **, size_t, const char *,
+			__va_list) __printflike(3, 0);
+int	kvsprintf (char *buf, const char *,
+			__va_list) __printflike(2, 0);
+int	ttyprintf (struct tty *, const char *, ...) __printflike(2, 3);
+void	hexdump (const void *ptr, int length, const char *hdr, int flags);
+void	kprint_cpuset(cpumask_t *mask);
+#define	HD_COLUMN_MASK	0xff
+#define	HD_DELIM_MASK	0xff00
+#define	HD_OMIT_COUNT	(1 << 16)
+#define	HD_OMIT_HEX	(1 << 17)
+#define	HD_OMIT_CHARS	(1 << 18)
+int	ksscanf(const char *, char const *, ...)
+	    __nonnull(1, 2) __scanflike(2, 3);
+int	kvsscanf(const char *, char const *, __va_list)
+	    __nonnull(1, 2) __scanflike(2, 0);
+void	kvasfree(char **);
+
+long	strtol(const char *, char **, int) __nonnull(1);
+u_long	strtoul(const char *, char **, int) __nonnull(1);
+quad_t	strtoq(const char *, char **, int) __nonnull(1);
+u_quad_t strtouq(const char *, char **, int) __nonnull(1);
+
+/*
+ * NOTE: some functions commonly used by device drivers may be passed
+ *       pointers to volatile storage, volatile set to avoid warnings.
+ *
+ * NOTE: When using builtin's, GCC does enormous optimizations and makes
+ *       a number of assumptions that can cause later unrelated conditionals
+ *       to be optimized out.  In the case of memset and memmove, GCC
+ *       assumes that (to) and (from) cannot be NULL (even when (len) might
+ *       be 0), and will optimize-out later NULL tests on (to) or (from).
+ */
+#if 1
+#define bcopy(from, to, len)				\
+	__builtin_memmove(__DEQUALIFY(void *, (to)),	\
+			  __DEQUALIFY(void *, (from)),	\
+			  (len))
+#define memcpy(to, from, len)				\
+	__builtin_memcpy(__DEQUALIFY(void *, (to)),	\
+			  __DEQUALIFY(void *, (from)),	\
+			  (len))
+#define memset(ptr, c, len)				\
+	__builtin_memset(__DEQUALIFY(void *, (ptr)), (c), (len))
+#define memmove(to, from, len)				\
+	__builtin_memmove(__DEQUALIFY(void *, (to)),	\
+			  __DEQUALIFY(void *, (from)),	\
+			  (len))
+#define bzero(buf, len)					\
+	__builtin_memset(__DEQUALIFY(void *, (buf)), 0, (len))
+#else
+void	bcopy(volatile const void *from, volatile void *to, size_t len)
+	    __nonnull(1, 2);
+void	*memcpy(void *to, const void *from, size_t len)
+	    __nonnull(1, 2);
+void	*memmove(void *, const void *, size_t);
+void	*memset(void *, int, size_t);
+void	bzero(volatile void *buf, size_t len) __nonnull(1);
+#endif
+void	_bcopy(volatile const void *from, volatile void *to, size_t len)
+	    __nonnull(1, 2);
+void	*_memcpy(void *to, const void *from, size_t len)
+	    __nonnull(1, 2);
+void	*_memmove(void *, const void *, size_t);
+void	*_memset(void *, int, size_t);
+void	_bzero(volatile void *buf, size_t len) __nonnull(1);
+void	bzeront(volatile void *buf, size_t len) __nonnull(1);
+
+long	kreadmem64(const void *addr);
+
+int	copystr (const void *kfaddr, void *kdaddr, size_t len,
+		size_t *lencopied) __nonnull(1, 2);
+int	copyinstr (const void *udaddr, void *kaddr, size_t len,
+		size_t *lencopied) __nonnull(1, 2);
+int	copyin(const void *udaddr, void *kaddr, size_t len) __nonnull(1, 2);
+int	copyin_nofault(const void *udaddr, void *kaddr, size_t len)
+	    __nonnull(1, 2);
+int	copyout(const void *kaddr, void *udaddr, size_t len) __nonnull(1, 2);
+int	copyout_nofault(const void *kaddr, void *udaddr, size_t len)
+	    __nonnull(1, 2);
+
+int	fubyte (const uint8_t *base);
+int	subyte (uint8_t *base, uint8_t byte);
+int32_t	fuword32 (const uint32_t *base);
+int64_t	fuword64 (const uint64_t *base);
+int	suword32 (uint32_t *base, int word);
+int	suword64 (uint64_t *base, uint64_t word);
+uint32_t casu32(volatile uint32_t *p, uint32_t oldval, uint32_t newval);
+uint64_t casu64(volatile uint64_t *p, uint64_t oldval, uint64_t newval);
+uint32_t swapu32(volatile uint32_t *p, uint32_t val);
+uint64_t swapu64(volatile uint64_t *p, uint64_t val);
+uint32_t fuwordadd32(volatile uint32_t *p, uint32_t val);
+uint64_t fuwordadd64(volatile uint64_t *p, uint64_t val);
+
+void	DELAY(int usec);
+void	DRIVERSLEEP(int usec);
+
+void	startprofclock (struct proc *);
+void	stopprofclock (struct proc *);
+void	setstatclockrate (int hzrate);
+
+/*
+ * Kernel environment support functions and sundry.
+ */
+char	*kgetenv (const char *name);
+int	ksetenv(const char *name, const char *value);
+int	kunsetenv(const char *name);
+void	kfreeenv(char *env);
+int	ktestenv(const char *name);
+int	kgetenv_int (const char *name, int *data);
+int	kgetenv_string (const char *name, char *data, int size);
+int	kgetenv_ulong(const char *name, unsigned long *data);
+int	kgetenv_quad (const char *name, quad_t *data);
+int	kgetenv_long(const char *name, long *data);
+extern char *kern_envp;
+
+#include <sys/libkern.h>
+
+/* Initialize the world */
+void	mi_startup (void);
+void	nchinit (void);
+
+/* Finalize the world. */
+void	shutdown_nice (int);
+
+/*
+ * Kernel to clock driver interface.
+ */
+void	inittodr (time_t base);
+void	resettodr (void);
+void	startrtclock (void);
+
+/* Timeouts */
+typedef void timeout_t (void *);	/* timeout function type */
+
+/* Interrupt management */
+
+/* 
+ * For the alpha arch, some of these functions are static __inline, and
+ * the others should be.
+ */
+#if defined(__x86_64__)
+void		setdelayed (void);
+void		setsoftcambio (void);
+void		setsoftcamnet (void);
+void		setsoftunused02 (void);
+void		setsoftcrypto (void);
+void		setsoftunused01 (void);
+void		setsofttty (void);
+void		setsoftvm (void);
+void		setsofttq (void);
+void		schedsofttty (void);
+void		splz (void);
+void		splz_check (void);
+void		cpu_mmw_pause_int(int*, int, int, int);
+void		cpu_mmw_pause_long(long*, long, int, int);
+void		cpu_smp_stopped(void);
+#endif /* __x86_64__ */
+
+/*
+ * Various callout lists.
+ */
+
+/* Exit callout list declarations. */
+typedef void (*exitlist_fn) (struct thread *td);
+
+int	at_exit (exitlist_fn function);
+int	rm_at_exit (exitlist_fn function);
+
+/* Fork callout list declarations. */
+typedef void (*forklist_fn) (struct proc *parent, struct proc *child,
+				 int flags);
+
+int	at_fork (forklist_fn function);
+int	rm_at_fork (forklist_fn function);
+
+extern struct globaldata	*panic_cpu_gd;
+
+/* 
+ * Common `proc' functions are declared here so that proc.h can be included
+ * less often.
+ */
+int	tsleep(const volatile void *, int, const char *, int);
+int	ssleep(const volatile void *, struct spinlock *, int, const char *, int)
+	    __nonnull(1);
+int	lksleep(const volatile void *, struct lock *, int, const char *, int)
+	    __nonnull(1);
+int	mtxsleep(const volatile void *, struct mtx *, int, const char *, int)
+	    __nonnull(1);
+int	zsleep(const volatile void *, struct lwkt_serialize *, int, const char *, int)
+	    __nonnull(1);
+void	tsleep_interlock(const volatile void *, int) __nonnull(1);
+void	tsleep_remove (struct thread *);
+int	lwkt_sleep (const char *, int);
+void	tstop (void);
+void	wakeup(const volatile void *chan) __nonnull(1);
+void	wakeup_one(const volatile void *chan) __nonnull(1);
+void	wakeup_mycpu(const volatile void *chan) __nonnull(1);
+void	wakeup_mycpu_one(const volatile void *chan) __nonnull(1);
+void	wakeup_oncpu(struct globaldata *gd, const volatile void *chan)
+	    __nonnull(2);
+void	wakeup_oncpu_one(struct globaldata *gd, const volatile void *chan)
+	    __nonnull(2);
+void	wakeup_domain(const volatile void *chan, int domain) __nonnull(1);
+void	wakeup_domain_one(const volatile void *chan, int domain) __nonnull(1);
+void	wakeup_start_delayed(void);
+void	wakeup_end_delayed(void);
+
+/*
+ * Common `cdev_t' stuff are declared here to avoid #include poisoning
+ */
+
+int major(cdev_t x);
+int minor(cdev_t x);
+dev_t devid_from_dev(cdev_t x);
+cdev_t dev_from_devid(dev_t x, int b);
+int uminor(dev_t dev);
+int umajor(dev_t dev);
+dev_t makeudev(int x, int y);
+
+/*
+ * Unit number allocation API. (kern/subr_unit.c)
+ */
+struct unrhdr;
+struct unrhdr *new_unrhdr(int low, int high, struct lock *lock);
+void delete_unrhdr(struct unrhdr *uh);
+int alloc_unr(struct unrhdr *uh);
+int alloc_unrl(struct unrhdr *uh);
+void free_unr(struct unrhdr *uh, u_int item);
+
+/*
+ * Population count algorithm using SWAR approach
+ * - "SIMD Within A Register".
+ */
+
+static __inline uint16_t
+bitcount16(uint32_t x)
+{
+
+	x = (x & 0x5555) + ((x & 0xaaaa) >> 1);
+	x = (x & 0x3333) + ((x & 0xcccc) >> 2);
+	x = (x + (x >> 4)) & 0x0f0f;
+	x = (x + (x >> 8)) & 0x00ff;
+	return (x);
+}
+
+static __inline uint32_t
+bitcount32(uint32_t x)
+{
+
+	x = (x & 0x55555555) + ((x & 0xaaaaaaaa) >> 1);
+	x = (x & 0x33333333) + ((x & 0xcccccccc) >> 2);
+	x = (x + (x >> 4)) & 0x0f0f0f0f;
+	x = (x + (x >> 8));
+	x = (x + (x >> 16)) & 0x000000ff;
+	return (x);
+}
+
+static __inline uint64_t
+bitcount64(uint64_t x)
+{
+
+	x = (x & 0x5555555555555555) + ((x & 0xaaaaaaaaaaaaaaaa) >> 1);
+	x = (x & 0x3333333333333333) + ((x & 0xcccccccccccccccc) >> 2);
+	x = (x + (x >> 4)) & 0x0f0f0f0f0f0f0f0f;
+	x = (x + (x >> 8));
+	x = (x + (x >> 16));
+	x = (x + (x >> 32)) & 0x000000ff;
+	return (x);
+}
+
+/*
+ * Calculate (a * b) / d with a 128-bit intermediate computation to
+ * avoid overflow.
+ */
+static __inline uint64_t
+muldivu64(uint64_t a, uint64_t b, uint64_t d)
+{
+	_uint128_t t;
+
+	t = (_uint128_t)a * b;
+	if (t / d > UINT64_MAX) {
+		kprintf("muldivu64: overflow %lu,%lu,%lu\n", a, b, d);
+		print_backtrace(-1);
+	}
+	return (t / d);
+}
+
+#endif /* !_SYS_SYSTM_H_ */

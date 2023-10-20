@@ -1,0 +1,133 @@
+SubDir HAIKU_TOP src system libroot ;
+
+UsePrivateHeaders libroot runtime_loader ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		UsePrivateSystemHeaders ;
+
+		local libgccAsSingleObject ;
+		if $(architecture) = x86_gcc2 {
+			libgccAsSingleObject
+				= <$(architecture)>libroot_libgcc_$(TARGET_ARCH).o ;
+			# One object to link them all...
+			TARGET_LDFLAGS_$(TARGET_PACKAGING_ARCH) on
+				<$(architecture)>libroot_libgcc_$(TARGET_ARCH).o =
+				[ on <$(architecture)>libroot_libgcc_$(TARGET_ARCH).o
+					return $(TARGET_LDFLAGS_$(TARGET_PACKAGING_ARCH)) ]
+				--whole-archive ;
+			MergeObject $(libgccAsSingleObject) : : [ TargetLibgcc ] ;
+		}
+
+		local librootObjects =
+			$(libgccAsSingleObject)
+
+			os_main.o
+			os_arch_$(TARGET_ARCH).o
+
+			posix_arch_$(TARGET_ARCH).o
+			posix_crypt.o
+			posix_locale.o
+			posix_main.o
+			posix_pthread.o
+			posix_signal.o
+			posix_stdio.o
+			posix_musl.o
+			posix_gnu_arch_$(TARGET_ARCH).o
+			posix_gnu_ctype.o
+			posix_gnu_ext.o
+			posix_gnu_iconv.o
+			posix_gnu_libio.o
+			posix_gnu_locale.o
+			posix_gnu_math.o
+			posix_gnu_misc.o
+			posix_gnu_regex.o
+			posix_gnu_stdio.o
+			posix_gnu_stdlib.o
+			posix_gnu_wcsmbs.o
+			posix_stdlib.o
+			posix_string.o
+			posix_string_arch_$(TARGET_ARCH).o
+			posix_sys.o
+			posix_time.o
+			posix_unistd.o
+			posix_wchar.o
+			;
+		librootObjects = $(librootObjects:G=$(architecture)) ;
+
+		local librootDebugObjects =
+			posix_malloc_debug.o
+			;
+		librootDebugObjects = $(librootDebugObjects:G=$(architecture)) ;
+
+		local librootNoDebugObjects =
+			posix_malloc.o
+			;
+		librootNoDebugObjects = $(librootNoDebugObjects:G=$(architecture)) ;
+
+		local libroot = [ MultiArchDefaultGristFiles libroot.so ] ;
+		local librootDebug = $(libroot:B=libroot_debug) ;
+
+		DONT_LINK_AGAINST_LIBROOT on $(libroot) = true ;
+		DONT_LINK_AGAINST_LIBROOT on $(librootDebug) = true ;
+
+		SetVersionScript $(libroot) : libroot_versions ;
+		SetVersionScript $(librootDebug) : libroot_versions ;
+
+		SharedLibrary $(libroot)
+			:
+			libroot_init.c
+			:
+			$(librootObjects)
+			$(librootNoDebugObjects)
+			[ TargetStaticLibsupc++ ]
+			[ TargetLibgcc ]
+			;
+
+		# Use the standard libroot.so soname, so when the debug version is
+		# pre-loaded it prevents the standard version to be loaded as well.
+		HAIKU_SONAME on $(librootDebug) = libroot.so ;
+
+		SharedLibrary $(librootDebug)
+			:
+			libroot_init.c
+			:
+			$(librootObjects)
+			$(librootDebugObjects)
+			[ TargetStaticLibsupc++ ]
+			[ TargetLibgcc ]
+			;
+
+		# These are defined in POSIX for c99 support, so fake'em
+		StaticLibrary [ MultiArchDefaultGristFiles libc.a ] : empty.c ;
+		StaticLibrary [ MultiArchDefaultGristFiles libm.a ] : empty.c ;
+		StaticLibrary [ MultiArchDefaultGristFiles libpthread.a ] : empty.c ;
+
+		# Copy libroot.so and update the copy's revision section. We link
+		# everything against the original, but the copy will end up on the disk
+		# image (this way we avoid unnecessary dependencies). The copy will be
+		# located in a subdirectory.
+		if $(TARGET_PLATFORM) = haiku {
+			local targetDir = [ FDirName $(TARGET_DEBUG_$(DEBUG)_LOCATE_TARGET)
+				revisioned ] ;
+			local revisionedLibroot = [ MultiArchDefaultGristFiles
+				libroot.so : revisioned ] ;
+			local revisionedLibrootDebug
+				= $(librootDebug:G=$(revisionedLibroot:G)) ;
+
+			MakeLocate $(revisionedLibroot) : $(targetDir) ;
+			CopySetHaikuRevision $(revisionedLibroot) : $(libroot) ;
+
+			MakeLocate $(revisionedLibrootDebug) : $(targetDir) ;
+			CopySetHaikuRevision $(revisionedLibrootDebug) : $(librootDebug) ;
+		}
+	}
+}
+
+SubInclude HAIKU_TOP src system libroot add-ons ;
+SubInclude HAIKU_TOP src system libroot os ;
+SubInclude HAIKU_TOP src system libroot posix ;
+SubInclude HAIKU_TOP src system libroot stubbed ;

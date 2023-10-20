@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src add-ons accelerants et6x00 ;
+
+UsePrivateHeaders [ FDirName graphics et6x00 ] ;
+
+Addon et6x00.accelerant :
+	Acceleration.c
+	EngineManagment.c
+	GetAccelerantHook.c
+	GetModeInfo.c
+	GlobalData.c
+	InitAccelerant.c
+	ProposeDisplayMode.c
+	SetDisplayMode.c
+;
+
+Depends et6x00.accelerant : et6x00.driver ;

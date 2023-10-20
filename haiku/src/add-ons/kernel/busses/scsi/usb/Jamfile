@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src add-ons kernel busses scsi usb ;
+
+UsePrivateHeaders drivers ;
+
+KernelAddon usb_scsi :
+	usb_scsi.c
+	tracing.c
+	transform_procs.c
+	proto_common.c
+	proto_bulk.c
+	proto_cbi.c
+	settings.c
+	fake_device.c
+	sg_buffer.c
+;
+
+# BUILD_LOG_DAEMON
+#App usb_scsi_logging : kernel drivers busses scsi :
+#	tracing.c
+#	tracing_daemon.c
+#;

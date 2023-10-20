@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src add-ons mail_daemon inbound_filters match_header ;
+
+UsePrivateHeaders mail shared ;
+UsePublicHeaders [ FDirName add-ons mail_daemon ] ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers os add-ons mail_daemon ] ;
+
+AddResources MatchHeader : MatchHeader.rdef ;
+
+Addon MatchHeader
+	:
+	ConfigView.cpp
+	RuleFilter.cpp
+	StringMatcher.cpp
+	:
+	be libmail.so [ TargetLibsupc++ ] localestub
+	;
+
+DoCatalogs MatchHeader
+	:
+	x-vnd.Haiku-MatchHeader
+	:
+	ConfigView.cpp
+	RuleFilter.cpp
+;

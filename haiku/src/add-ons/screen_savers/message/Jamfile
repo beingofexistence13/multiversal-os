@@ -1,0 +1,18 @@
+SubDir HAIKU_TOP src add-ons screen_savers message ;
+
+UsePrivateHeaders screen_saver ;
+	# For BuildDefaultSettingsView
+UsePrivateHeaders shared ;
+	# For ObjectList
+
+AddResources Message : Message.rdef ;
+
+ScreenSaver Message :
+	Message.cpp : 
+	be libscreensaver.so localestub [ TargetLibsupc++ ] ;
+
+DoCatalogs Message :
+	x-vnd.Haiku-MessageScreensaver
+	:
+	Message.cpp	
+;

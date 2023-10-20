@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons media media-add-ons video_producer_demo ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Addon [ MultiArchDefaultGristFiles video_producer_demo.media_addon ] :
+			AddOn.cpp
+			Producer.cpp
+			: be media [ TargetLibsupc++ ]
+		;
+	}
+}

@@ -1,0 +1,34 @@
+SubDir HAIKU_TOP src add-ons translators gif ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) shared ] ;
+
+AddResources GIFTranslator : GIFTranslator.rdef ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Translator [ MultiArchDefaultGristFiles GIFTranslator ] :
+			# Main Source
+			GIFTranslator.cpp
+			GIFView.cpp
+
+			# Real Work
+			GIFLoad.cpp
+			LoadPalette.cpp
+			GIFSave.cpp
+			SavePalette.cpp
+			SFHash.cpp
+			:
+			be translation [ TargetLibsupc++ ] localestub
+			[ MultiArchDefaultGristFiles libtranslatorsutils.a ]
+			: true
+		;
+	}
+}
+
+DoCatalogs GIFTranslator :
+	x-vnd.Haiku-GIFTranslator
+	:
+	GIFTranslator.cpp
+	GIFView.cpp
+;

@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src tests kits mail ;
+
+UsePrivateHeaders mail shared ;
+
+SimpleTest header_test :
+	header_test.cpp
+
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ] mail
+;

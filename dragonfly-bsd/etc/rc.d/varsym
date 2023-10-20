@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# PROVIDE: varsym
+# REQUIRE: mountcritremote
+
+. /etc/rc.subr
+
+name=varsym
+rcvar="varsym_enable"
+required_files="/etc/varsym.conf"
+start_cmd="varsym_start"
+stop_cmd=":"
+
+varsym_start()
+{
+	local line
+
+	if [ ! -f "/etc/varsym.conf" ]; then
+		return
+	fi
+
+	# NOTE: Do not miss the last line when it does not end with a LF.
+	while read -r line || [ -n "${line}" ]; do
+		case ${line} in
+		\#*|'')
+			;;
+		*[^=\ ]=[^=\ ]*)
+			debug "varsym -s ${line}"
+			eval varsym -s ${line}
+			;;
+		*)
+			warn "invalid syntax: '${line}'"
+			;;
+		esac
+	done < /etc/varsym.conf
+}
+
+load_rc_config $name
+run_rc_command "$1"

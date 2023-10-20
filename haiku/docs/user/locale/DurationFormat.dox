@@ -1,0 +1,132 @@
+/*
+ * Copyright 2011-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Adrien Destugues, pulkomandy@pulkomandy.ath.cx
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/locale/DurationFormat.h	hrev48439
+ *		src/kits/locale/DurationFormat.cpp	hrev48439
+ */
+
+
+/*!
+	\file DurationFormat.h
+	\ingroup locale
+	\ingroup libbe
+	\brief Contains BDurationFormat class, a time interval formatter and parser.
+*/
+
+
+/*!
+	\class BDurationFormat
+	\ingroup locale
+	\ingroup libbe
+	\brief Formatter for time intervals.
+
+	BDurationFormat is a formatter for time intervals. A time interval is
+	defined by its start and end values, and the result is a string such as
+	"1 hour, 2 minutes, 28 seconds".
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BDurationFormat::BDurationFormat(const BLanguage& language,
+		const BFormattingConventions& conventions, const BString& separator,
+		const time_unit_style style)
+	\brief Constructor.
+
+	\warning Creating a BDurationFormat is a costly operation. Most of the
+	         time want to use the default one through the BLocale class.
+
+	\param language The language to use.
+	\param conventions The formatting conventions to use.
+	\param separator String appended between the duration elements.
+	\param style The time unit style to use.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BDurationFormat::BDurationFormat(const BString& separator,
+		const time_unit_style style)
+	\brief Constructor.
+
+	\warning Creating a BDurationFormat is a costly operation. Most of the
+	         time want to use the default one through the BLocale class.
+
+	\param separator String appended between the duration elements.
+	\param style The time unit style to use.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BDurationFormat::BDurationFormat(const BDurationFormat& other)
+	\brief Copy Constructor.
+
+	\param other The BDurationFormat object to copy from.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn BDurationFormat::~BDurationFormat()
+	\brief Destructor.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BDurationFormat::SetSeparator(const BString& separator)
+	\brief Replace the separator for this formatter.
+
+	\param separator The separator string to set.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BDurationFormat::SetTimeZone(const BTimeZone* timeZone)
+	\brief Sets the timezone for this formatter.
+
+	\param timeZone The BTimeZone object to set.
+
+	\returns A status code.
+	\retval B_OK Everything went fine.
+	\retval B_NO_INIT Format object is \c NULL.
+	\retval B_ERROR Other errors.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BDurationFormat::Format(BString& buffer, bigtime_t startValue,
+		bigtime_t stopValue) const
+	\brief Formats a duration defined by its start and end values.
+
+	The start and end values are in milliseconds. The result is appended to
+	the buffer. The full time style uses full words (hours, minutes, seconds),
+	while the short one uses units (h, m, s).
+
+	\param buffer The buffer to fill out.
+	\param startValue The start value in milliseconds.
+	\param stopValue The stop value in milliseconds.
+
+	\returns A status code.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a buffer was \c NULL or invalid.
+	\retval B_ERROR Formatting error.
+
+	\since Haiku R1
+*/

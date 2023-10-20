@@ -1,0 +1,75 @@
+.\" Copyright (c) 1996 Doug Rabson
+.\"
+.\" All rights reserved.
+.\"
+.\" This program is free software.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE DEVELOPERS ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE DEVELOPERS BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" $FreeBSD: src/share/man/man9/VOP_GETPAGES.9,v 1.4.2.2 2001/12/17 11:30:18 ru Exp $
+.\"
+.Dd May 6, 2020
+.Dt VOP_GETPAGES 9
+.Os
+.Sh NAME
+.Nm VOP_GETPAGES ,
+.Nm VOP_PUTPAGES
+.Nd read or write VM pages from a file
+.Sh SYNOPSIS
+.In sys/param.h
+.In sys/vnode.h
+.In vm/vm.h
+.Ft int
+.Fn VOP_GETPAGES "struct vnode *vp" "vm_page_t *m" "int count" "int reqpage" "vm_ooffset_t offset" "int seqaccess"
+.Ft int
+.Fn VOP_PUTPAGES "struct vnode *vp" "vm_page_t *m" "int count" "int flags" "int *rtvals" "vm_ooffset_t offset"
+.Sh DESCRIPTION
+The arguments are:
+.Bl -tag -width ".Fa seqaccess"
+.It Fa vp
+The file to access.
+.It Fa m
+Pointer to a page array representing a contiguous region of the file to
+be read or written.
+.It Fa count
+The length of this array.
+.It Fa flags
+.Dv OBJPC_*
+flags, see
+.In vm/vm_pager.h .
+.It Fa rtvals
+An array of VM system result codes indicating the status of each
+page written by
+.Fn VOP_PUTPAGES .
+.It Fa reqpage
+Index of the requested page.
+.It Fa offset
+Offset in the file to start accessing.
+.It Fa seqaccess
+Sequential access.
+.El
+.Sh RETURN VALUES
+Zero is returned on success, otherwise an error is returned.
+.Sh SEE ALSO
+.Xr vnode 9
+.Sh AUTHORS
+This man page was written by
+.An Doug Rabson .

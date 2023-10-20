@@ -1,0 +1,642 @@
+/*
+ * Copyright 2002-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		John Scipione, jscipione@gmail.com
+ *		Ingo Weinhold, bonefish@users.sf.net
+ *
+ * Corresponds to:
+ *		headers/os/storage/Node.h	hrev47402
+ *		src/kits/storage/Node.cpp	hrev47402
+ */
+
+
+/*!
+	\file Node.h
+	\ingroup storage
+	\ingroup libbe
+	\brief Provides the BNode class and node_ref struct.
+*/
+
+
+/*!
+	\struct node_ref
+	\ingroup storage
+	\ingroup libbe
+	\brief Reference structure to a particular vnode on a device.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn node_ref::node_ref()
+	\brief Creates an uninitialized node_ref object.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn node_ref::node_ref(const node_ref& other)
+	\brief Creates a copy of the given node_ref object.
+
+	\param other the node_ref to be copied.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\name Operators
+*/
+
+
+//! @{
+
+
+/*!
+	\fn bool node_ref::operator==(const node_ref& other) const
+	\brief Tests whether this node_ref and the supplied one are equal.
+
+	\param other The node_ref to be compared against.
+
+	\return \c true, if the objects are equal, \c false otherwise.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool node_ref::operator!=(const node_ref& other) const
+	\brief Tests whether this node_ref and the supplied one are NOT equal.
+
+	\param other The node_ref to be compared against.
+
+	\return \c true, if the objects are \b NOT equal, \c false otherwise.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool node_ref::operator<(const node_ref& other) const
+	\brief Tests whether this node_ref is less than the supplied one.
+
+	\param other The node_ref to be compared against.
+
+	\return \c true, if this node_ref is less than \a other,
+	        \c false otherwise.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn node_ref& node_ref::operator=(const node_ref& other)
+	\brief Makes this node ref a copy of the supplied one.
+
+	\param other The node_ref to be copied.
+
+	\return A reference to this object.
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\var node_ref::device
+	\brief The device number on which the node is located.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\var node_ref::node
+	\brief The node's inode number.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\class BNode
+	\ingroup storage
+	\ingroup libbe
+	\brief A BNode represents a chunk of data in the filesystem.
+
+	The BNode class provides an interface for manipulating the data and
+	attributes belonging to filesystem entries. The BNode is unaware of the
+	name that refers to it in the filesystem (i.e. its entry), instead, a
+	BNode is concerned solely with the entry's data and attributes.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::BNode()
+	\brief Creates an uninitialized BNode object.
+
+	\see SetTo()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::BNode(const entry_ref* ref)
+	\brief Creates a BNode object and initializes it to the specified
+	       entry_ref.
+
+	\param ref The entry_ref referring to the node.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::BNode(const BEntry* entry)
+	\brief Creates a BNode object and initializes it to the specified
+	       filesystem entry.
+
+	\param entry The BEntry referring to the node.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::BNode(const char* path)
+	\brief Creates a BNode object and initializes it to the entry referred
+	       to by the specified path.
+
+	\param path The \a path referring to the node.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::BNode(const BDirectory* dir, const char* path)
+	\brief Creates a BNode object and initializes it to the entry referred
+	       to by the specified path rooted in the specified directory.
+
+	\param dir The base BDirectory.
+	\param path The \a path name relative to \a dir.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::BNode(const BNode& other)
+	\brief Creates a copy of the given BNode.
+
+	\param other The BNode to be copied.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BNode::~BNode()
+	\brief Frees all resources associated with the BNode.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::GetStat(struct stat* stat) const
+	\brief Fills in the given stat structure with the <tt>stat()</tt>
+	       information for this object.
+
+	\param stat A pointer to a stat structure to be filled in.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE: \c NULL \a stat.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int BNode::Dup()
+	\brief Gets the POSIX file descriptor referred to by this node.
+
+	Remember to call close() on the file descriptor when you're through
+	with it.
+
+	\returns A valid file descriptor, or -1 if something went wrong.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\name Constructor Helpers
+*/
+
+
+//! @{
+
+
+/*!
+	\fn status_t BNode::InitCheck() const
+	\brief Checks whether the object has been properly initialized or not.
+
+	\returns \c B_OK if the object has been properly initialized, or
+	         \c B_NO_INIT otherwise.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::SetTo(const entry_ref* ref)
+	\brief Initializes the object to the specified entry_ref.
+
+	\param ref The entry_ref referring to the entry.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK: Everything went fine.
+	\retval B_BAD_VALUE: \a ref was \c NULL.
+	\retval B_ENTRY_NOT_FOUND: The entry could not be found.
+	\retval B_BUSY: The entry was locked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::SetTo(const BEntry* entry)
+	\brief Initializes the object to the specified filesystem \a entry.
+
+	\param entry The BEntry representing the entry.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a entry was \c NULL.
+	\retval B_ENTRY_NOT_FOUND The \a entry could not be found.
+	\retval B_BUSY The \a entry was locked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::SetTo(const char* path)
+	\brief Initializes the object to the specified \a path.
+
+	\param path The entry's path name; \a path can be relative or absolute,
+	       and can contain "." and ".." elements. If path is relative, it uses
+	       the current working directory as the base directory.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a path was \c NULL.
+	\retval B_ENTRY_NOT_FOUND The entry could not be found.
+	\retval B_BUSY The entry of was locked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::SetTo(const BDirectory* dir, const char* path)
+	\brief Initializes the object to the entry referred by the
+	       specified \a path relative to the the specified directory.
+
+	\param dir The base BDirectory.
+	\param path The path name relative to \a dir.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a dir was \c NULL.
+	\retval B_ENTRY_NOT_FOUND The entry could not be found.
+	\retval B_BUSY The entry was locked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BNode::Unset()
+	\brief Returns the object to an uninitialized state.
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\name Locking Methods
+*/
+
+
+//! @{
+
+
+/*!
+	\fn status_t BNode::Lock()
+	\brief Attains an exclusive lock on the data referred to by this node
+	       so that it may not be modified by any other objects or methods.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_FILE_ERROR The object is not initialized.
+	\retval B_BUSY The node is already locked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::Unlock()
+	\brief Unlocks the date referred to by this node.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_FILE_ERROR The object is not initialized.
+	\retval B_BAD_VALUE The node is not locked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::Sync()
+	\brief Immediately performs any pending disk actions on the node.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_FILE_ERROR Something went wrong.
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\name Attribute Methods
+*/
+
+
+//! @{
+
+
+/*!
+	\fn ssize_t BNode::WriteAttr(const char* attr, type_code type,
+		off_t offset, const void* buffer, size_t length)
+	\brief Writes data from a buffer to an attribute.
+
+	Write \a length bytes of data from \a buffer to the attribute specified
+	by \a name after erasing any data that existed previously. The type
+	specified by \a type \em is remembered, and may be queried with
+	GetAttrInfo(). The value of \a offset is currently ignored.
+
+	\param attr The name of the attribute.
+	\param type The type of the attribute.
+	\param offset The index at which to write the data (currently ignored).
+	\param buffer The buffer containing the data to be written.
+	\param length The number of bytes to be written.
+
+	\return The number of bytes actually written.
+	\retval B_BAD_VALUE \a attr or \a buffer was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized or the node it refers
+	        to was read only.
+	\retval B_NOT_ALLOWED The node resides on a read only volume.
+	\retval B_DEVICE_FULL There was insufficient disk space to complete the
+	        operation.
+	\retval B_NO_MEMORY There was insufficient memory to complete the
+	        operation.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn ssize_t BNode::ReadAttr(const char* attr, type_code type,
+		off_t offset, void* buffer, size_t length) const
+	\brief Reads data from an attribute into \a buffer.
+
+	Reads \a length bytes of data from the attribute given by \a name into
+	\a buffer. \a type and \a offset are currently ignored.
+
+	\param attr The name of the attribute.
+	\param type The type of the attribute (currently ignored).
+	\param offset The index from which to read the data (currently ignored).
+	\param buffer The buffer for the data to be read.
+	\param length The number of bytes to be read.
+
+	\return The number of bytes actually read.
+	\retval B_BAD_VALUE \a attr or \a buffer was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized.
+	\retval B_ENTRY_NOT_FOUND The node had no attribute \a attr.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::RemoveAttr(const char* name)
+	\brief Deletes the attribute given by \a name.
+
+	\param name The name of the attribute to remove.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a name was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized or the node it
+	        referred to was read-only.
+	\retval B_ENTRY_NOT_FOUND The node had no attribute \a name.
+	\retval B_NOT_ALLOWED The node resided on a read-only volume.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::RenameAttr(const char* oldName, const char* newName)
+	\brief Moves the attribute given by \a oldName to \a newName.
+
+	If \a newName already exists, the data is clobbered.
+
+	\param oldName The name of the attribute to be renamed.
+	\param newName The new name for the attribute.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a oldName or \a newName was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized or the node it
+	        referred to was read only.
+	\retval B_ENTRY_NOT_FOUND The node had no attribute \a oldName.
+	\retval B_NOT_ALLOWED The node resided on a read-only volume.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::GetAttrInfo(const char* name,
+		struct attr_info* info) const
+	\brief Fills in the pre-allocated attr_info struct pointed to by \a info
+	       with information about the attribute specified by \a name.
+
+	\param name The name of the attribute.
+	\param info The attr_info structure to be filled in.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a name was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized.
+	\retval B_ENTRY_NOT_FOUND The node had no attribute \a name.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::GetNextAttrName(char* buffer)
+	\brief Copies the name of the attribute into \c buffer and then advances
+	       the pointer to the next attribute.
+
+	The name of the node is first copied into \a buffer, which should be at
+	least \c B_ATTR_NAME_LENGTH characters long. The copied node name is
+	\0 terminated. Once the name is copied the attribute list pointer
+	is advanced to the next attribute in the list. When GetNextAttrName()
+	reaches the end of the list it returns \c B_ENTRY_NOT_FOUND.
+
+	\param buffer A buffer to copy the name of the attribute into.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK The Attribute name was copied and there are more attribute
+	        names to copy.
+	\retval B_BAD_VALUE passed in \a buffer was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized.
+	\retval B_ENTRY_NOT_FOUND There were no more attributes, the last attribute
+	        name had already been copied.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::RewindAttrs()
+	\brief Resets the object's attribute pointer to the first attribute in the
+	       list.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_FILE_ERROR Some other error occurred.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn status_t BNode::WriteAttrString(const char* name, const BString* data)
+	\brief Writes the specified string to the specified attribute, clobbering
+	       any previous data.
+
+	\param name the name of the attribute.
+	\param data the BString to be written to the attribute.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a name or \a data was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized or the node it
+	        referred to was read-only.
+	\retval B_NOT_ALLOWED The node resided on a read-only volume.
+	\retval B_DEVICE_FULL There was insufficient disk space to complete the
+	        operation.
+	\retval B_NO_MEMORY There was insufficient memory to complete the
+	        operation.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn status_t BNode::ReadAttrString(const char* name, BString* result) const
+	\brief Reads the data of the specified attribute into the pre-allocated
+	       \a result.
+
+	\param name the name of the attribute.
+	\param result the BString to be set to the value of the attribute.
+
+	\return \c B_OK on success or an error code otherwise.
+	\retval B_OK Everything went fine.
+	\retval B_BAD_VALUE \a name or \a result was \c NULL.
+	\retval B_FILE_ERROR The object was not initialized.
+	\retval B_ENTRY_NOT_FOUND The node had no attribute \a attr.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Operators
+*/
+
+
+//! @{
+
+
+/*!
+	\fn BNode& BNode::operator=(const BNode& other)
+	\brief Initializes the object as a copy of \a other.
+
+	\param other the BNode to be copied.
+
+	\returns A reference to this BNode object.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BNode::operator==(const BNode &node) const
+	\brief Tests whether this and the supplied BNode object are equal.
+
+	Two BNode objects are said to be equal if they're set to the same node,
+	or if they're both unintialized
+
+	\param node The BNode to be compared against.
+
+	\return \c true, if the BNode objects are equal, \c false otherwise.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BNode::operator!=(const BNode &node) const
+	\brief Tests whether this and the supplied BNode object are not equal.
+
+	Two BNode objects are said to be equal if they're set to the same node,
+	or if they're both unintialized.
+
+	\param node The BNode to be compared with
+
+	\return \c false, if the BNode objects are equal, \c true otherwise.
+
+	\since BeOS R3
+*/
+
+
+//! @}

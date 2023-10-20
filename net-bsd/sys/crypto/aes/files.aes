@@ -1,0 +1,12 @@
+#	$NetBSD: files.aes,v 1.3 2020/07/25 22:40:08 riastradh Exp $
+
+define	aes
+
+file	crypto/aes/aes_bear.c			aes
+file	crypto/aes/aes_ccm.c			aes
+file	crypto/aes/aes_ccm_mbuf.c		aes
+file	crypto/aes/aes_ct.c			aes
+file	crypto/aes/aes_ct_dec.c			aes
+file	crypto/aes/aes_ct_enc.c			aes
+file	crypto/aes/aes_impl.c			aes
+file	crypto/aes/aes_selftest.c		aes

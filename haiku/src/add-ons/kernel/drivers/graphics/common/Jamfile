@@ -1,0 +1,11 @@
+SubDir HAIKU_TOP src add-ons kernel drivers graphics common ;
+
+SubDirCcFlags -DENABLE_LOGGING -DLOG_INCLUDE_STARTUP ;
+
+UsePrivateHeaders graphics ;
+UsePrivateHeaders [ FDirName graphics radeon ] ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+
+StaticLibrary libgraphicscommon.a :
+	memory_manager.c
+;

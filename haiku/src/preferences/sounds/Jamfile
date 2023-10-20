@@ -1,0 +1,21 @@
+SubDir HAIKU_TOP src preferences sounds ;
+
+UsePrivateHeaders interface ;
+
+Preference Sounds : 
+	HApp.cpp 
+	HWindow.cpp 
+	HEventList.cpp 
+	: be libcolumnlistview.a game localestub tracker libmedia.so
+		[ TargetLibsupc++ ]
+	: Sounds.rdef
+	;
+
+DoCatalogs Sounds :
+	x-vnd.Haiku-Sounds
+	:
+	HApp.cpp
+	HWindow.cpp
+	HEventList.cpp
+	: en.catalog
+	;

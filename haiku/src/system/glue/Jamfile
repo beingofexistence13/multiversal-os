@@ -1,0 +1,34 @@
+SubDir HAIKU_TOP src system glue ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		UsePrivateSystemHeaders ;
+
+		local sources =
+			init_term_dyn.c
+			start_dyn.c
+			haiku_version_glue.c
+			;
+		MergeObject <$(architecture)>glue_common.o : $(sources) ;
+
+		if $(HAIKU_CC_IS_CLANG_$(architecture)) = 1 {
+			MergeObject <$(architecture)>crtbeginS.o : crtbegin.c ;
+			MergeObject <$(architecture)>crtendS.o : crtend.c ;
+			ObjectCcFlags crtbegin.c crtend.c : -DCRT_HAS_INITFINI_ARRAY -DCRT_SHARED ;
+		}
+
+		if $(HAIKU_BUILD_TYPE) = bootstrap {
+			# build a version for stage0 of the bootstrap process
+			BootstrapStage0PlatformObjects [ FGristFiles $(sources) ] : true ;
+		}
+	}
+}
+
+
+local arch ;
+for arch in $(TARGET_ARCHS) {
+	SubInclude HAIKU_TOP src system glue arch $(arch) ;
+}

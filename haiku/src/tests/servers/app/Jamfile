@@ -1,0 +1,295 @@
+SubDir HAIKU_TOP src tests servers app ;
+
+UsePrivateHeaders app graphics input interface shared storage ;
+
+SimpleTest app_server_debug :
+	app_server_debug.cpp
+	: be
+;
+
+SetSubDirSupportedPlatforms libbe_test ;
+
+# No need to define any of those targets, when not building for libbe_test
+if $(TARGET_PLATFORM) = libbe_test {
+
+UseLibraryHeaders agg png ;
+UseBuildFeatureHeaders zlib ;
+UsePrivateHeaders [ FDirName graphics common ] ;
+
+# headers/build/private/kernel is needed for safemode.h and syscalls.h.
+# headers/private/kernel for the util/* stuff.
+UseHeaders [ FDirName $(HAIKU_TOP) headers build private kernel ] : true ;
+UsePrivateHeaders kernel support ;
+
+local appServerDir = [ FDirName $(HAIKU_TOP) src servers app ] ;
+
+UseHeaders [ FDirName $(appServerDir) decorator ] ;
+UseHeaders [ FDirName $(appServerDir) drawing ] ;
+UseHeaders [ FDirName $(appServerDir) drawing interface html5 ] ;
+UseHeaders [ FDirName $(appServerDir) drawing interface remote ] ;
+UseHeaders [ FDirName $(appServerDir) drawing Painter ] ;
+UseHeaders [ FDirName $(appServerDir) drawing Painter drawing_modes ] ;
+UseHeaders [ FDirName $(appServerDir) drawing Painter font_support ] ;
+UseHeaders [ FDirName $(appServerDir) font ] ;
+UseHeaders [ FDirName $(appServerDir) stackandtile ] ;
+UseBuildFeatureHeaders freetype ;
+UseLibraryHeaders agg lp_solve linprog ;
+
+# This overrides the definitions in private/servers/app/ServerConfig.h
+local defines = [ FDefines TEST_MODE=1 ] ;
+	# USE_DIRECT_WINDOW_TEST_MODE=1
+
+SubDirCcFlags $(defines) ; #-finstrument-functions ; #-fcheck-memory-usage -D_NO_INLINE_ASM ;
+SubDirC++Flags $(defines) ; #-finstrument-functions ; #-fcheck-memory-usage -D_NO_INLINE_ASM ;
+
+SEARCH_SOURCE += $(appServerDir) ;
+SEARCH_SOURCE += [ FDirName $(appServerDir) decorator ] ;
+SEARCH_SOURCE += [ FDirName $(appServerDir) drawing ] ;
+SEARCH_SOURCE += [ FDirName $(appServerDir) drawing Painter ] ;
+SEARCH_SOURCE += [ FDirName $(appServerDir) drawing interface remote ] ;
+SEARCH_SOURCE += [ FDirName $(appServerDir) drawing interface virtual ] ;
+SEARCH_SOURCE += [ FDirName $(appServerDir) font ] ;
+
+SharedLibrary libhwinterface.so :
+	BBitmapBuffer.cpp
+	DWindowBuffer.cpp
+	HWInterface.cpp
+	RGBColor.cpp
+	UpdateQueue.cpp
+
+	NetReceiver.cpp
+	NetSender.cpp
+	RemoteDrawingEngine.cpp
+	RemoteEventStream.cpp
+	RemoteHWInterface.cpp
+	RemoteMessage.cpp
+	StreamingRingBuffer.cpp
+
+	: # will depend on libtestappserver.so
+;
+
+# We include --no-undefined in LINKFLAGS by default, which we can't use here
+# because otherwise we would be trapped in a circular dependency.
+local hwinterfaceLinkFlags ;
+for flag in [ on libhwinterface.so return $(LINKFLAGS) ] {
+	if $(flag) = "--no-undefined" {
+		hwinterfaceLinkFlags += "--allow-shlib-undefined" ;
+		continue ;
+	}
+	hwinterfaceLinkFlags += $(flag) ;
+}
+LINKFLAGS on libhwinterface.so = $(hwinterfaceLinkFlags) ;
+LINKFLAGS on libhwinterface.so += -lnetwork -lbnetapi ;
+
+# libhwinterfaceimpl.so needs to link against libbe *first*, but simply
+# adding it to the library list would add it to LINKLIBS which is always
+# appended after NEEDLIBS in the command line.
+LINKFLAGS on libhwinterfaceimpl.so ?= $(LINKFLAGS) ;
+LINKFLAGS on libhwinterfaceimpl.so += -lbe ;
+
+SharedLibrary libhwinterfaceimpl.so :
+	ViewHWInterface.cpp
+	DWindowHWInterface.cpp
+	MultiLocker.cpp
+
+#	libraries
+	:
+	libhwinterface.so
+	[ TargetLibstdc++ ]
+;
+
+local decorator_src =
+	DecorManager.cpp
+	Decorator.cpp
+	DefaultDecorator.cpp
+	DefaultWindowBehaviour.cpp
+	MagneticBorder.cpp
+	TabDecorator.cpp
+	WindowBehaviour.cpp
+	;
+
+local font_src =
+	AppFontManager.cpp
+	FontCache.cpp
+	FontCacheEntry.cpp
+	FontEngine.cpp
+	FontFamily.cpp
+	FontManager.cpp
+	FontStyle.cpp
+	GlobalFontManager.cpp
+	;
+
+# These files are shared between the test_app_server and the libhwintreface, so
+# they can talk together.
+SharedLibrary libtestappserver.so :
+	Angle.cpp
+	ClientMemoryAllocator.cpp
+	CursorData.cpp
+	CursorManager.cpp
+	CursorSet.cpp
+	DelayedMessage.cpp
+	DesktopListener.cpp
+	DirectWindowInfo.cpp
+	DrawingEngine.cpp
+	DrawState.cpp
+	$(font_src)
+	GlobalSubpixelSettings.cpp
+	IntPoint.cpp
+	IntRect.cpp
+	MultiLocker.cpp
+	Overlay.cpp
+	RGBColor.cpp
+	ServerBitmap.cpp
+	ServerCursor.cpp
+	ServerFont.cpp
+	SystemPalette.cpp
+
+	# drawing
+	PatternHandler.cpp
+
+#	trace.c
+
+	# Misc. Sources
+	ProfileMessageSupport.cpp
+	EventDispatcher.cpp
+	EventStream.cpp
+	TestServerLoopAdapter.cpp
+	MessageLooper.cpp
+
+	# Decorator
+	$(decorator_src)
+
+	# Manager Classes
+	BitmapManager.cpp
+	InputManager.cpp
+	ScreenManager.cpp
+
+	AppServer.cpp
+	Desktop.cpp
+	ServerApp.cpp
+	ServerWindow.cpp
+
+	# DrawingEngine Classes
+#	AccelerantBuffer.cpp
+#	AccelerantHWInterface.cpp
+	BitmapBuffer.cpp
+	BitmapDrawingEngine.cpp
+	drawing_support.cpp
+	MallocBuffer.cpp
+
+	AlphaMask.cpp
+	AlphaMaskCache.cpp
+	BitmapHWInterface.cpp
+	Canvas.cpp
+	DesktopSettings.cpp
+	Layer.cpp
+	OffscreenServerWindow.cpp
+	OffscreenWindow.cpp
+	PictureBoundingBoxPlayer.cpp
+	RegionPool.cpp
+	Screen.cpp
+	ScreenConfigurations.cpp
+	ServerPicture.cpp
+	View.cpp
+	VirtualScreen.cpp
+	Window.cpp
+	WindowList.cpp
+	Workspace.cpp
+	WorkspacesView.cpp
+
+	# libraries
+	: be libpainter.a libagg.a libtextencoding.so shared libstackandtile.a
+	liblinprog.a libhwinterface.so libhwinterfaceimpl.so
+	[ BuildFeatureAttribute freetype : library ]
+	[ TargetLibstdc++ ]
+;
+
+Includes [ FGristFiles AppServer.cpp BitmapManager.cpp Canvas.cpp
+	ClientMemoryAllocator.cpp Desktop.cpp DesktopSettings.cpp
+	DrawState.cpp DrawingEngine.cpp ServerApp.cpp
+	ServerBitmap.cpp ServerCursor.cpp ServerFont.cpp ServerPicture.cpp
+	ServerWindow.cpp View.cpp Window.cpp WorkspacesView.cpp
+	$(decorator_src) $(font_src) ]
+	: [ BuildFeatureAttribute freetype : headers ] ;
+
+
+AddResources test_app_server : test_app_server.rdef ;
+
+Server test_app_server :
+
+	# drawing
+	drawing_support.cpp
+
+	# libraries
+	:
+	[ BuildFeatureAttribute zlib : library ] libtestappserver.so be
+	libhwinterface.so libhwinterfaceimpl.so libtextencoding.so
+	[ BuildFeatureAttribute freetype : library ]
+	[ TargetLibstdc++ ] [ TargetLibsupc++ ]
+;
+
+# install in the test dir
+HaikuInstall install-test-apps : $(HAIKU_APP_TEST_LIB_DIR)
+	: libtestappserver.so libbe_test.so
+	libhwinterface.so libhwinterfaceimpl.so libtextencoding.so
+	: tests!apps ;
+
+HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : test_app_server
+	: tests!apps ;
+
+HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : run.sh
+	: tests!apps ;
+
+} # if $(TARGET_PLATFORM) = libbe_test
+
+SubInclude HAIKU_TOP src tests servers app archived_view ;
+SubInclude HAIKU_TOP src tests servers app async_drawing ;
+SubInclude HAIKU_TOP src tests servers app avoid_focus ;
+SubInclude HAIKU_TOP src tests servers app benchmark ;
+SubInclude HAIKU_TOP src tests servers app bitmap_bounds ;
+SubInclude HAIKU_TOP src tests servers app bitmap_drawing ;
+SubInclude HAIKU_TOP src tests servers app code_to_name ;
+SubInclude HAIKU_TOP src tests servers app clip_to_picture ;
+SubInclude HAIKU_TOP src tests servers app constrain_clipping_region ;
+SubInclude HAIKU_TOP src tests servers app copy_bits ;
+SubInclude HAIKU_TOP src tests servers app cursor_test ;
+SubInclude HAIKU_TOP src tests servers app desktop_window ;
+SubInclude HAIKU_TOP src tests servers app draw_after_children ;
+SubInclude HAIKU_TOP src tests servers app draw_string_offsets ;
+SubInclude HAIKU_TOP src tests servers app drawing_debugger ;
+SubInclude HAIKU_TOP src tests servers app drawing_modes ;
+SubInclude HAIKU_TOP src tests servers app event_mask ;
+SubInclude HAIKU_TOP src tests servers app find_view ;
+SubInclude HAIKU_TOP src tests servers app following ;
+SubInclude HAIKU_TOP src tests servers app font_spacing ;
+SubInclude HAIKU_TOP src tests servers app gradients ;
+SubInclude HAIKU_TOP src tests servers app hide_and_show ;
+SubInclude HAIKU_TOP src tests servers app idle_test ;
+SubInclude HAIKU_TOP src tests servers app inverse_clipping ;
+SubInclude HAIKU_TOP src tests servers app lagging_get_mouse ;
+SubInclude HAIKU_TOP src tests servers app lock_focus ;
+SubInclude HAIKU_TOP src tests servers app look_and_feel ;
+SubInclude HAIKU_TOP src tests servers app menu_crash ;
+SubInclude HAIKU_TOP src tests servers app no_pointer_history ;
+SubInclude HAIKU_TOP src tests servers app painter ;
+SubInclude HAIKU_TOP src tests servers app playground ;
+SubInclude HAIKU_TOP src tests servers app pulsed_drawing ;
+SubInclude HAIKU_TOP src tests servers app regularapps ;
+SubInclude HAIKU_TOP src tests servers app resize_limits ;
+SubInclude HAIKU_TOP src tests servers app scrollbar ;
+SubInclude HAIKU_TOP src tests servers app scrolling ;
+SubInclude HAIKU_TOP src tests servers app shape_test ;
+SubInclude HAIKU_TOP src tests servers app stacktile ;
+SubInclude HAIKU_TOP src tests servers app statusbar ;
+SubInclude HAIKU_TOP src tests servers app stress_test ;
+SubInclude HAIKU_TOP src tests servers app text_rendering ;
+SubInclude HAIKU_TOP src tests servers app textview ;
+SubInclude HAIKU_TOP src tests servers app tiled_bitmap_test ;
+SubInclude HAIKU_TOP src tests servers app transformation ;
+SubInclude HAIKU_TOP src tests servers app unit_tests ;
+SubInclude HAIKU_TOP src tests servers app view_state ;
+SubInclude HAIKU_TOP src tests servers app view_transit ;
+SubInclude HAIKU_TOP src tests servers app window_creation ;
+SubInclude HAIKU_TOP src tests servers app window_invalidation ;
+SubInclude HAIKU_TOP src tests servers app workspace_activated ;
+SubInclude HAIKU_TOP src tests servers app workspace_switcher ;

@@ -1,0 +1,14 @@
+SubDir HAIKU_TOP src add-ons screen_savers leaves ;
+
+AddResources Leaves : Leaves.rdef ;
+
+ScreenSaver Leaves :
+	Leaves.cpp :
+	be screensaver [ TargetLibsupc++ ] localestub
+;
+
+DoCatalogs Leaves :
+	x-vnd.Haiku-LeavesScreensaver
+	:
+	Leaves.cpp
+;

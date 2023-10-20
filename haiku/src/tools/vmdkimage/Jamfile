@@ -1,0 +1,9 @@
+SubDir HAIKU_TOP src tools vmdkimage ;
+
+UsePrivateHeaders kernel ;
+UsePrivateHeaders vmdk ;
+
+BuildPlatformMain <build>vmdkimage
+	: vmdkimage.cpp
+	: $(HOST_LIBSUPC++)
+;

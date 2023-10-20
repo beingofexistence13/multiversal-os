@@ -1,0 +1,140 @@
+SubDir HAIKU_TOP src build libpackage ;
+
+UsePrivateBuildHeaders kernel package shared libroot storage support ;
+
+UseHeaders [ FDirName $(HAIKU_TOP) headers os net ] : true ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package hpkg ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package hpkg v1 ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package manager ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits package solver ] ;
+
+USES_BE_API on libpackage_build.so = true ;
+LINKFLAGS on libpackage_build.so += $(HOST_PTHREAD_LINKFLAGS) ;
+
+
+{
+	# The package writer needs to know where the license files are located.
+	local dataDir = [ FDirName $(HAIKU_TOP) data system data ] ;
+	# The directory path we compile in must be absolute. If it isn't prepend
+	# pwd.
+	local defines ;
+	if ! [ Match "(^/.*)" : $(dataDir) ] {
+		dataDir = `pwd`/$(dataDir) ;
+	}
+	local defines = [ FDefines
+		\"HAIKU_BUILD_SYSTEM_DATA_DIRECTORY="\\\"$(dataDir)\\\""\"
+	] ;
+	ObjectC++Flags PackageWriterImpl.cpp : $(defines) ;
+}
+
+
+HPKG_SOURCES =
+	AttributeDataReader.cpp
+	BlockBufferPool.cpp
+	BlockBufferPoolImpl.cpp
+	BlockBufferPoolNoLock.cpp
+	BufferPool.cpp
+	PoolBuffer.cpp
+	DataReader.cpp
+	ErrorOutput.cpp
+	FDDataReader.cpp
+	FetchUtils.cpp
+	GlobalWritableFileInfo.cpp
+	HPKGDefs.cpp
+	PackageContentHandler.cpp
+	PackageData.cpp
+	PackageDataReader.cpp
+	PackageEntry.cpp
+	PackageEntryAttribute.cpp
+	PackageFileHeapAccessorBase.cpp
+	PackageFileHeapReader.cpp
+	PackageFileHeapWriter.cpp
+	PackageReader.cpp
+	PackageReaderImpl.cpp
+	PackageWriter.cpp
+	PackageWriterImpl.cpp
+	ReaderImplBase.cpp
+	RepositoryContentHandler.cpp
+	RepositoryReader.cpp
+	RepositoryReaderImpl.cpp
+	RepositoryWriter.cpp
+	RepositoryWriterImpl.cpp
+	Strings.cpp
+	UserSettingsFileInfo.cpp
+	WriterImplBase.cpp
+
+	# V1 support
+	HPKGDefsV1.cpp
+	PackageContentHandlerV1.cpp
+	PackageDataReaderV1.cpp
+	PackageDataV1.cpp
+	PackageEntryAttributeV1.cpp
+	PackageEntryV1.cpp
+	PackageInfoContentHandlerV1.cpp
+	PackageReaderImplV1.cpp
+	PackageReaderV1.cpp
+	ReaderImplBaseV1.cpp
+;
+
+# locate the library
+MakeLocate libpackage_build.so : $(HOST_BUILD_COMPATIBILITY_LIB_DIR) ;
+
+BuildPlatformSharedLibrary libpackage_build.so
+	:
+	ActivateRepositoryCacheJob.cpp
+	ActivateRepositoryConfigJob.cpp
+	ActivationTransaction.cpp
+	AddRepositoryRequest.cpp
+	Attributes.cpp
+	ChecksumAccessors.cpp
+	CommitTransactionResult.cpp
+	Context.cpp
+	DownloadFileRequest.cpp
+	DropRepositoryRequest.cpp
+	FetchFileJob.cpp
+	InstallationLocationInfo.cpp
+	Job.cpp
+	PackageInfo.cpp
+	PackageInfoContentHandler.cpp
+	PackageInfoParser.cpp
+	PackageInfoSet.cpp
+	PackageResolvable.cpp
+	PackageResolvableExpression.cpp
+	PackageRoster.cpp
+	PackageVersion.cpp
+	RefreshRepositoryRequest.cpp
+	RemoveRepositoryJob.cpp
+	RepositoryCache.cpp
+	RepositoryConfig.cpp
+	RepositoryInfo.cpp
+	Request.cpp
+	TempfileManager.cpp
+	User.cpp
+	ValidateChecksumJob.cpp
+
+	$(HPKG_SOURCES)
+
+	# hpkg, but only libpackage
+	NoErrorOutput.cpp
+	StandardErrorOutput.cpp
+
+	# manager
+	Exceptions.cpp
+	RepositoryBuilder.cpp
+
+	# solver
+	Solver.cpp
+	SolverPackage.cpp
+	SolverPackageSpecifier.cpp
+	SolverPackageSpecifierList.cpp
+	SolverProblem.cpp
+	SolverProblemSolution.cpp
+	SolverRepository.cpp
+	SolverResult.cpp
+	:
+	libshared_build.a $(HOST_LIBBE) $(HOST_LIBSTDC++)
+;
+
+HaikuSubInclude solver ;

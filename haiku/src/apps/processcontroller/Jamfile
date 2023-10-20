@@ -1,0 +1,38 @@
+SubDir HAIKU_TOP src apps processcontroller ;
+
+UsePrivateSystemHeaders ;
+UsePrivateHeaders app interface shared ;
+
+Application ProcessController :
+	AutoIcon.cpp
+	IconMenuItem.cpp
+	KernelMemoryBarMenuItem.cpp
+	MemoryBarMenu.cpp
+	MemoryBarMenuItem.cpp
+	NoiseBarMenuItem.cpp
+	ProcessController.cpp
+	PCWindow.cpp
+	PCWorld.cpp
+	Preferences.cpp
+	PriorityMenu.cpp
+	QuitMenu.cpp
+	TeamBarMenu.cpp
+	TeamBarMenuItem.cpp
+	ThreadBarMenu.cpp
+	ThreadBarMenuItem.cpp
+	Utilities.cpp
+	: be shared [ TargetLibsupc++ ] localestub
+	: ProcessController.rdef
+;
+
+DoCatalogs ProcessController :
+	x-vnd.Haiku-ProcessController
+	:
+	KernelMemoryBarMenuItem.cpp
+	NoiseBarMenuItem.cpp
+	PCWindow.cpp
+	PCWorld.cpp
+	Preferences.cpp
+	PriorityMenu.cpp
+	ProcessController.cpp
+;

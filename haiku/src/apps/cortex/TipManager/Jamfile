@@ -1,0 +1,19 @@
+SubDir HAIKU_TOP src apps cortex TipManager ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) ] ;
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) support ] ;
+
+SubDirCcFlags -DCORTEX_NAMESPACE=cortex ;
+
+StaticLibrary cortex_tip_manager.a :
+	TipManager.cpp
+	TipManagerImpl.cpp
+	TipWindow.cpp
+	TipView.cpp
+;
+
+DoCatalogs cortex_tip_manager.a :
+	x-vnd.Cortex.TipManager
+	:
+	TipWindow.cpp
+;

@@ -1,0 +1,48 @@
+1	russian	x-vnd.Haiku-PowerStatus	1085070685
+Run in window	PowerStatus		Запустить в окне
+Extended battery info	PowerStatus		Расширенная информация о батарее
+Show status icon	PowerStatus		Показать значок статуса
+Battery charging	PowerStatus		Батарея заряжается
+Design capacity low warning: 	PowerStatus		Уровень полного разряда: 
+The battery level is critical, please plug in the device immediately.	PowerStatus		Критический уровень заряда батареи, пожалуйста, подключите устройство к сети прямо сейчас.
+non-rechargeable	PowerStatus		неперезаряжаемая
+Last full charge: 	PowerStatus		Последняя полная зарядка: 
+ mV	PowerStatus		 мВ
+Current rate: 	PowerStatus		Текущее значение: 
+Show text label	PowerStatus		Показать текстовую метку
+Quit	PowerStatus		Выход
+Battery low	PowerStatus		Низкий заряд батареи
+Model number: 	PowerStatus		Номер модели: 
+Battery unused	PowerStatus		Батарея не используется
+Type: 	PowerStatus		Тип: 
+Damaged battery	PowerStatus		Поврежденная батарея
+You can run PowerStatus in a window or install it in the Deskbar.	PowerStatus		Вы можете запустить состояние электропитания в окне или установить его в Deskbar.
+ mAh	PowerStatus		 мАч
+Battery discharging	PowerStatus		Батарея разряжается
+Design voltage: 	PowerStatus		Штатное напряжение: 
+discharging	PowerStatus		разрядка
+rechargeable	PowerStatus		перезаряжаемая
+Battery info…	PowerStatus		Информация о батарее…
+Show time	PowerStatus		Показать время
+ mA	PowerStatus		 мА
+About…	PowerStatus		О программе…
+Serial number: 	PowerStatus		Серийный номер: 
+Battery critical	PowerStatus		Критический заряд батареи
+Capacity: 	PowerStatus		Емкость: 
+ mW	PowerStatus		 мВт
+No supported battery detected. PowerStatus cannot be used on your system.	PowerStatus		Поддерживаемые аккумуляторы не были найдены. PowerStatus невозможно использовать на этой системе.
+Show percent	PowerStatus		Показать в процентах
+Capacity granularity 1: 	PowerStatus		Детализация ёмкости 1: 
+The battery level is getting low, please plug in the device.	PowerStatus		Заряд батареи становится слишком низким, пожалуйста, подключите устройство к сети.
+Design capacity warning: 	PowerStatus		Уровень низкого заряда: 
+Capacity granularity 2: 	PowerStatus		Детализация ёмкости 2: 
+Too bad!	PowerStatus		Очень жаль!
+Technology: 	PowerStatus		Технология: 
+ mWh	PowerStatus		 мВтч
+PowerStatus	System name		Электропитание
+Design capacity: 	PowerStatus		Штатная емкость: 
+OEM info: 	PowerStatus		Изготовитель: 
+no battery	PowerStatus		без батареи
+Empty battery slot	PowerStatus		Пустой слот батареи
+Install in Deskbar	PowerStatus		Установить в Deskbar
+charging	PowerStatus		зарядка

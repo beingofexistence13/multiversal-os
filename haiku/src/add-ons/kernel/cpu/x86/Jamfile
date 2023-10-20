@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src add-ons kernel cpu x86 ;
+
+UsePrivateKernelHeaders ;
+
+KernelAddon generic_x86 :
+	generic_x86.cpp
+	amd.cpp
+	intel.cpp
+	via.cpp
+	;

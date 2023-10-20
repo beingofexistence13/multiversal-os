@@ -1,0 +1,28 @@
+WPA SUPPLICANT 2.9
+==================
+
+This directory contains a selected set of files from wpa_supplicant-2.9.
+Original source can be downloaded from:
+
+       https://w1.fi/wpa_supplicant/
+
+file = wpa_supplicant-2.9.tar.gz
+date = 7 Aug 2019
+size = 3231785
+sha1 = b784c0e5e56889c81d027757a4623659bf15f9a8
+
+A list of files and directories removed is in README.DELETED
+
+The following files have been patched:
+======================================
+
+	modified:   src/common/dhcp.h
+	modified:   src/crypto/crypto_openssl.c
+	modified:   src/l2_packet/l2_packet_freebsd.c
+	modified:   wpa_supplicant/main.c
+	modified:   wpa_supplicant/op_classes.c
+	modified:   wpa_supplicant/wpa_supplicant.c
+	modified:   wps/wps_upnp.c
+
+Note: modifications mostly taken from dports/security/wpa_supplicant/files/
+      (as of commit 13b53940+)

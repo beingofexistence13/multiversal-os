@@ -1,0 +1,19 @@
+BYACC 20221106
+==============
+
+Original source can be downloaded from:
+ftp://ftp.invisible-island.net/byacc
+
+file = byacc-20221106.tgz
+date = November 07, 2022
+size = 896951
+sha1 = a2febacda79b7d25bfb475a5e214d3d97ae548e7
+
+A list of deleted files is in README.DELETED.
+
+Use "git diff vendor/BYACC contrib/byacc" to see local modifications.
+
+When upgrading, remember to update usr.bin/byacc/config.h
+
+This source is used in:
+	usr.bin/yacc

@@ -1,0 +1,1299 @@
+/*
+ * Copyright 2007-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/support/SupportDefs.h	hrev54953
+ */
+
+
+/*!
+	\file SupportDefs.h
+	\ingroup support
+	\ingroup libbe
+	\brief Defines basic types and definitions for the Haiku API.
+*/
+
+
+/*!
+	\name Fixed-Size Integer Types
+*/
+
+
+//! @{
+
+
+/*!
+	\typedef typedef __haiku_int8 int8
+	\brief 1-byte signed integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_uint8 uint8
+	\brief 1-byte unsigned integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_int16 int16
+	\brief 2-bytes signed integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_uint16 uint16
+	\brief 2-bytes unsigned integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_int32 int32
+	\brief 4-bytes signed integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_uint32 uint32
+	\brief 4-bytes unsigned integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_int64 int64
+	\brief 8-bytes signed integer.
+*/
+
+
+/*!
+	\typedef typedef __haiku_uint64 uint64
+	\brief 8-bytes unsigned integer.
+*/
+
+
+//! @}
+
+
+/*!
+	\name Fixed-size Volatile Types
+*/
+
+
+//! @{
+
+
+/*!
+	\typedef typedef volatile int8 vint8
+	\brief 1-byte volatile signed integer.
+*/
+
+
+/*!
+	\typedef typedef volatile uint8 vuint8
+	\brief 1-byte volatile unsigned integer.
+*/
+
+
+/*!
+	\typedef typedef volatile int16 vint16
+	\brief 2-bytes volatile signed integer.
+*/
+
+
+/*!
+	\typedef typedef volatile uint16 vuint16
+	\brief 2-bytes volatile unsigned integer.
+*/
+
+
+/*!
+	\typedef typedef volatile int32 vint32
+	\brief 4-bytes volatile signed integer.
+*/
+
+
+/*!
+	\typedef typedef volatile uint32 vuint32
+	\brief 4-bytes volatile unsigned integer.
+*/
+
+
+/*!
+	\typedef typedef volatile int64 vint64
+	\brief 8-bytes volatile signed integer.
+*/
+
+
+/*!
+	\typedef typedef volatile uint64 vuint64
+	\brief 8-bytes volatile unsigned integer.
+*/
+
+
+//! @}
+
+
+/*!
+	\name Short-hand Volatile Type Names
+*/
+
+
+//! @{
+
+
+/*!
+	\typedef typedef volatile long vlong
+	\brief Volatile signed long.
+*/
+
+
+/*!
+	\typedef typedef volatile int vint
+	\brief Volatile signed int.
+*/
+
+
+/*!
+	\typedef typedef volatile short vshort
+	\brief Volatile signed short.
+*/
+
+
+/*!
+	\typedef typedef volatile char vchar
+	\brief Volatile signed char.
+*/
+
+
+/*!
+	\typedef typedef volatile unsigned long vulong
+	\brief Volatile unsigned long.
+*/
+
+
+/*!
+	\typedef typedef volatile unsigned int vuint
+	\brief Volatile unsigned int.
+*/
+
+
+/*!
+	\typedef typedef volatile unsigned short vushort
+	\brief Volatile unsigned short.
+*/
+
+
+/*!
+	\typedef typedef volatile unsigned char vuchar
+	\brief Volatile unsigned char.
+*/
+
+
+//! @}
+
+
+/*!
+	\name Character Type Formats
+*/
+
+
+//! @{
+
+
+/*!
+	\typedef typedef unsigned char uchar
+	\brief Unsigned 1-byte wide character.
+*/
+
+
+//! @}
+
+
+/*!
+	\name Descriptive Type Formats
+*/
+
+
+//! @{
+
+
+/*!
+	\typedef typedef int32 status_t
+	\brief Represents one of the status codes defined in Errors.h.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\typedef typedef int64 bigtime_t
+	\brief Represents time in microseconds.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\typedef typedef int64 nanotime_t
+	\brief Represents time in nanoseconds.
+*/
+
+
+/*!
+	\typedef typedef uint32 type_code
+	\brief Represents a certain type of data. See TypeConstants.h for
+	       possible values.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\typedef typedef uint32 perform_code
+	\brief Defined to support 'hidden' commands or extensions to classes.
+
+	The Haiku API has none of these.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\typedef typedef __haiku_phys_addr_t phys_addr_t
+	\brief Represents a physical address.
+
+	This has the length of 4 bytes on a 32 bit platform, and 8 bytes on a 64
+	bit platform.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\typedef typedef phys_addr_t phys_size_t
+	\brief Represents a size of physical memory.
+
+	This has the length of 4 bytes on a 32 bit platform, and 8 bytes on a 64
+	bit platform.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\typedef typedef __haiku_generic_addr_t generic_addr_t
+	\brief Represents a generic address.
+
+	A generic address is wide enough to store both physical and virtual
+	addresses.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\typedef typedef generic_addr_t generic_size_t
+	\brief Represents a size of generic memory.
+
+	A generic address is wide enough to store both physical and virtual
+	addresses.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Format strings for printf() and scanf() for integer types
+*/
+
+
+//! @{
+
+
+/*!
+	\def B_PRId8
+	\brief printf() constant for i8 as decimal
+*/
+
+
+/*!
+	\def B_PRIi8
+	\brief printf() constant for i8 as decimal
+*/
+
+
+/*!
+	\def B_PRId16
+	\brief printf() constant for i16 as decimal
+*/
+
+
+/*!
+	\def B_PRIi16
+	\brief printf() constant for i16 as decimal
+*/
+
+
+/*!
+	\def B_PRId32
+	\brief printf() constant for i32 as decimal
+*/
+
+
+/*!
+	\def B_PRIi32
+	\brief printf() constant for i32 as decimal
+*/
+
+
+/*!
+	\def B_PRId64
+	\brief printf() constant for i64 as decimal
+*/
+
+
+/*!
+	\def B_PRIi64
+	\brief printf() constant for i64 as decimal
+*/
+
+
+/*!
+	\def B_PRIu8
+	\brief printf() constant for u8 as decimal
+*/
+
+
+/*!
+	\def B_PRIo8
+	\brief printf() constant for u8 as octal
+*/
+
+
+/*!
+	\def B_PRIx8
+	\brief printf() constant for u8 as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIX8
+	\brief printf() constant for u8 as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIu16
+	\brief printf() constant for u16 as decimal
+*/
+
+
+/*!
+	\def B_PRIo16
+	\brief printf() constant for u16 as octal
+*/
+
+
+/*!
+	\def B_PRIx16
+	\brief printf() constant for u16 as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIX16
+	\brief printf() constant for u16 as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIu32
+	\brief printf() constant for u32 as decimal
+*/
+
+
+/*!
+	\def B_PRIo32
+	\brief printf() constant for u32 as octal
+*/
+
+
+/*!
+	\def B_PRIx32
+	\brief printf() constant for u32 as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIX32
+	\brief printf() constant for u32 as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIu64
+	\brief printf() constant for u64 as decimal
+*/
+
+
+/*!
+	\def B_PRIo64
+	\brief printf() constant for u64 as octal
+*/
+
+
+/*!
+	\def B_PRIx64
+	\brief printf() constant for u64 as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIX64
+	\brief printf() constant for u64 as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_SCNd8
+	\brief scanf() constant for i8 as decimal
+*/
+
+
+/*!
+	\def B_SCNi8
+	\brief scanf() constant for i8 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNd16
+	\brief scanf() constant for i16 as decimal
+*/
+
+
+/*!
+	\def B_SCNi16
+	\brief scanf() constant for i16 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNd32
+	\brief scanf() constant for i32 as decimal
+*/
+
+
+/*!
+	\def B_SCNi32
+	\brief scanf() constant for i32 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNd64
+	\brief scanf() constant for i64 as decimal
+*/
+
+
+/*!
+	\def B_SCNi64
+	\brief scanf() constant for i64 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNu8
+	\brief scanf() constant for u8 as decimal
+*/
+
+
+/*!
+	\def B_SCNo8
+	\brief scanf() constant for u8 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNx8
+	\brief scanf() constant for u8 as hexadecimal
+*/
+
+
+/*!
+	\def B_SCNu16
+	\brief scanf() constant for u16 as decimal
+*/
+
+
+/*!
+	\def B_SCNo16
+	\brief scanf() constant for u16 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNx16
+	\brief scanf() constant for u16 as hexadecimal
+*/
+
+
+/*!
+	\def B_SCNu32
+	\brief scanf() constant for u32 as decimal
+*/
+
+
+/*!
+	\def B_SCNo32
+	\brief scanf() constant for u32 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNx32
+	\brief scanf() constant for u32 as hexadecimal
+*/
+
+
+/*!
+	\def B_SCNu64
+	\brief scanf() constant for u64 as decimal
+*/
+
+
+/*!
+	\def B_SCNo64
+	\brief scanf() constant for u64 as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNx64
+	\brief scanf() constant for u64 as hexadecimal
+*/
+
+
+//! @}
+
+
+/*!
+	\name Format strings for several standard types
+*/
+
+
+//! @{
+
+
+/*!
+	\def B_PRIuSIZE
+	\brief printf() constant for size_t as decimal
+*/
+
+
+/*!
+	\def B_PRIoSIZE
+	\brief printf() constant for size_t as octal
+*/
+
+
+/*!
+	\def B_PRIxSIZE
+	\brief printf() constant for size_t as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIXSIZE
+	\brief printf() constant for size_t as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_SCNuSIZE
+	\brief scanf() constant for size_t as decimal
+*/
+
+
+/*!
+	\def B_SCNoSIZE
+	\brief scanf() constant for size_t as decimal, octal or hexadecimal
+
+*/
+
+
+/*!
+	\def B_SCNxSIZE
+	\brief scanf() constant for size_t as hexadecimal
+*/
+
+
+/*!
+	\def B_PRIdSSIZE
+	\brief printf() constant for ssize_t as decimal
+*/
+
+
+/*!
+	\def B_PRIiSSIZE
+	\brief printf() constant for ssize_t as decimal
+*/
+
+
+/*!
+	\def B_SCNdSSIZE
+	\brief scanf() constant for ssize_t as decimal
+*/
+
+
+/*!
+	\def B_SCNiSSIZE
+	\brief scanf() constant for ssize_t as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_PRIuADDR
+	\brief printf() constant for addr_t as decimal
+*/
+
+
+/*!
+	\def B_PRIoADDR
+	\brief printf() constant for addr_t as octal
+*/
+
+
+/*!
+	\def B_PRIxADDR
+	\brief printf() constant for addr_t as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIXADDR
+	\brief printf() constant for addr_t as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_SCNuADDR
+	\brief scanf() constant for addr_t as decimal
+*/
+
+
+/*!
+	\def B_SCNoADDR
+	\brief scanf() constant for addr_t as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNxADDR
+	\brief scanf() constant for addr_t as hexadecimal
+*/
+
+
+/*!
+	\def B_PRIuPHYSADDR
+	\brief printf() constant for phys_addr_t as decimal
+*/
+
+
+/*!
+	\def B_PRIoPHYSADDR
+	\brief printf() constant for phys_addr_t as octal
+*/
+
+
+/*!
+	\def B_PRIxPHYSADDR
+	\brief printf() constant for phys_addr_t as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIXPHYSADDR
+	\brief printf() constant for phys_addr_t as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_SCNuPHYSADDR
+	\brief scanf() constant for phys_addr_t as decimal
+*/
+
+
+/*!
+	\def B_SCNoPHYSADDR
+	\brief scanf() constant for phys_addr_t as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNxPHYSADDR
+	\brief scanf() constant for phys_addr_t as hexadecimal
+*/
+
+
+/*!
+	\def B_PRIuGENADDR
+	\brief printf() constant for generic_addr_t as decimal
+*/
+
+
+/*!
+	\def B_PRIoGENADDR
+	\brief printf() constant for generic_addr_t as octal
+*/
+
+
+/*!
+	\def B_PRIxGENADDR
+	\brief printf() constant for generic_addr_t as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_PRIXGENADDR
+	\brief printf() constant for generic_addr_t as uppercase hexadecimal
+*/
+
+
+/*!
+	\def B_SCNuGENADDR
+	\brief scanf() constant for generic_addr_t as decimal
+*/
+
+
+/*!
+	\def B_SCNoGENADDR
+	\brief scanf() constant for generic_addr_t as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNxGENADDR
+	\brief scanf() constant for generic_addr_t as hexadecimal
+*/
+
+
+/*!
+	\def B_PRIdOFF
+	\brief printf() constant for off_t as decimal
+*/
+
+
+/*!
+	\def B_PRIiOFF
+	\brief printf() constant for off_t as decimal
+*/
+
+
+/*!
+	\def B_PRIxOFF
+	\brief printf() constant for off_t as lowercase hexadecimal
+*/
+
+
+/*!
+	\def B_SCNdOFF
+	\brief scanf() constant for off_t as decimal
+*/
+
+
+/*!
+	\def B_SCNiOFF
+	\brief scanf() constant for off_t as decimal, octal or hexadecimal
+*/
+
+
+/*!
+	\def B_SCNxOFF
+	\brief scanf() constant for off_t as octal
+*/
+
+
+/*!
+	\def B_PRIdDEV
+	\brief printf() constant for dev_t as decimal
+*/
+
+
+/*!
+	\def B_PRIiDEV
+	\brief printf() constant for dev_t as decimal
+*/
+
+
+/*!
+	\def B_PRIdINO
+	\brief printf() constant for ino_t as decimal
+*/
+
+
+/*!
+	\def B_PRIiINO
+	\brief printf() constant for ino_t as decimal
+*/
+
+
+/*!
+	\def B_PRIdTIME
+	\brief printf() constant for time_t as decimal
+*/
+
+
+/*!
+	\def B_PRIiTIME
+	\brief printf() constant for time_t as decimal
+*/
+
+
+/*!
+	\def B_PRIdBIGTIME
+	\brief printf() constant for bigtime_t as decimal
+*/
+
+
+/*!
+	\def B_PRIiBIGTIME
+	\brief printf() constant for bigtime_t as decimal
+*/
+
+
+/*!
+	\def B_PRINTF_POINTER_WIDTH
+	\brief printf() argument for printed width of a pointer with the %p format
+		(minus 0x prefix).
+*/
+
+
+//! @}
+
+
+//////////////// Odds and ends
+
+
+/*!
+	\var const char* B_EMPTY_STRING
+	\brief Defines an empty string. Currently defined as the string "".
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\def min_c(a,b)
+	\brief Returns the minimum of the values a and b.
+
+	\note When including this header in a C file, use the C equivalent called
+	      \c min(a,b).
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\def max_c(a,b)
+	\brief Returns the maximum of values a and b.
+
+	\note When including this header in a C file, use the C equivalent called
+	      \c max(a,b).
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\def NULL
+	\brief Defines the constant \c NULL if it hasn't already been defined.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\def B_COUNT_OF(a)
+	\brief Count items in an array.
+
+	Set to (sizeof(a) / sizeof(a[0])).
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\addtogroup support_globals
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void atomic_set(int32* value, int32 newValue)
+	\brief Atomically set the variable \a value to \a newvalue.
+
+	This is a thread-safe way of performing the \c *value \c = \c newValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case. The variable must be naturally aligned.
+
+	\sa atomic_set64() for a version that works on \c long \c long.
+	\sa atomic_test_and_set()
+	\sa atomic_add()
+	\sa atomic_and()
+	\sa atomic_or(),
+	\sa atomic_get()
+
+	\since Haiku R1
+*/
+
+
+/*!	\fn int32 atomic_get_and_set(int32* value, int32 newValue)
+	\brief Atomically set the variable \a value to \a newvalue and return the
+	       old value.
+
+	This is a thread-safe way of performing the \c *value \c = \c newValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_get_and_set64() for a version that works on \c long \c long.
+	\sa atomic_set()
+	\sa atomic_test_and_set()
+	\sa atomic_add()
+	\sa atomic_and()
+	\sa atomic_or(),
+	\sa atomic_get()
+
+	\since Haiku R1
+*/
+
+
+/*!	\fn int32 atomic_test_and_set(int32* value, int32 newValue,
+		int32 testAgainst)
+	\brief Atomically set the variable \a value to \a newValue if the current
+	       value is \a testAgainst.
+
+	This is a thread-safe way of conditionally performing the \c *value \c +=
+	\c newValue operation. You should use these function when two or more
+	threads might access the variable simultaneously. You don't have to use
+	a semaphore or a mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_test_and_set64() for a version that works on \c long \c long.
+	\sa atomic_get_and_set()
+	\sa atomic_set()
+	\sa atomic_add()
+	\sa atomic_and()
+	\sa atomic_or()
+	\sa atomic_get()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int32 atomic_add(int32* value, int32 addValue)
+	\brief Atomically add the value of \a addValue to \a value.
+
+	This is a thread-safe way of performing the \c *value \c += \c addValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_add64() for a version that works on \c long \c long.
+	\sa atomic_get_and_set()
+	\sa atomic_set()
+	\sa atomic_test_and_set()
+	\sa atomic_and()
+	\sa atomic_or()
+	\sa atomic_get()
+
+	\since BeOS R3
+*/
+
+
+/*!	\fn int32 atomic_and(int32* value, int32 andValue)
+	\brief Atomically perform a bitwise AND operation of \a andValue to the
+         variable \a andValue.
+
+	This is a thread-safe way of performing the \c *value \c &amp;= \c andValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_and64() for a version that works on \c long \c long.
+	\sa atomic_get_and_set()
+	\sa atomic_set()
+	\sa atomic_test_and_set()
+	\sa atomic_add()
+	\sa atomic_or()
+	\sa atomic_get()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn int32 atomic_or(int32* value, int32 orValue)
+	\brief Atomically perform a bitwise OR operation of \a orValue to the
+	       variable \a andValue.
+
+	This is a thread-safe way of performing the \c *value \c |= \c orValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_or64() for a version that works on \c long \c long.
+	\sa atomic_get_and_set()
+	\sa atomic_set()
+	\sa atomic_test_and_set()
+	\sa atomic_add()
+	\sa atomic_and()
+	\sa atomic_get()
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn int32 atomic_get(int32* value)
+	\brief Atomically return the value of \c value.
+
+	This is a thread-safe way of reading the contents of the \c value
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case. The variable must be naturally aligned.
+
+	\return The original value of \c value.
+
+	\sa atomic_get64() for a version that works on \c long \c long.
+	\sa atomic_get_and_set()
+	\sa atomic_set()
+	\sa atomic_test_and_set()
+	\sa atomic_add()
+	\sa atomic_and()
+	\sa atomic_or()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void atomic_set64(int64* value, int64 newValue)
+	\brief Atomically set the variable \a value to \a newvalue.
+
+	This is a thread-safe way of performing the \c *value \c = \c newValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case. The variable must be naturally aligned.
+
+	\sa atomic_set() for a version that works on an \c int32.
+	\sa atomic_get_and_set64()
+	\sa atomic_test_and_set64()
+	\sa atomic_add64()
+	\sa atomic_and64()
+	\sa atomic_or64()
+	\sa atomic_get64()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int64 atomic_get_and_set64(int64* value, int64 newValue)
+	\brief Atomically set the variable \a value to \a newvalue and return
+	       the old value.
+
+	This is a thread-safe way of performing the \c *value \c = \c newValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_get_and_set() for a version that works on an \c int32.
+	\sa atomic_set64()
+	\sa atomic_test_and_set64()
+	\sa atomic_add64()
+	\sa atomic_and64()
+	\sa atomic_or64()
+	\sa atomic_get64()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int64 atomic_test_and_set64(int64* value, int64 newValue,
+		int64 testAgainst)
+	\brief Atomically set the variable \a value to \a newValue if the current
+		   value is \a testAgainst.
+
+	This is a thread-safe way of conditionally performing the \c *value
+	\c += \c newValue operation. You should use these function when two
+	or more threads might access the variable simultaneously. You don't
+	have to use a semaphore or a mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_test_and_set() for a version that works on an \c int32.
+	\sa atomic_get_and_set64()
+	\sa atomic_set64()
+	\sa atomic_add64()
+	\sa atomic_and64()
+	\sa atomic_or64()
+	\sa atomic_get64()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int64 atomic_add64(int64* value, int64 addValue)
+	\brief Atomically add the value of \a addValue to \a value.
+
+	This is a thread-safe way of performing the \c *value \c += \c addValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_add() for a version that works on an \c int32.
+	\sa atomic_get_and_set64()
+	\sa atomic_set64()
+	\sa atomic_test_and_set64()
+	\sa atomic_and64()
+	\sa atomic_or64()
+	\sa atomic_get64()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int64 atomic_and64(int64* value, int64 andValue)
+	\brief Atomically perform a bitwise AND operation of \a andValue to the
+	       variable \a andValue.
+
+	This is a thread-safe way of performing the \c *value \c &amp;= \c andValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_and() for a version that works on an \c int32.
+	\sa atomic_get_and_set64()
+	\sa atomic_set64()
+	\sa atomic_test_and_set64()
+	\sa atomic_add64()
+	\sa atomic_or64()
+	\sa atomic_get64()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int64 atomic_or64(int64* value, int64 orValue)
+	\brief Atomically perform a bitwise OR operation of \a orValue to the
+	       variable \a andValue.
+
+	This is a thread-safe way of performing the \c *value \c |= \c orValue
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case.
+
+	\return The original value of \c value.
+
+	\sa atomic_or() for a version that works on an \c int32.
+	\sa atomic_get_and_set64()
+	\sa atomic_set64()
+	\sa atomic_test_and_set64()
+	\sa atomic_add64()
+	\sa atomic_and64()
+	\sa atomic_get64()
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int64 atomic_get64(int64* value)
+	\brief Atomically return the value of \c value.
+
+	This is a thread-safe way of reading the contents of the \c value
+	operation. You should use these function when two or more threads might
+	access the variable simultaneously. You don't have to use a semaphore or a
+	mutex in this case. The variable must be naturally aligned.
+
+	\return The original value of \c value.
+
+	\sa atomic_get() for a version that works on an \c int32.
+	\sa atomic_get_and_set64()
+	\sa atomic_set64()
+	\sa atomic_test_and_set64()
+	\sa atomic_add64()
+	\sa atomic_and64()
+	\sa atomic_or64()
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\fn void* get_stack_frame(void)
+	\brief Internal function.
+	\internal
+*/
+
+
+/*!
+	\name Deprecated defines
+*/
+
+
+//! @{
+
+
+/*!
+	\def FALSE
+	\brief Obsolete. Use \c false.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\def TRUE
+	\brief Obsolete. Use \c true.
+
+	\since BeOS R3
+*/
+
+
+//! @}

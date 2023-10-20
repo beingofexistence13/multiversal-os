@@ -1,0 +1,63 @@
+SubDir HAIKU_TOP src system boot platform openfirmware ;
+
+UsePrivateHeaders [ FDirName graphics common ] ;
+
+{
+	local defines = _BOOT_PLATFORM_OPENFIRMWARE ;
+	defines = [ FDefines $(defines) ] ;
+	SubDirCcFlags $(defines) ;
+	SubDirC++Flags $(defines) -fno-rtti ;
+}
+
+local platform_src =
+	cpu.cpp
+	console.cpp
+	debug.cpp
+	devices.cpp
+	Handle.cpp
+	heap.cpp
+	menu.cpp
+	mmu.cpp
+	network.cpp
+	real_time_clock.cpp
+	start.cpp
+	support.cpp
+	video.cpp
+;
+
+local kernel_src =
+	openfirmware.cpp
+	openfirmware_devices.cpp
+;
+
+local vesa_src =
+	# VESA/DDC EDID
+	decode_edid.c
+	dump_edid.c
+;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup openfirmware ] {
+	on $(platform) {
+		BootMergeObject boot_platform_openfirmware.o :
+
+			$(platform_src)
+			$(kernel_src)
+			$(vesa_src)
+		:
+		:
+			boot_platform_generic_openfirmware.a
+			boot_platform_openfirmware_$(TARGET_ARCH).o
+		;
+
+#		SEARCH on [ FGristFiles $(genericPlatformSources) ]
+#			= [ FDirName $(HAIKU_TOP) src system boot platform generic ] ;
+		SEARCH on [ FGristFiles $(kernel_src) ]
+			= [ FDirName $(HAIKU_TOP) src system kernel platform openfirmware ] ;
+		SEARCH on [ FGristFiles $(vesa_src) ]
+			= [ FDirName $(HAIKU_TOP) src add-ons accelerants common ] ;
+
+	}
+}
+
+SubInclude HAIKU_TOP src system boot platform openfirmware arch ;

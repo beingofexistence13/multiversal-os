@@ -1,0 +1,203 @@
+.\" (c) Copyright 2010 by Matthew Dillon and Dima Ruban.  Permission to
+.\"    use and distribute based on the DragonFly copyright.
+.\"
+.Dd August 16, 2015
+.Dt POWERD 8
+.Os
+.Sh NAME
+.Nm powerd
+.Nd simple CPU performance control and battery life monitor
+.Sh SYNOPSIS
+.Nm
+.Op Fl cdeftQU
+.Op Fl b Ar backlight_percentage
+.Op Fl h Ar highest_freq
+.Op Fl l Ar lowest_freq
+.Op Fl p Ar hysteresis
+.Op Fl r Ar poll_time
+.Op Fl u Ar trigger_up
+.Op Fl B Ar minimum_battery_life
+.Op Fl H Ar lowtemp:hightemp
+.Op Fl L Ar battery_life_linger
+.Op Fl P Ar battery_poll_interval
+.Op Fl T Ar sample_time
+.Sh DESCRIPTION
+The
+.Nm
+daemon monitors the CPU load and automatically adjusts the CPU
+performance up or down accordingly.
+.Pp
+The
+.Nm
+also monitors battery life.
+If the battery life is low
+(less than or equal to 2% by default),
+.Nm
+will send audio alert immediately,
+and shutdown the machine after lingering for a little while
+(60 seconds by default).
+.Pp
+The options are as follows:
+.Bl -tag -width ".Fl p Ar hysteresis"
+.It Fl b Ar backlight_percentage
+Set backlight to the specified percentage,
+if AC line is not plugged in.
+.It Fl c
+Enable mwait C-state hint adjustment,
+if it is available.
+.It Fl d
+Debug option.
+Causes
+.Nm
+to not go to the background and prints some debug output to
+.Va stdout .
+.It Fl e
+Enable Intel Performance and Energy Bias Hint adjustment,
+if it is available.
+.It Fl f
+Disable CPU power domain frequency adjustment.
+CPU power domain frequency adjustment does not reduce CPU power consumption
+much
+(if any)
+on some of the modern Intel CPUs,
+when the CPU is idle.
+.It Fl h Ar highest_freq
+If CPU power domain frequency adjustment is enabled,
+then frequency of CPU power domains will not be set to a value higher
+than the specified limit (unit: MHz).
+.It Fl l Ar lowest_freq
+If CPU power domain frequency adjustment is enabled,
+then frequency of CPU power domains will not be set to a value lower
+than the specified limit (unit: MHz).
+.Pp
+NOTE: This option is ignored if powerd is in temperature management.
+Temperature management will lower the frequency in excess of this value
+if necessary (but usually doesn't have to).
+.Pp
+NOTE: If you are using a serial port at 115200 baud, it is recommended
+you not allow the frequency to drop below 1500 Mhz or you might lose
+characters.
+.It Fl p Ar hysteresis
+Percent of the upper limit to subtract as an hysteresis value to scale
+down to the min performance.
+The default is 10
+(meaning 10%).
+.It Fl r Ar poll_time
+Polling time in seconds.
+Default is 1.0.
+Setting this value lower will poll for load changes faster.
+For example,
+a workstation might want to use 0.2 or 0.4.
+.Nm
+can become unstable if you make this value too small.
+.It Fl t
+Turbo mode.
+Disables switching to turbo mode as maximum frequency completely.
+Switching to turbo mode as maximum frequency is enabled by default,
+if the CPU supports it.
+.It Fl u Ar trigger_up
+Per CPU load limit in percent to force maximum performance.
+The default is 25
+(meaning an instantanious load of 0.25 on a single cpu).
+The load is calculated over 3 polls.
+It is suggested that this value not be made lower than around 7.
+.It Fl B Ar minimum_battery_life
+If battery life is less than or equal to the specified value,
+the machine will start shutting down process.
+Default is 2
+(2% battery life left).
+.It Fl H Ar lowtemp:hightemp
+If the cpu temperature goes above lowtemp, powerd will begin ramping down
+the cpu frequency, reaching the lowest possible cpu frequency when the cpu
+temperature reaches hightemp.
+The default range is 75:85 (in degrees C), which tends to hold a laptop
+to ~80C under heavy load.
+Generally
+speaking, no machine cpu should be allowed to go above 80C even if the
+cpu can handle it, it means something is seriously wrong with your cooling
+system and you are stressing the cpu and mobo if you allow it.
+.Pp
+The default range starts at 75C.  Most desktops with reasonable cooling
+will not exceed this value so it makes for a good default.  Laptops can
+easily exceed 75C, sometimes reaching into the high 80's or even the 90's
+due to poor cooling and vendors tweaking their BIOS/fan-controls to the
+high side to do well in benchmarks.
+If you want your laptop to last, however, you really don't want it to get
+that hot.  For powerd to be able to stabilize, we recommend that a minimum
+of a 10C range be used.  So, for example, 70:80, or 75:85, and so forth.
+The user can change this range when starting powerd by adjusting
+.Va powerd_flags
+in
+.Pa /etc/rc.conf .
+.Pp
+This option can cause cpu fans to oscillate, and you may need to adjust the
+range if the oscillation is annoying to you.  The basic reason for this is
+that small changes to the cpu frequency can have a huge effect on system
+power consumption, causing the BIOS-controlled fan to react, which in turn
+also changes the temperature and causes powerd to react.
+.It Fl L Ar battery_life_linger
+If battery life is less than or equal to the configured value,
+shutting down the machine will be delayed by the specified value.
+During the delay,
+alert message will be logged to the console,
+and audio alert will be alarmed.
+If AC line is plugged in during this delay,
+shutting down process will be cancelled.
+Default is 60 seconds.
+.It Fl P Ar battery_poll_interval
+Poll the battery life at the specified interval.
+If 0 is specified,
+battery life monitoring will be disabled.
+Default is 5 seconds.
+.It Fl Q
+Don't alarm audio alert,
+if the battery life is low.
+.It Fl T Ar sample_time
+Total sample interval in seconds.
+Default is 8.0.
+This effects how quickly powerd ratchets down the performance
+and cpus on an idle machine.
+Longer times will ratchet down more slowly.
+For example,
+a workstation might want to use a value of 30.0.
+.It Fl U
+Don't adjust userland scheduler's usable CPUs.
+.El
+.Sh EXIT STATUS
+The
+.Nm
+utility will exit with a non-zero code if required sysctls are not
+present.
+If the system is unable to report temperature,
+.Nm
+will still run, but will not be able to do any temperature-based frequency
+management.
+.Pp
+If a new instance of
+.Nm
+is run from the command line, it will automatically kill any previous
+instance running in the background.
+The system operator does not have to manually kill or signal
+.Nm
+when restarting it, simply invoke a new copy.
+.Sh EXAMPLES
+The defaults work well for servers but a workstation user might want
+to use something like the following in their
+.Pa /etc/rc.conf
+to ratchet up the machine more quickly in response to spike loads
+(such as when you are browsing).
+.Pp
+.Li powerd_enable="YES"
+.Pp
+.Li powerd_flags="-u 7 -r 0.2 -T 60"
+.Sh SEE ALSO
+.Xr acpi 4 ,
+.Xr perfbias 4
+.Sh HISTORY
+The
+.Nm
+command first appeared in
+.Dx 2.7 .
+.Sh BUGS
+I'm shocked I tell you,
+shocked that there might be bugs in this program!

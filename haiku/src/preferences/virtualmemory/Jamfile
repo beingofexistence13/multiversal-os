@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src preferences virtualmemory ;
+
+UsePrivateHeaders shared system ;
+
+Preference VirtualMemory :
+	VirtualMemory.cpp
+	SettingsWindow.cpp
+	Settings.cpp
+	$(DRIVER_SETTINGS)
+
+	: be shared [ TargetLibstdc++ ] localestub
+	: VirtualMemory.rdef
+;
+
+if ! $(TARGET_PLATFORM_HAIKU_COMPATIBLE) {
+	SEARCH on [ FGristFiles driver_settings.c ] +=
+		[ FDirName $(HAIKU_TOP) src system libroot os ] ;
+}
+
+DoCatalogs VirtualMemory :
+    x-vnd.Haiku-VirtualMemory
+    :
+    VirtualMemory.cpp
+    SettingsWindow.cpp
+;

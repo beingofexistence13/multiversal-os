@@ -1,0 +1,10 @@
+#	$NetBSD: files.sifive,v 1.2 2022/12/03 09:40:56 skrll Exp $
+#
+# Configuration info for SiFive SoCs
+#
+#
+
+# FU540 Power Reset Clocking Interrupt (PRCI) subsystem
+device	prci
+attach	prci at fdt with fu540_prci
+file	arch/riscv/sifive/fu540_prci.c		fu540_prci

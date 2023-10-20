@@ -1,0 +1,39 @@
+GCC-8 Release
+==================
+
+Original source of man pages can be downloaded from:
+http://ftp.gnu.org/gnu/gcc
+
+file = gcc-8.3.0.tar.xz
+date = 22 Feb 2019
+size = 63694700
+sha1 = c27f4499dd263fe4fb01bcc5565917f3698583b2
+
+The source files are pulled directly from GCC's Subversion repository.
+See LAST_UPDATED for SVN or git revision
+
+The file README.DELETED contains a list of deleted files and directories.
+
+Configured with
+===============
+  --with-bugurl=http://bugs.dragonflybsd.org
+  --enable-languages=c,c++,lto --enable-threads=posix --enable-__cxa_atexit
+  --disable-libunwind-exceptions --disable-libstdcxx-pch
+  --disable-libquadmath --disable-libitm --enable-libstdcxx-dual-abi=yes
+  --enable-lto --enable-plugin --enable-gnu-indirect-function
+  --enable-checking=release --with-pkgversion="[DragonFly]"
+  --disable-nls --disable-multilib --disable-bootstrap
+  ac_cv_lib_dl_dlsym=no (dlsym explictly disabled in libgomp.so)
+
+The following files have been patched (* planned)
+=================================================
+  gcc/c-family/c-format.c		extra TZ "%+" format for strftime()
+  gcc/config/dragonfly.h		default dynamic linker path
+  gcc/gcc.c				default paths for base tools
+					add -save-temps=objects option
+  libbacktrace/fileline.c		KERN_PROC_PATHNAME addition
+  libgcc/gthr-posix.h			avoid weakref (ld.gold issue)
+  libssp/ssp.c				include <stdlib.h> for alloca()
+  libstdc++-v3/include/c_global/cstdio	remove throw() decorations
+  libstdc++-v3/include/c_global/cstdlib	remove throw() decorations
+  libstdc++-v3/include/c_global/cwchar	remove throw() decorations

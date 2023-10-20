@@ -1,0 +1,21 @@
+# This file defines the content of the bootstrap Haiku image.
+
+# import everything from the minimum image
+include [ FDirName $(HAIKU_BUILD_RULES_DIR) images definitions minimum ] ;
+
+# build and add the source package directory and a haikuports.config file
+CopyDirectoryToHaikuImage home haikuports
+	: [ BuildHaikuPortsSourcePackageDirectory ]
+	: input-source-packages : -x  *_source-*.hpkg : isTarget ;
+AddFilesToHaikuImage home haikuports
+	: [ BuildHaikuPortsRepositoryConfig /boot/home/haikuports ] ;
+
+# copy the haikuports format versions file
+local formatVersionsFile = <haikuports>FormatVersions ;
+SEARCH on $(formatVersionsFile) = $(HAIKU_PORTS) ;
+AddFilesToHaikuImage home haikuports : $(formatVersionsFile) ;
+
+# bootstrap daemon
+local bootstrapDaemon = <haiku-image>bootstrap_daemon.py ;
+SEARCH on $(bootstrapDaemon) = [ FDirName $(HAIKU_TOP) build scripts ] ;
+AddFilesToHaikuImage home config settings boot launch : $(bootstrapDaemon) ;

@@ -1,0 +1,72 @@
+SubDir HAIKU_TOP src servers input ;
+
+rule MkKeymapHeader
+{
+	local binary = $(1) ;
+	local source = $(2) ;
+
+	SEARCH on $(source) = $(SEARCH_SOURCE) ;
+	MakeLocateArch $(binary) ;
+
+	Depends $(binary) : $(source) <build>keymap ;
+	MkKeymapHeader1 $(binary) : <build>keymap $(source) ;
+	LocalClean clean : $(binary) ;
+}
+
+actions MkKeymapHeader1
+{
+	$(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR) \
+	$(2[1]) -o "$(1)" -h "$(2[2-])"
+}
+
+MkKeymapHeader [ FGristFiles SystemKeymap.h ] : US-International.keymap ;
+
+SEARCH on US-International.keymap += [ FDirName $(HAIKU_TOP) src data keymaps ] ;
+
+AddResources input_server : input_server.rdef ;
+
+UsePrivateHeaders app input interface shared storage support ;
+UsePrivateSystemHeaders ;
+
+if $(TARGET_PLATFORM) != haiku {
+	#APPSERVER_TEST_MODE = 1 ;
+	if $(APPSERVER_TEST_MODE) {
+		SubDirC++Flags -DAPPSERVER_TEST_MODE ;
+	} else {
+		SubDirC++Flags -DAPPSERVER_R5_COMM ;
+	}
+} else {
+	APPSERVER_TEST_MODE = 0 ;
+}
+
+Server input_server :
+	InputServer.cpp
+	InputServerDevice.cpp
+	InputServerFilter.cpp
+	InputServerMethod.cpp
+
+	AddOnManager.cpp
+
+	MouseSettings.cpp
+	KeyboardSettings.cpp
+
+	MethodReplicant.cpp
+	MethodMenuItem.cpp
+	BottomlineWindow.cpp
+
+	PathList.cpp
+
+	# storage
+	AddOnMonitor.cpp
+	AddOnMonitorHandler.cpp
+	NodeMonitorHandler.cpp
+
+	: be [ TargetLibstdc++ ]
+;
+
+Includes [ FGristFiles InputServer.cpp ] : [ FGristFiles SystemKeymap.h ] ;
+
+SEARCH on [ FGristFiles AddOnMonitor.cpp
+		AddOnMonitorHandler.cpp
+		NodeMonitorHandler.cpp ]
+	+= [ FDirName $(SUBDIR) $(DOTDOT) $(DOTDOT) kits storage ] ;

@@ -1,0 +1,104 @@
+local architecture = $(HAIKU_PACKAGING_ARCHS[1]) ;
+
+
+local haikuDevelPackage = haiku_devel.hpkg ;
+HaikuPackage $(haikuDevelPackage) ;
+
+local arch = $(TARGET_ARCH) ;
+
+# glue code
+AddFilesToPackage develop lib :
+	<src!system!glue!arch!$(arch)!$(architecture)>crti.o
+	<src!system!glue!arch!$(arch)!$(architecture)>crtn.o
+	<src!system!glue!$(architecture)>init_term_dyn.o
+	<src!system!glue!$(architecture)>start_dyn.o
+	<src!system!glue!$(architecture)>haiku_version_glue.o
+	;
+
+# kernel
+AddFilesToPackage develop lib : kernel.so : _KERNEL_ ;
+
+# additional libraries
+local developmentLibs =
+	<revisioned>libroot_debug.so
+	;
+
+AddFilesToPackage lib : $(developmentLibs) ;
+
+# library symlinks
+local lib ;
+for lib in [ HaikuImageGetSystemLibs ] $(developmentLibs) {
+	AddSymlinkToPackage develop lib : ../../lib $(lib:BS) ;
+	local abiVersion = [ on $(lib) return $(HAIKU_LIB_ABI_VERSION) ] ;
+	if $(abiVersion) {
+		local abiVersionedLib = $(lib:BS).$(abiVersion) ;
+		AddSymlinkToPackage develop lib
+			: ../../lib $(abiVersionedLib) ;
+	}
+}
+
+# static libraries
+AddFilesToPackage develop lib :
+	libc.a libcolumnlistview.a
+	<$(architecture)>liblocalestub.a
+	libm.a libnetservices.a
+	libpthread.a libprint.a libprintutils.a
+	<$(architecture)>libshared.a ;
+
+# libnetservices2.a
+if $(HAIKU_CC_IS_LEGACY_GCC_$(architecture)) = 0 {
+	# Modern C++ only; skip on gcc2
+	AddFilesToPackage develop lib :
+		<$(architecture)>libnetservices2.a ;
+}
+
+# the POSIX error code mapper library
+AddFilesToPackage develop lib : libposix_error_mapper.a ;
+
+# ABI independent stuff
+
+# directory attributes
+AddDirectoryToPackage develop : system-develop.rdef ;
+
+
+# headers
+AddHeaderDirectoryToPackage config ;
+AddHeaderDirectoryToPackage glibc ;
+AddHeaderDirectoryToPackage libs alm ;
+AddHeaderDirectoryToPackage libs glut GL ;
+AddHeaderDirectoryToPackage os ;
+AddHeaderDirectoryToPackage posix ;
+
+# private headers
+AddHeaderDirectoryToPackage private ;
+CopyDirectoryToPackage develop headers private libs compat
+	: [ FDirName $(HAIKU_TOP) src libs compat freebsd_network ]
+	: : -x *.c -x *.cpp -x *.awk -x Jamfile -x miidevs -x usbdevs ;
+CopyDirectoryToPackage develop headers private libs compat
+	: [ FDirName $(HAIKU_TOP) src libs compat freebsd_wlan ]
+	: : -x *.c -x Jamfile ;
+
+# create be -> os symlink for now
+AddSymlinkToPackage develop headers : os : be ;
+
+# BSD and GNU compatibility headers
+AddHeaderDirectoryToPackage compatibility bsd : bsd ;
+AddHeaderDirectoryToPackage compatibility gnu : gnu ;
+
+# cpp headers
+if $(HAIKU_CC_IS_LEGACY_GCC_$(architecture)) = 1 {
+	# GCC 2 only -- for GCC 4 they come with the gcc package
+	CopyDirectoryToPackage develop headers c++
+		: [ FDirName $(HAIKU_TOP) headers cpp ] : 2.95.3 ;
+}
+
+
+# Deskbar menu symlinks
+AddSymlinkToPackage data deskbar menu Applications
+	: ../../../../apps/Debugger : Debugger ;
+
+# Debugging tools
+SEARCH on leak_analyser.sh = [ FDirName $(HAIKU_TOP) src bin ] ;
+AddFilesToPackage bin : leak_analyser.sh ;
+
+BuildHaikuPackage $(haikuDevelPackage) : haiku_devel ;

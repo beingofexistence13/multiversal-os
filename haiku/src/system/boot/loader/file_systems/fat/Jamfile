@@ -1,0 +1,20 @@
+SubDir HAIKU_TOP src system boot loader file_systems fat ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders shared storage ;
+
+SubDirC++Flags -fno-rtti ;
+
+local platform ;
+for platform in [ MultiBootSubDirSetup ] {
+	on $(platform) {
+		BootStaticLibrary [ MultiBootGristFiles boot_fatfs ] :
+			fatfs.cpp
+			Volume.cpp
+			CachedBlock.cpp
+			Directory.cpp
+			File.cpp
+			Stream.cpp
+		;
+	}
+}

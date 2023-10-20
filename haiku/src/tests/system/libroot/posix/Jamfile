@@ -1,0 +1,96 @@
+SubDir HAIKU_TOP src tests system libroot posix ;
+
+UsePrivateHeaders libroot system ;
+SubDirSysHdrs $(HAIKU_TOP) headers compatibility bsd ;
+SubDirSysHdrs $(HAIKU_TOP) headers compatibility gnu ;
+
+# filter warnings about strftime()-formats in locale_test
+TARGET_WARNING_C++FLAGS_$(TARGET_PACKAGING_ARCH)
+	on [ FGristFiles locale_test.o ] += -Wno-format ;
+
+# POSIX/libc tests
+SimpleTest abort_test : abort_test.cpp ;
+SimpleTest SyslogTest : SyslogTest.cpp ;
+SimpleTest brk_test : brk_test.c ;
+SimpleTest calloc_test : calloc_test.c ;
+SimpleTest <test>chmod : chmod.cpp ;
+SimpleTest clearenv : clearenv.cpp ;
+SimpleTest dirent_test : dirent_test.cpp ;
+SimpleTest fifo_test : fifo_test.cpp ;
+SimpleTest flock_test : flock_test.cpp ;
+SimpleTest fseek_test : fseek_test.cpp ;
+SimpleTest getsubopt_test : getsubopt_test.cpp ;
+SimpleTest locale_test : locale_test.cpp ;
+SimpleTest memalign_test : memalign_test.cpp : [ TargetLibsupc++ ] ;
+SimpleTest mprotect_test : mprotect_test.cpp ;
+SimpleTest pthread_signal_test : pthread_signal_test.cpp ;
+SimpleTest realtime_sem_test1 : realtime_sem_test1.cpp ;
+SimpleTest seek_and_write_test : seek_and_write_test.cpp ;
+SimpleTest setpgid_test : setpgid_test.cpp ;
+SimpleTest setjmp_test : setjmp_test.c ;
+if $(TARGET_ARCH) = x86 {
+	SimpleTest setjmp_test2 : setjmp_test2.S ;
+}
+SimpleTest signal_in_allocator_test : signal_in_allocator_test.cpp ;
+SimpleTest signal_in_allocator_test2 : signal_in_allocator_test2.cpp ;
+SimpleTest signal_test : signal_test.cpp ;
+SimpleTest sigsetjmp_test : sigsetjmp_test.c ;
+SimpleTest test_time : test_time.c ;
+#SimpleTest tls_concurrency_test : tls_concurrency_test.cpp ;
+SimpleTest tst-mktime : tst-mktime.c ;
+SimpleTest <test>truncate : truncate.cpp ;
+SimpleTest init_rld_after_fork_test : init_rld_after_fork_test.cpp ;
+SimpleTest user_thread_fork_test : user_thread_fork_test.cpp ;
+SimpleTest pthread_barrier_test : pthread_barrier_test.cpp ;
+SimpleTest posix_spawn_test : posix_spawn_test.cpp ;
+SimpleTest posix_spawn_redir_test : posix_spawn_redir_test.c ;
+SimpleTest posix_spawn_redir_err : posix_spawn_redir_err.c ;
+SimpleTest posix_spawn_pipe_test : posix_spawn_pipe_test.c ;
+SimpleTest posix_spawn_pipe_err : posix_spawn_pipe_err.c ;
+SimpleTest pthread_attr_stack_test : pthread_attr_stack_test.cpp ;
+SimpleTest thread_local_test : thread_local_test.cpp : [ TargetLibstdc++ ] ;
+
+# XSI tests
+SimpleTest xsi_msg_queue_test1 : xsi_msg_queue_test1.cpp ;
+SimpleTest xsi_sem_test1 : xsi_sem_test1.cpp ;
+
+# wide character tests
+SimpleTest fwide_test : fwide_test.c ;
+SimpleTest gnulib-test-btowc : gnulib-test-btowc.c ;
+SimpleTest gnulib-test-mbrtowc : gnulib-test-mbrtowc.c ;
+#SimpleTest gnulib-test-mbsnrtowcs : gnulib-test-mbsnrtowcs.c ;
+SimpleTest gnulib-test-mbsrtowcs : gnulib-test-mbsrtowcs.c ;
+SimpleTest gnulib-test-wcrtomb : gnulib-test-wcrtomb.c ;
+#SimpleTest gnulib-test-wcsnrtombs : gnulib-test-wcsnrtombs.c ;
+SimpleTest gnulib-test-wcsrtombs : gnulib-test-wcsrtombs.c ;
+SimpleTest mbtest : mbtest.c ;
+SimpleTest testmb : testmb.c ;
+SimpleTest tst-btowc : tst-btowc.c ;
+SimpleTest tst-fgetws : tst-fgetws.c ;
+SimpleTest tst-getwc : tst-getwc.c ;
+SimpleTest tst-mbrtowc : tst-mbrtowc.c ;
+SimpleTest tst-swprintf : tst-swprintf.c ;
+SimpleTest tst-swscanf : tst-swscanf.c ;
+SimpleTest tst-swscanf2 : tst-swscanf2.c ;
+SimpleTest tst-ungetwc1 : tst-ungetwc1.c ;
+SimpleTest tst-ungetwc2 : tst-ungetwc2.c ;
+SimpleTest tst-wcrtomb : tst-wcrtomb.c ;
+SimpleTest tst-wcsnlen : tst-wcsnlen.c ;
+SimpleTest tst-wcstof : tst-wcstof.c ;
+SimpleTest tst-wprintf : tst-wprintf.c ;
+SimpleTest tst-wprintf2 : tst-wprintf2.c ;
+SimpleTest tst-wscanf : tst-wscanf.c ;
+SimpleTest test_wcfuncs : test_wcfuncs.c ;
+SimpleTest test_wctype : test_wctype.c ;
+SimpleTest wcs_test : wcs_test.cpp ;
+
+UnitTestLib librootposixtest.so :
+	LibRootPosix.cpp
+
+	CryptTest.cpp
+
+	: be libgnu.so [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+;
+
+SubInclude HAIKU_TOP src tests system libroot posix math ;
+SubInclude HAIKU_TOP src tests system libroot posix string ;

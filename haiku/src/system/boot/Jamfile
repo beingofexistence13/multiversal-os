@@ -1,0 +1,464 @@
+SubDir HAIKU_TOP src system boot ;
+
+UsePrivateHeaders [ FDirName libroot locale ] ;
+
+rule BuildOpenFirmwareLoader {
+	local haikuLoader = $(1) ;
+	local bootLoader = $(2) ;
+
+	Depends $(haikuLoader) : $(bootLoader) ;
+	MakeLocateDebug $(haikuLoader) ;
+
+	switch $(TARGET_ARCH) {
+		case ppc :
+			BuildCoffLoader $(haikuLoader) : $(bootLoader) ;
+		case sparc :
+			BuildAoutLoader $(haikuLoader) : $(bootLoader) ;
+		case * :
+			Exit "Currently unsupported arch:" $(TARGET_ARCH) ;
+	}
+}
+
+
+#
+# A.out haiku_loader creation
+#
+rule BuildAoutLoader {
+	local haikuLoader = $(1) ;
+	local bootLoader = $(2) ;
+
+	Depends $(haikuLoader) : $(bootLoader) ;
+	MakeLocateDebug $(haikuLoader) ;
+
+	ELF2AOUT on $(haikuLoader) = <build>elf2aout ;
+	Depends $(haikuLoader) : <build>elf2aout ;
+}
+
+actions BuildAoutLoader bind ELF2AOUT {
+	$(RM) -f $(1)
+	$(HOST_ADD_BUILD_COMPATIBILITY_LIB_DIR) \
+	$(ELF2AOUT) -o $(1) $(2)
+}
+
+
+#
+# Coff haiku_loader creation
+#
+rule BuildCoffLoader {
+	local coffLoader = $(1) ;
+	local bootLoader = $(2) ;
+	switch $(TARGET_ARCH) {
+		case ppc :
+			COFF_FORMAT on $(coffLoader) = xcoff-powermac ;
+		case * :
+			Exit "Currently unsupported coff arch:" $(TARGET_ARCH) ;
+	}
+	HACK_COFF on $(coffLoader) = <build>hack-coff ;
+
+	Depends $(coffLoader) : <build>hack-coff ;
+}
+
+actions BuildCoffLoader bind HACK_COFF {
+	$(RM) -f $(1)
+	# get the address of the COFF entry
+	$(TARGET_OBJCOPY_$(TARGET_KERNEL_ARCH)) -O symbolsrec $(2) $(2).syms
+	EP=`grep _coff_start $(2).syms | tr -d '\r' | cut -d'$' -f2`
+	$(RM) -f $(2).syms
+	# copy to XCOFF format and patch the entry point
+	$(TARGET_OBJCOPY_$(TARGET_KERNEL_ARCH)) -O $(COFF_FORMAT) --set-start="0x${EP}" $(2) $(1)
+	#$(CP) $(2) $(1)
+	# fill-in some fields objcopy missed
+	$(HACK_COFF) $(1)
+}
+
+
+#
+# BIOS haiku_loader creation
+#
+rule BuildBiosLoader {
+	local haikuLoader = $(1) ;
+	local bootLoader = $(2) ;
+
+	Depends $(haikuLoader) : $(bootLoader) ;
+	MakeLocateDebug $(haikuLoader) ;
+
+	on $(1) ResAttr $(1) : $(RESFILES) : false ;
+	if ! [ on $(1) return $(DONT_USE_BEOS_RULES) ] {
+		SetType $(1) ;
+		MimeSet $(1) ;
+	}
+}
+
+actions BuildBiosLoader {
+	$(RM) -f $(1)
+	$(TARGET_OBJCOPY_$(TARGET_KERNEL_ARCH)) -O binary $(2) $(1)
+}
+
+
+#
+# EFI loader creation
+#
+rule BuildEFILoader {
+	local efiLoader = $(1) ;
+	local bootLoader = $(2) ;
+
+	Depends $(efiLoader) : $(bootLoader) ;
+
+	switch $(TARGET_ARCH) {
+		case x86 :
+			OUTPUT_TARGET on $(efiLoader) = pei-i386 ;
+		case x86_64 :
+			OUTPUT_TARGET on $(efiLoader) = pei-x86-64 ;
+		case arm :
+			OUTPUT_TARGET on $(efiLoader) = binary ;
+		case arm64 :
+			OUTPUT_TARGET on $(efiLoader) = binary ;
+		case riscv64 :
+			OUTPUT_TARGET on $(efiLoader) = binary ;
+		case * :
+			Exit "Currently unsupported arch:" $(TARGET_ARCH) ;
+	}
+
+	MakeLocateDebug $(efiLoader) ;
+}
+
+actions BuildEFILoader
+{
+	$(RM) -f $(1)
+	if [ "$(OUTPUT_TARGET)" = "binary" ]; then
+		# no bfd support, fake efi Pe header
+		$(TARGET_OBJCOPY_$(TARGET_KERNEL_ARCH)) -j .text -j .sdata -j .data \
+			-j .dynamic -j .dynsym -j .rel* -j .rela* -j .reloc -j .dynstr \
+			-j _haiku_revision \
+			--output-target=$(OUTPUT_TARGET) $(2) $(1)
+	else
+		# bfd supports pe + efi for arch
+		$(TARGET_OBJCOPY_$(TARGET_KERNEL_ARCH)) -j .text -j .sdata -j .data \
+			-j .dynamic -j .dynsym -j .rel* -j .rela* -j .reloc -j .dynstr \
+			-j _haiku_revision \
+			--output-target=$(OUTPUT_TARGET) \
+			--subsystem=efi-app $(2) $(1)
+	fi
+}
+
+#
+# Sign our EFI Bootloader if a key has been provided
+# SignEFILoader <output> : <input> : <public_cert_file> : <private_key_file> ;
+#
+rule SignEFILoader
+{
+	local signedEFILoader = $(1) ;
+	local unsignedEFILoader = $(2) ;
+	local publicCert = $(3) ;
+	local privateKey = $(4) ;
+
+	Depends $(signedEFILoader) : $(unsignedEFILoader) ;
+
+	DB_CERT_FILE on $(signedEFILoader) = $(publicCert) ;
+	DB_KEY_FILE on $(signedEFILoader) = $(privateKey) ;
+}
+
+actions SignEFILoader
+{
+	$(RM) -f $(1)
+	echo "Signing EFI bootloader..."
+	sbsign --key $(DB_KEY_FILE) --cert $(DB_CERT_FILE) --output $(1) $(2)
+}
+
+#
+# Verify our EFI bootloader has been properly signed
+# VerifyEFILoader <loader> : <cert>
+#
+actions VerifyEFILoader
+{
+	sbverify --cert $(2) $(1)
+}
+
+
+#
+# U-boot image creation
+#
+rule BuildUImage image : data : args
+{
+    Depends $(image) : $(data) ;
+    LocalClean clean : $(image) ;
+    MKIMAGE_ARGS on $(image) = $(args) ;
+    colon on $(image) = ":" ;
+    local files = $(data:G=) ;
+    BuildUImage1 $(image) : $(data) ;
+}
+
+actions BuildUImage1
+{
+    mkimage $(MKIMAGE_ARGS) -d $(>:J=$(colon)) $(<)
+}
+
+#
+# Given a txt, generate a binary u-boot script
+#
+rule BuildUImageScript script : source
+{
+	Depends $(script) : $(source) ;
+	LocalClean clean : $(script) ;
+	SCRIPTNAME on $(script) = $(script) ;
+	FAKEOS on $(script) = "linux" ;
+	ARCH on $(script) = $(TARGET_ARCH) ;
+
+	if $(TARGET_ARCH) = "riscv64" || $(TARGET_ARCH) = "riscv32" {
+		ARCH on $(script) = "riscv" ;
+	}
+
+	BuildUImageScript1 $(script) : $(source) ;
+}
+
+actions BuildUImageScript1
+{
+	$(RM) -f $(1)
+	mkimage -A $(ARCH) -O $(FAKEOS) -T script -C none -n $(SCRIPTNAME) \
+		-d $(2) $(1)
+}
+
+# the bootsector on haiku_loader.amiga_m68k must be checksummed
+rule ChecksumAmigaLoader
+{
+	local haikuLoader = $(1) ;
+	local checksummer = <build>fixup_amiga_boot_checksum ;
+
+	Depends $(haikuLoader) : $(checksummer) ;
+
+	TARGET_CHECKSUM on $(haikuLoader) = $(checksummer) ;
+}
+
+actions ChecksumAmigaLoader bind TARGET_CHECKSUM
+{
+	$(TARGET_CHECKSUM) $(1)
+}
+
+# the bootsector on haiku_loader.atari_m68k must be checksummed
+rule ChecksumAtariLoader
+{
+	local haikuLoader = $(1) ;
+	local checksummer = <build>fixup_tos_boot_checksum ;
+
+	Depends $(haikuLoader) : $(checksummer) ;
+
+	TARGET_CHECKSUM on $(haikuLoader) = $(checksummer) ;
+}
+
+actions ChecksumAtariLoader bind TARGET_CHECKSUM {
+	$(TARGET_CHECKSUM) $(1)
+}
+
+
+
+# atari_m68k: AUTO folder PRG target
+# based on KernelLd
+rule AtariBootPrgLd
+{
+	# AtariBootPrgLd <name> : <objs> : <linkerscript> : <args> ;
+
+	LINK on $(1) = $(TARGET_LD_$(TARGET_KERNEL_ARCH)) ;
+
+	LINKFLAGS on $(1) = $(4) ;
+	if $(3) { LINKFLAGS on $(1) += --script=$(3) ; }
+
+	# Remove any preset LINKLIBS
+	LINKLIBS on $(1) = ;
+
+	# TODO: Do we really want to invoke SetupKernel here? The objects should
+	# have been compiled with KernelObjects anyway, so we're doing that twice.
+	SetupKernel $(2) ;
+
+	# Show that we depend on the libraries we need
+	LocalClean clean : $(1) ;
+	LocalDepends all : $(1) ;
+	Depends $(1) : $(2) ;
+
+	MakeLocateDebug $(1) ;
+
+}
+
+actions AtariBootPrgLd
+{
+	$(LINK) $(LINKFLAGS) -o "$(1)" "$(2)" $(LINKLIBS) ;
+}
+
+
+local extraSources = ;
+if $(TARGET_CC_IS_LEGACY_GCC_$(TARGET_KERNEL_ARCH)) = 1 {
+	extraSources += atomic.S ;
+}
+
+for platform in [ MultiBootSubDirSetup ] {
+	on $(platform) {
+		if $(TARGET_ARCH) = x86_64 && $(TARGET_BOOT_PLATFORM) = efi {
+			SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) libroot os arch
+								x86_64 ] ;
+		} else {
+			SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) libroot os arch
+									$(TARGET_KERNEL_ARCH_DIR) ] ;
+		}
+
+		SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) libroot posix string ] ;
+		SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) libroot posix stdlib ] ;
+		SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) libroot posix locale ] ;
+		SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) kernel lib ] ;
+
+		BootMergeObject boot_libroot_$(platform:G=).o :
+			abs.c
+			ctype_loc.cpp
+			ctype_l.cpp
+			ctype.cpp
+			LocaleData.cpp
+			qsort.c
+			kernel_vsprintf.cpp
+			memchr.c
+			memcmp.c
+			memmove.c
+			strdup.cpp
+			strndup.cpp
+			strlen.cpp
+			strnlen.cpp
+			strcmp.c
+			strcasecmp.c
+			strncmp.c
+			strcat.c
+			strcpy.c
+			strerror.c
+			strlcat.c
+			strlcpy.c
+			strchr.c
+			strrchr.c
+			strtol.c
+			strtoul.c
+			$(extraSources)
+		;
+
+		AddResources haiku_loader.$(TARGET_BOOT_PLATFORM) : boot_loader.rdef ;
+
+		local archGrist = [ FGrist src system boot arch $(TARGET_KERNEL_ARCH_DIR) $(platform:G=) ] ;
+		local archObject = boot_arch_$(TARGET_KERNEL_ARCH).o ;
+		local ldflags = $(HAIKU_BOOT_LDFLAGS) $(HAIKU_BOOT_$(platform:G=:U)_LDFLAGS) ;
+		ldflags ?= $(TARGET_BOOT_LDFLAGS) ;
+
+		# needed by tarfs, packagefs, and video_splash.cpp
+		local supportLibs = [ FGrist boot_zlib.a ] ;
+		if [ FIsBuildFeatureEnabled zstd ] {
+			supportLibs += boot_zstd.a ;
+		}
+
+		# efi loader needs to be shared.
+		if $(TARGET_BOOT_PLATFORM) = efi {
+			ldflags += -shared ;
+			ldflags += -Map=$(TARGET_DEBUG_$(DEBUG)_LOCATE_TARGET)/efi.map ;
+		}
+
+		if $(TARGET_BOOT_PLATFORM) = riscv {
+			ldflags += -z notext ;
+		}
+
+		BootLd boot_loader_$(platform:G=) :
+			boot_platform_$(platform:G=).o
+			$(archObject:G=$(archGrist))
+			[ MultiBootGristFiles
+				boot_loader.a
+				boot_net.a
+				boot_partitions.a
+
+				# file systems
+				boot_bfs.a
+				boot_amiga_ffs.a
+				boot_tarfs.a
+				boot_fatfs.a
+				boot_packagefs.a
+
+				boot_loader.a
+					# a second time, so undefined references in the file systems can be
+					# resolved
+				$(supportLibs)
+			]
+
+			# libroot functions needed by the stage2 boot loader
+			boot_libroot_$(platform:G=).o
+
+			: $(HAIKU_TOP)/src/system/ldscripts/$(TARGET_ARCH)/boot_loader_$(platform:G=).ld
+			: $(ldflags)
+		;
+
+		MakeLocate <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) : [ FDirName $(TARGET_DEBUG_$(DEBUG)_LOCATE_TARGET) revisioned ] ;
+		CopySetHaikuRevision <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) : boot_loader_$(TARGET_BOOT_PLATFORM) ;
+
+		switch $(TARGET_BOOT_PLATFORM) {
+			case efi :
+				if $(HAIKU_BOOT_$(platform:G=:U)_PRIVATE_KEYFILE) {
+					BuildEFILoader haiku_loader.$(TARGET_BOOT_PLATFORM).unsigned
+						: <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+					SignEFILoader haiku_loader.$(TARGET_BOOT_PLATFORM)
+						: haiku_loader.$(TARGET_BOOT_PLATFORM).unsigned
+						: [ FDirName $(HAIKU_TOP) data boot efi keys DB.crt ]
+						: $(HAIKU_BOOT_$(platform:G=:U)_PRIVATE_KEYFILE) ;
+					VerifyEFILoader haiku_loader.$(TARGET_BOOT_PLATFORM)
+						: [ FDirName $(HAIKU_TOP) data boot efi keys DB.crt ] ;
+				} else {
+					BuildEFILoader haiku_loader.$(TARGET_BOOT_PLATFORM)
+						: <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+				}
+
+				if $(TARGET_ARCH) = arm || $(TARGET_ARCH) = riscv64 {
+					# These EFI platforms need u-boot to get them going
+					BuildUImageScript boot.scr
+						: [ FDirName $(HAIKU_TOP) data boot u-boot boot-$(TARGET_ARCH).scr.txt ] ;
+				}
+
+			case bios_ia32 :
+				BuildBiosLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+
+			case pxe_ia32 :
+				BuildBiosLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+
+			case openfirmware :
+				BuildOpenFirmwareLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+
+			case u-boot :
+				local loader_entry = `printf \"obase=16;ibase=16;10 + %x\\n\" $(HAIKU_BOOT_LOADER_BASE)|bc` ;
+				BuildUImage haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM)
+					:
+					-A $(TARGET_ARCH) -O linux -T kernel -C none
+					-a $(HAIKU_BOOT_LOADER_BASE) -e $(loader_entry)
+					-n 'Haiku $(TARGET_KERNEL_ARCH) loader' ;
+				BuildUImage haiku-floppyboot.tgz.$(TARGET_BOOT_PLATFORM) : haiku-floppyboot.tgz :
+					-A $(TARGET_ARCH) -O linux -T ramdisk -C none
+					-n 'Haiku $(TARGET_KERNEL_ARCH) floppyboot' ;
+				BuildUImageScript boot.scr
+					: [ FDirName $(HAIKU_TOP) data boot u-boot boot-$(TARGET_ARCH).scr.txt ] ;
+
+			case amiga_m68k :
+				BuildBiosLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+				ChecksumAmigaLoader haiku_loader.$(TARGET_BOOT_PLATFORM) ;
+
+			case atari_m68k :
+				BuildBiosLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+				ChecksumAtariLoader haiku_loader.$(TARGET_BOOT_PLATFORM) ;
+
+				AtariBootPrgLd haiku.prg :
+					<revisioned>boot_loader_$(TARGET_BOOT_PLATFORM)
+					: $(HAIKU_TOP)/src/system/ldscripts/$(TARGET_ARCH)/boot_prg_$(TARGET_BOOT_PLATFORM).ld
+					: -Bstatic
+				;
+
+			case riscv :
+				BuildBiosLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+
+			case next_m68k :
+				BuildAoutLoader haiku_loader.$(TARGET_BOOT_PLATFORM) : <revisioned>boot_loader_$(TARGET_BOOT_PLATFORM) ;
+
+			case * :
+				Exit "Currently unsupported haiku_loader:" $(TARGET_BOOT_PLATFORM) ;
+		}
+	}
+}
+
+SubInclude HAIKU_TOP src system boot arch $(TARGET_KERNEL_ARCH_DIR) ;
+SubInclude HAIKU_TOP src system boot libs ;
+SubInclude HAIKU_TOP src system boot loader ;
+SubInclude HAIKU_TOP src system boot platform ;

@@ -1,0 +1,250 @@
+.\"	$OpenBSD: ahci.4,v 1.7 2008/04/19 01:18:39 djm Exp $
+.\"
+.\" Copyright (c) 2006 David Gwynne <dlg@openbsd.org>
+.\" Copyright (c) 2009-2016 Matthew Dillon <dillon@backplane.com>
+.\"
+.\" Permission to use, copy, modify, and distribute this software for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" TORTIOUS ACTION, ARISING OUT OF
+.\" PERFORMANCE OF THIS SOFTWARE.
+.\"
+.\" Copyright (c) 2016 The DragonFly Project.  All rights reserved.
+.\"
+.\" This code is derived from software contributed to The DragonFly Project
+.\" by Matthew Dillon <dillon@backplane.com>
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in
+.\"    the documentation and/or other materials provided with the
+.\"    distribution.
+.\" 3. Neither the name of The DragonFly Project nor the names of its
+.\"    contributors may be used to endorse or promote products derived
+.\"    from this software without specific, prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+.\" FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE
+.\" COPYRIGHT HOLDERS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY OR CONSEQUENTIAL DAMAGES (INCLUDING,
+.\" BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+.\" LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
+.\" AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+.\" OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+.\" OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.Dd November 28, 2014
+.Dt AHCI 4
+.Os
+.Sh NAME
+.Nm ahci
+.Nd Advanced Host Controller Interface for Serial ATA
+.Sh SYNOPSIS
+To compile this driver into the kernel,
+place the following line in your
+kernel configuration file:
+.Bd -ragged -offset indent
+.Cd "device ahci"
+.Ed
+.Pp
+Alternatively, to load the driver as a
+module at boot time, place the following line in
+.Xr loader.conf 5 :
+.Bd -literal -offset indent
+ahci_load="YES"
+.Ed
+.Pp
+Note that
+.Dx
+compiles this driver into the kernel by default, so you normally do not
+have to do anything..
+.Sh DESCRIPTION
+The
+.Nm
+driver provides support for Serial ATA controllers conforming to the
+Advanced Host Controller Interface specification.
+.Pp
+Several AHCI capable controllers also provide a compatibility mode that
+causes them to appear as a traditional ATA controller supported by
+.Xr nata 4 .
+.Pp
+Although
+.Nm
+controllers are actual ATA controllers, the driver emulates SCSI via a
+translation layer.
+.Sh Special Features
+This driver detects chipsets with the FBS capability, indicating FIS-Based
+Switching support.
+This capability allows I/O to be queued to multiple targets behind a
+port-multiplier and will substantially increase performance when
+operating on multiple targets at once.
+Unfortunately, most AHCI controllers do not implement FBS.  Without it,
+concurrent access to multiple targets behind a port-multiplier will
+serialize and wind up being quite slow.
+.Pp
+This driver detects and supports chipsets with the SPM capability,
+indicating Port-Multiplier support.
+This capability allows you to connect a port-multiplier to the SATA port.
+The driver will then probe and attach all targets loaded into the
+port-multiplier.
+A few provisios... most port-multipliers implode if no drives are loaded
+into them, and most port-multipliers also fail to properly follow the
+AHCI port-multiplier standards, so YMMV.  The driver will do everything it
+can to attach to a port-multiplier if it sees one.
+.Sh WARNINGS
+eSATA PCIe cards -
+There are many consumer PCIe cards which provide on-board AHCI controllers
+and internal or external ports.
+This driver should work with most of them.
+However, we strongly recommend that you avoid purchasing any AHCI PCIe
+cards which provide both external eSATA and internal SATA ports and
+have jumpers to select between the two.
+The jumper header seriously interferes with delicate SATA
+communications and can cause instability and I/O errors even at slower
+3Gbps speeds.
+.Pp
+Port-Multipliers -
+There are many consumer port multipliers.  Nearly all of them fail to
+properly follow the spec.  This driver works hard to attach to whatever
+port-mutilplier it sees.  A good rule of thumb to follow is to
+always plug something into the first target slot on the PM.
+Dual eSATA/USB port-multipliers are very common but tend to have poorly
+implemented firmwares.  Still, you might not have a choice, so YMMV.
+Issues that can arise: The PM fails to probe, or the driver only sees
+one drive, or hot-swap detection fails to operate properly.
+.Pp
+Port-Multipliers require PM-capable AHCI chipsets.
+Most AHCI chipsets are not PM-capable... Intel is particularly bad (for
+reasons unknown).  Marvell chipsets tend to either be PM-capable or
+implement virtual PM handling on a (single) normal SATA port.  ASMedia
+chipsets are usually PM-capable, but the PCIe card might be poorly designed
+and generate lots of I/O errors due to electrical noise.
+.Pp
+The asynchronous attach described below may cause problems detecting your
+boot drive quickly enough for the kernel to be able to mount it.
+If you use the feature, the boot drive should normally be on the first
+AHCI controller and not be behind a port-multiplier.
+Only use the feature if you have a lot of controllers (like three or more).
+.Sh LOADER TUNABLES
+The following hints may be set in
+.Xr loader.conf 5
+to control the
+.Nm
+driver's behavior.
+Note that the hint need only exist, so removing it requires commenting it out.
+.Pp
+Usually both the
+.Xr nata 4
+and the
+.Nm
+drivers are loaded.
+The
+.Xr nata 4
+driver will pick up any ata-like devices which the
+.Nm
+driver misses.
+If the
+.Nm
+driver is disabled the
+.Xr nata 4
+driver will typically pick up the
+.Nm
+devices, albeit under the
+.Pa ad
+disk name rather than the
+.Pa da
+disk name.
+.Bd -literal -offset indent
+hint.ahci.disabled=1
+.Ed
+.Pp
+The
+.Nm
+driver can be told to force a lower-speed 1.5Gb or 3.0Gb link speed
+if necessary, and can also be told to refrain from attempting to send
+certain higher-level ATA commands to initialize ATA features which
+some devices might not properly implement.
+Dropping the link speed is sometimes necessary to avoid chipset comm errors
+when a machine's cabling is sub-standard.
+.Bd -literal -offset indent
+hint.ahci.force150=1
+hint.ahci.force300=1
+hint.ahci.force600=1
+hint.ahci.nofeatures=1
+.Ed
+.Pp
+By default, the driver will use MSI if it is supported.
+This behavior can be turned off by setting the following tunable:
+.Bd -literal -offset indent
+hw.ahci.msi.enable=0
+.Ed
+.Pp
+By default, on startup the driver will synchronously wait for all ports
+to probe and attach them in order before allowing the kernel boot to
+proceed to the next controller.
+Even though ports are probed in parallel, this can slow booting down
+if your system has multiple AHCI controllers.
+You can force a full asynchronous probe by setting the following
+tunable.
+The kernel will still wait for all controllers to finish before
+proceeding to the mountroot, but all ports will probe in parallel
+so booting will be a lot faster.
+WARNING!  When probing asynchronously /dev/da* assignments for drives can
+change from boot to boot, so be sure to only access drives by their
+/dev/serno/* path and not by their /dev/da* drive.
+.Bd -literal -offset indent
+# Attach everything asynchronously
+hw.ahci.synchronous_boot=0
+.Ed
+.Sh SYSCTL VARIABLES
+Link power management can be set with the sysctl
+.Va dev.ahci.%d.%d.link_pwr_mgmt
+to 0 for `disabled', 1 for `medium', and 2 for `aggressive'.
+Link power state can be read with the sysctl
+.Va dev.ahci.%d.%d.link_pwr_state .
+.Sh SEE ALSO
+.Xr intro 4 ,
+.Xr nata 4 ,
+.Xr nvme 4 ,
+.Xr pci 4 ,
+.Xr scsi 4 ,
+.Xr sili 4 ,
+.Xr loader.conf 5
+.Sh HISTORY
+The
+.Nm
+driver first appeared in
+.Dx 2.3 .
+.Sh AUTHORS
+.An -nosplit
+The
+.Nm
+driver was originally written by
+.An David Gwynne Aq Mt dlg@openbsd.org
+and
+.An Christopher Pascoe Aq Mt pascoe@openbsd.org
+for
+.Ox .
+.Pp
+It was ported to
+.Dx
+by
+.An Matt Dillon Aq Mt dillon@apollo.backplane.com ,
+who substantially rewrote the driver (honestly, just about from scratch
+but having the openbsd code as a reference helped a lot), and
+added new features such as hot-plug, FIS-based switching, and port
+multiplier support.

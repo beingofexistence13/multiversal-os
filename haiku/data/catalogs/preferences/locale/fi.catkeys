@@ -1,0 +1,30 @@
+1	finnish	x-vnd.Haiku-Locale	1081217032
+Medium format:	TimeFormatSettings		Keskikokoinen muoto:
+Negative:	TimeFormatSettings		Negatiivinen:
+Language	Locale Preflet Window		Kieli
+Short format:	TimeFormatSettings		Lyhyt muoto:
+24 hour	TimeFormatSettings		24 tuntia
+Locale	Locale Preflet Window		Maa-asetus
+Time	TimeFormatSettings		Aika
+Defaults	Locale Preflet Window		Oletukset
+Locale	System name		Paikallisasetukset
+Date	TimeFormatSettings		Päivämäärä
+OK	Locale Preflet Window		Valmis
+Long format:	TimeFormatSettings		Pitkä muoto:
+Numbers	TimeFormatSettings		Numerot
+Available languages	Locale Preflet Window		Käytettävissä olevat kielet
+Locale	Locale Preflet		Maa-asetus
+Unable to find the available languages! You can't use this preflet!	Locale Preflet Window		Käytettävissä olevia kieliä ei löytynyt! Et voi käyttää tätä asetusohjelmaa!
+Formatting	Locale Preflet Window		Muotoilu
+Use month/day-names from preferred language	TimeFormatSettings		Käytä ensisijaisen kielen kuukausi/päivä -nimiä
+already chosen	LanguageListView		jo valittu
+Preferred languages	Locale Preflet Window		Toivotut kielet
+Full format:	TimeFormatSettings		Kokonainen muoto:
+Cancel	Locale Preflet Window		Peru
+Revert	Locale Preflet Window		Palauta
+Translate application and folder names	TimeFormatSettings		Suomenna sovellus- ja kansionimet
+12 hour	TimeFormatSettings		12 tuntia
+Positive:	TimeFormatSettings		Positiivinen:
+Deskbar and Tracker need to be restarted for this change to take effect. Would you like to restart them now?	Locale Preflet Window		Työpöytäpalkki ja Seuraaja on käynnistettävä uudelleen, jotta nämä muutokset tulevat voimaan. Haluatko käynnistää ne nyt?
+Restart	Locale Preflet Window		Käynnistä uudelleen
+Currency	TimeFormatSettings		Valuutta

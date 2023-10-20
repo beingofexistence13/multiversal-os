@@ -1,0 +1,62 @@
+SubDir HAIKU_TOP src kits support ;
+
+SetSubDirSupportedPlatforms haiku libbe_test ;
+
+UsePrivateHeaders app interface locale media shared support ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		UseBuildFeatureHeaders zlib ;
+
+		Includes [ FGristFiles ZlibCompressionAlgorithm.cpp ]
+			: [ BuildFeatureAttribute zlib : headers ] ;
+
+		if [ FIsBuildFeatureEnabled zstd ] {
+			SubDirC++Flags -DZSTD_ENABLED ;
+			UseBuildFeatureHeaders zstd ;
+			Includes [ FGristFiles ZstdCompressionAlgorithm.cpp ]
+				: [ BuildFeatureAttribute zstd : headers ] ;
+		}
+
+		# BUrl uses ICU to perform IDNA conversions (unicode domain names)
+		UseBuildFeatureHeaders icu ;
+		Includes [ FGristFiles Url.cpp ]
+			: [ BuildFeatureAttribute icu : headers ] ;
+
+		MergeObject <libbe!$(architecture)>support_kit.o :
+			Architecture.cpp
+			Archivable.cpp
+			ArchivingManagers.cpp
+			Base64.cpp
+			Beep.cpp
+			BlockCache.cpp
+			BufferedDataIO.cpp
+			BufferIO.cpp
+			ByteOrder.cpp
+			CompressionAlgorithm.cpp
+			DataIO.cpp
+			DataPositionIOWrapper.cpp
+			DateTime.cpp
+			Flattenable.cpp
+			Job.cpp
+			JobQueue.cpp
+			List.cpp
+			Locker.cpp
+			PointerList.cpp
+			Referenceable.cpp
+			StopWatch.cpp
+			String.cpp
+			StringList.cpp
+			Url.cpp
+			Uuid.cpp
+			ZlibCompressionAlgorithm.cpp
+			ZstdCompressionAlgorithm.cpp
+			;
+
+		StaticLibrary [ MultiArchDefaultGristFiles libreferenceable.a ]
+			: : [ FGristFiles Referenceable.o ] ;
+	}
+}

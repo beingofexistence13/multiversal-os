@@ -1,0 +1,51 @@
+1	italian	x-vnd.Be-PEPL	2634915100
+Launching the FileTypes preflet to configure Person attributes has failed.\n\nError: 	People		L'avvio del pennello di preferenze Tipi di file, per configurare gli attributi di Contatti, è fallito.\n\nErrore: 
+Mobile phone	People		Telefono mobile
+Unnamed person	People		Anonimo
+New person…	People		Nuovo contatto...
+Address	People		Indirizzo
+Zip	People		Zip
+Select all	People		Seleziona tutto
+Could not create %s.	People		Non è stato possibile creare %s.
+Quit	People		Esci
+Company	People		Compagnia
+Name	People		Nome
+The file '%name%' could not be written.	People		Il file '%name%' non può essere scritto.
+Contact name	People		Nome del contatto
+Cancel	People		Cancella
+Edit	People		Modifica
+Save changes before closing?	People		Salvare le modifiche prima di uscire?
+People	System name		Contatti
+Error	People		Errore
+Revert	People		Ripristina
+Country	People		Paese
+Person	Short mimetype description		Contatto
+New person	People		Nuovo conatto
+Save	People		Salva
+Fax	People		Fax
+URL	People		URL
+%name% picture	People		%name% foto
+Home phone	People		Telefono di casa
+none	Groups list		nessuno
+Save as…	People		Salva come...
+Cut	People		Taglia
+Contact information for a person.	Long mimetype description		Dettagli su un contatto
+Remove image	People		Rimuovi immagine
+City	People		Città
+Undo	People		Annulla
+Don't save	People		Non salvare
+Configure attributes	People		Configura attributi
+Work phone	People		Telefono di lavoro
+State	People		Stato
+Nickname	People		Soprannome
+OK	People		OK
+File	People		File
+Redo	People		Ripeti
+Close	People		Chiudi
+Copy	People		Copia
+Paste	People		Incolla
+E-mail	People		E-mail
+Group	People		Gruppo
+Drop an image here,\nor use the contextual menu.	People		Trascina un immagine qui,\ne usa il menu contestuale.
+Load image…	People		Carica un'immagine...
+Sorry	People		Spiacenti

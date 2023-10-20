@@ -1,0 +1,117 @@
+.\"
+.\" Copyright (c) 1999
+.\" Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer as
+.\"    the first lines of this file unmodified.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
+.\" OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+.\" IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
+.\" INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+.\" NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+.\" THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" $FreeBSD: src/share/man/man4/vga.4,v 1.7.2.10 2002/12/20 18:03:05 trhodes Exp $
+.\"
+.Dd March 3, 2020
+.Dt VGA 4
+.Os
+.Sh NAME
+.Nm vga
+.Nd generic video card interface
+.Sh SYNOPSIS
+.Cd "device vga0 at isa? port ?"
+.Pp
+.Cd "options VGA_KEEP_POWERON_MODE"
+.Cd "options VGA_NO_FONT_LOADING"
+.Cd "options VGA_NO_MODE_CHANGE"
+.Cd "options VGA_DEBUG=N"
+.Cd "options VGA_WIDTH90"
+.Sh DESCRIPTION
+The
+.Nm
+driver is a generic video card driver which provides access to
+video cards.
+This driver is required for the
+.Xr syscons 4
+console driver which will call the
+.Nm
+driver to manipulate video hardware (changing video modes, loading fonts, etc).
+.Pp
+The
+.Nm
+driver supports the standard VGA video cards.
+.Sh DRIVER CONFIGURATION
+The following kernel configuration options can be used to control the
+.Nm
+driver.
+These options provide compatibility with certain VGA cards.
+.Bl -tag -width ".Dv VGA_KEEP_POWERON_MODE"
+.It Dv VGA_DEBUG=N
+Set the VGA support debug level to
+.Fa N .
+The default value is 0, which suppresses all debugging output.
+A value of 2 gives maximum verbosity.
+.It Dv VGA_KEEP_POWERON_MODE
+This option keeps the initial mode's register settings for switching back
+to it from another mode.
+.It Dv VGA_WIDTH90
+This option enables 90 column modes: 90x25, 90x30, 90x43, 90x50, 90x60.
+These modes are not always supported by the video card and the display.
+It is highly likely that LCD display cannot work with these modes.
+.El
+.Pp
+The following option will remove some features from the
+.Nm
+driver and save kernel memory.
+.Bl -tag -width ".Dv VGA_KEEP_POWERON_MODE"
+.It Dv VGA_NO_FONT_LOADING
+This option removes font loading from the driver.
+Note that if you use this option and
+still wish to use the mouse on the console then you must also use the
+.Dv SC_ALT_MOUSE_IMAGE
+option.
+See
+.Xr syscons 4 .
+.It Dv VGA_NO_MODE_CHANGE
+This option prevents the driver from changing video modes.
+.El
+.Sh SEE ALSO
+.Xr vgl 3 ,
+.Xr syscons 4
+.Sh STANDARDS
+.Rs
+.%A "Apple, IBM, Motorola"
+.%T "Common Hardware Reference Platform: I/O Device Reference"
+.%B "Appendix A: VGA Programming Model"
+.%P "p. 195"
+.%U "ftp://ftp.software.ibm.com/rs6000/technology/spec/chrp/"
+.Re
+.Sh HISTORY
+The
+.Nm
+driver first appeared in
+.Fx 3.1 .
+.Sh AUTHORS
+.An -nosplit
+The
+.Nm
+driver was written by
+.An S\(/oren Schmidt Aq Mt sos@FreeBSD.org
+and
+.An Kazutaka Yokota Aq Mt yokota@FreeBSD.org .
+This manual page was written by
+.An Kazutaka Yokota .

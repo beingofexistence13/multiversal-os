@@ -1,0 +1,119 @@
+SubDir HAIKU_TOP src tests servers registrar ;
+
+UsePublicHeaders [ FDirName add-ons registrar ] ;
+UseArchHeaders $(TARGET_KERNEL_ARCH_DIR) ;
+
+# some test programs
+
+SimpleTest RegistrarTest1
+	: RegistrarTest1.cpp
+	: be [ TargetLibsupc++ ]
+;
+
+SimpleTest RosterShell
+	: RosterShell.cpp
+	: be [ TargetLibstdc++ ]
+;
+
+SimpleTest message_deliverer_test : message_deliverer_test.cpp : be ;
+
+
+# libbe_test related stuff
+
+SetSubDirSupportedPlatforms libbe_test ;
+
+SimpleTest run_test_registrar
+	: run_test_registrar.cpp
+	: be
+;
+
+# a shutdown working with the emulation under R5
+UsePrivateHeaders app ;
+UsePrivateHeaders kernel ;
+
+SimpleTest <test>shutdown
+	: shutdown.cpp
+	: be ;
+
+SEARCH on [ FGristFiles shutdown.cpp ] = [ FDirName $(HAIKU_TOP) src bin ] ;
+
+# Two small test apps for testing the shutdown process.
+
+SimpleTest no_shutdown_reply
+	: no_shutdown_reply.cpp
+	: be
+;
+
+SimpleTest negative_shutdown_reply
+	: negative_shutdown_reply.cpp
+	: be
+;
+
+SimpleTest user_shutdown_reply
+	: user_shutdown_reply.cpp
+	: be
+;
+
+
+# the registrar itself
+
+UsePrivateHeaders app ;
+UsePrivateHeaders shared ;
+UsePrivateHeaders storage ;
+UsePrivateHeaders tracker ;
+UsePrivateSystemHeaders ;
+
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src servers registrar ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src servers registrar mime ] ;
+SEARCH_SOURCE += [ FDirName $(HAIKU_TOP) src kits storage mime ] ;
+
+Server test_registrar
+ 	:
+	AppInfoList.cpp
+	AppInfoListMessagingTargetSet.cpp
+	Clipboard.cpp
+	ClipboardHandler.cpp
+	Event.cpp
+	EventMaskWatcher.cpp
+	EventQueue.cpp
+ 	FakeAuthenticationManager.cpp
+	MessageDeliverer.cpp
+	MessageEvent.cpp
+	MessageHandler.cpp
+	MessageRunnerManager.cpp
+	MessagingService.cpp
+	MIMEManager.cpp
+	PackageWatchingManager.cpp
+	PriorityMessageQueue.cpp
+	RecentApps.cpp
+	RecentEntries.cpp
+	Registrar.cpp
+	RosterAppInfo.cpp
+	RosterSettingsCharStream.cpp
+	ShutdownProcess.cpp
+	TextSnifferAddon.cpp
+	TRoster.cpp
+	Watcher.cpp
+	WatchingService.cpp
+
+	# mime
+	CreateAppMetaMimeThread.cpp
+	MimeUpdateThread.cpp
+	RegistrarThread.cpp
+	RegistrarThreadManager.cpp
+	UpdateMimeInfoThread.cpp
+
+	R5Compatibility.cpp
+	:
+	libstorage_kit_mime.a
+	be localestub [ TargetLibstdc++ ]
+	:
+	test_registrar.rdef
+;
+
+if $(TARGET_PLATFORM) = libbe_test {
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : test_registrar
+		: tests!apps ;
+	HaikuInstall install-test-apps : $(HAIKU_APP_TEST_DIR) : run_test_registrar
+		: tests!apps ;
+}

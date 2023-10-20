@@ -1,0 +1,10 @@
+SubDir HAIKU_TOP src tests apps terminal_replicant ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) src apps terminal ] ;
+
+Application RepliTerminal : 
+	main.cpp	
+	: be [ TargetLibsupc++ ]
+	;
+
+

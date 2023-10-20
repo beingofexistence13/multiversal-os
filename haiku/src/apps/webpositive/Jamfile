@@ -1,0 +1,94 @@
+SubDir HAIKU_TOP src apps webpositive ;
+
+SubDirC++Flags $(defines) -Wno-error=sequence-point -Wno-error=format-truncation ;
+SubDirCcFlags $(defines) -Wno-error=sequence-point -Wno-error=format-truncation ;
+
+# source directories
+local sourceDirs =
+	autocompletion
+	support
+	tabview
+;
+
+local sources =
+	# autocompletion
+	AutoCompleter.cpp
+	AutoCompleterDefaultImpl.cpp
+	TextViewCompleter.cpp
+
+	# support
+	BaseURL.cpp
+	BookmarkBar.cpp
+	FontSelectionView.cpp
+
+	# tabview
+	TabContainerView.cpp
+	TabManager.cpp
+	TabView.cpp
+
+	AuthenticationPanel.cpp
+	BrowserApp.cpp
+	BrowserWindow.cpp
+	BrowsingHistory.cpp
+	ConsoleWindow.cpp
+	CookieWindow.cpp
+	CredentialsStorage.cpp
+	DownloadProgressView.cpp
+	DownloadWindow.cpp
+	SettingsKeys.cpp
+	SettingsWindow.cpp
+	URLInputGroup.cpp
+;
+
+# We build WebPositive only for one architecture -- the first architecture for
+# which it is possible.
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		if ! [ FIsBuildFeatureEnabled webkit ] {
+			continue ;
+		}
+
+		UseBuildFeatureHeaders webkit ;
+
+		local sourceDir ;
+		for sourceDir in $(sourceDirs) {
+			SEARCH_SOURCE
+				+= [ FDirName $(HAIKU_TOP) src apps webpositive $(sourceDir) ] ;
+		}
+
+		Includes [ FGristFiles $(sources) ]
+			: [ BuildFeatureAttribute webkit : headers ] ;
+			# Dependency needed to trigger downloading/unzipping the package
+			# before compiling the files.
+
+		# private OS headers
+		UseLibraryHeaders icon ;
+		UsePrivateHeaders interface netservices shared tracker ;
+		SubDirHdrs $(HAIKU_TOP) src kits tracker ;
+
+		Application WebPositive :
+			$(sources)
+			:
+			bnetapi [ MultiArchDefaultGristFiles libnetservices.a libcolumnlistview.a ]
+			[ BuildFeatureAttribute webkit : libraries ]
+			[ TargetLibstdc++ ] localestub shared
+			be network tracker translation
+			:
+			WebPositive.rdef
+			;
+
+		DoCatalogs WebPositive :
+			x-vnd.Haiku-WebPositive
+			:
+			$(sources)
+			;
+
+		ExtractArchiveToHaikuImage home config settings WebPositive
+			: $(SUBDIR)/bookmarks/WebPositiveBookmarks.zip ;
+
+		EnableBuildFeatures webpositive ;
+
+		break ;
+	}
+}

@@ -1,0 +1,62 @@
+# Rules providing basic arithmetic operations
+
+HAIKU_PAD_9 = 0 1 2 3 4 5 6 7 8 ;
+
+# a > b <==> $(HAIKU_DIGIT_GREATER_$(a)[1$(b)])
+HAIKU_DIGIT_GREATER_0 = $(HAIKU_PAD_9) ;
+HAIKU_DIGIT_GREATER_1 = $(HAIKU_PAD_9) 1 ;
+HAIKU_DIGIT_GREATER_2 = $(HAIKU_PAD_9) 1 1 ;
+HAIKU_DIGIT_GREATER_3 = $(HAIKU_PAD_9) 1 1 1 ;
+HAIKU_DIGIT_GREATER_4 = $(HAIKU_PAD_9) 1 1 1 1 ;
+HAIKU_DIGIT_GREATER_5 = $(HAIKU_PAD_9) 1 1 1 1 1 ;
+HAIKU_DIGIT_GREATER_6 = $(HAIKU_PAD_9) 1 1 1 1 1 1 ;
+HAIKU_DIGIT_GREATER_7 = $(HAIKU_PAD_9) 1 1 1 1 1 1 1 ;
+HAIKU_DIGIT_GREATER_8 = $(HAIKU_PAD_9) 1 1 1 1 1 1 1 1 ;
+HAIKU_DIGIT_GREATER_9 = $(HAIKU_PAD_9) 1 1 1 1 1 1 1 1 1 ;
+
+# a + b == $(HAIKU_DIGIT_ADD_$(a)[1$(b)]) (carry ignored)
+HAIKU_DIGIT_ADD_0 = $(HAIKU_PAD_9) 0 1 2 3 4 5 6 7 8 9 ;
+HAIKU_DIGIT_ADD_1 = $(HAIKU_PAD_9) 1 2 3 4 5 6 7 8 9 0 ;
+HAIKU_DIGIT_ADD_2 = $(HAIKU_PAD_9) 2 3 4 5 6 7 8 9 0 1 ;
+HAIKU_DIGIT_ADD_3 = $(HAIKU_PAD_9) 3 4 5 6 7 8 9 0 1 2 ;
+HAIKU_DIGIT_ADD_4 = $(HAIKU_PAD_9) 4 5 6 7 8 9 0 1 2 3 ;
+HAIKU_DIGIT_ADD_5 = $(HAIKU_PAD_9) 5 6 7 8 9 0 1 2 3 4 ;
+HAIKU_DIGIT_ADD_6 = $(HAIKU_PAD_9) 6 7 8 9 0 1 2 3 4 5 ;
+HAIKU_DIGIT_ADD_7 = $(HAIKU_PAD_9) 7 8 9 0 1 2 3 4 5 6 ;
+HAIKU_DIGIT_ADD_8 = $(HAIKU_PAD_9) 8 9 0 1 2 3 4 5 6 7 ;
+HAIKU_DIGIT_ADD_9 = $(HAIKU_PAD_9) 9 0 1 2 3 4 5 6 7 8 ;
+
+# pragma mark - Number Operations
+
+rule AddNumAbs a : b
+{
+	# AddNum <a> : <b> ;
+
+	local result ;
+	local carry ;
+	while $(a) || $(b) || $(carry) {
+		# chop off the first digit
+		local da = $(a[1]:E=0) ;
+		local db = $(b[1]:E=0) ;
+		a = $(a[2-]) ;
+		b = $(b[2-]) ;
+
+		# add carry to the first digit
+		if $(carry) {
+			local daa = $(HAIKU_DIGIT_ADD_1[1$(da)]) ;
+			carry = $(HAIKU_DIGIT_GREATER_$(da)[1$(daa)]) ;
+			da = $(daa) ;
+		}
+
+		# add digits
+		local dr = $(HAIKU_DIGIT_ADD_$(da)[1$(db)]) ;
+		if $(HAIKU_DIGIT_GREATER_$(da)[1$(dr)]) {
+			carry = 1 ;
+		}
+
+		result += $(dr) ;
+	}
+
+	return $(result) ;
+}
+

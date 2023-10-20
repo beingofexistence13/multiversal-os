@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src add-ons screen_savers butterfly ;
+
+UsePrivateHeaders screen_saver ;
+	# For BuildDefaultSettingsView
+
+AddResources Butterfly : Butterfly.rdef ;
+
+ScreenSaver Butterfly :
+	Butterfly.cpp
+	: be screensaver localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs Butterfly :
+	x-vnd.Haiku-ButterflyScreensaver
+	:
+	Butterfly.cpp	
+;

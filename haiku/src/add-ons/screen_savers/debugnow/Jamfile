@@ -1,0 +1,17 @@
+SubDir HAIKU_TOP src add-ons screen_savers debugnow ;
+
+UsePrivateHeaders screen_saver ;
+	# For BuildDefaultSettingsView
+
+AddResources DebugNow : DebugNow.rdef ;
+
+ScreenSaver DebugNow :
+	DebugNow.cpp : 
+	be libscreensaver.so localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs DebugNow :
+	x-vnd.Haiku-DebugNowScreensaver
+	:
+	DebugNow.cpp
+;

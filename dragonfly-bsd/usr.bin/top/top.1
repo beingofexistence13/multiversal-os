@@ -1,0 +1,554 @@
+.\" Copyright (c) 1984 through 2008, William LeFebvre
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\"     * Redistributions of source code must retain the above copyright
+.\" notice, this list of conditions and the following disclaimer.
+.\"
+.\"     * Redistributions in binary form must reproduce the above
+.\" copyright notice, this list of conditions and the following disclaimer
+.\" in the documentation and/or other materials provided with the
+.\" distribution.
+.\"
+.\"     * Neither the name of William LeFebvre nor the names of other
+.\" contributors may be used to endorse or promote products derived from
+.\" this software without specific prior written permission.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+.\" "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+.\" LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+.\" A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+.\" OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+.\" SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+.\" LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+.\" DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+.\" THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+.\" (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+.\" OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd February 15, 2023
+.Dt TOP 1
+.Os
+.Sh NAME
+.Nm top
+.Nd display and update information about the top cpu processes
+.Sh SYNOPSIS
+.Nm
+.Op Fl CIMSTabcinqtuv
+.Op Fl d Ar count
+.Op Fl m Ar mode
+.Op Fl o Ar field
+.Op Fl s Ar time
+.Op Fl U Ar username
+.Op Ar number
+.Sh DESCRIPTION
+.Nm
+displays the top
+processes on the system and periodically updates this information.
+Raw cpu percentage is used to rank the processes.
+.Pp
+.Nm
+makes a distinction between terminals that support advanced capabilities
+and those that do not.
+This distinction affects the choice of defaults for certain options.
+In the remainder of this document, an
+.Dq intelligent
+terminal is one that
+supports cursor addressing, clear screen, and clear to end of line.
+Conversely, a
+.Dq dumb
+terminal is one that does not support such features.
+If the output of
+.Nm
+is redirected to a file, it acts as if it were being run on a dumb
+terminal.
+.Ss OPTIONS
+.Bl -tag -width "-U username" -offset indent
+.It Fl C
+Turn off the use of color in the display.
+.It Fl I
+Do not display idle processes.
+By default, top displays both active and idle processes.
+.It Fl M
+Enable multi-CPU display.
+.It Fl S
+Show system processes in the display.
+Normally, system processes such as the pager and the swapper are not shown.
+This option makes them visible.
+.It Fl T
+List all available color tags and the current set of tests used for
+color highlighting, then exit.
+.It Fl a
+Show all processes for as long as possible.
+This is shorthand for
+.Dq Fl d Li all Li all .
+This option is especially handy in batch mode.
+.It Fl b
+Use
+.Dq batch
+mode.
+In this mode, all input from the terminal is ignored.
+Interrupt characters (such as ^C and ^\e) still have an effect.
+This is the default on a dumb terminal, or when the output is not a terminal.
+.It Fl c
+Show the full command line for each process.
+Default is to show just the command name.
+This option is not supported on all platforms.
+.It Fl i
+Use
+.Dq interactive
+mode.
+In this mode, any input is immediately read for processing.
+See the subsection on
+.Sx INTERACTIVE MODE
+for an explanation of which keys perform what functions.
+After the command is processed, the screen will immediately be updated,
+even if the command was not understood.
+This mode is the default when standard output is an intelligent terminal.
+.It Fl q
+Renice
+.Nm
+to \-20 so that it will run faster.
+This can be used when the system is being very sluggish to improve the
+possibility of discovering the problem.
+This option can only be used by root.
+.It Fl t
+Show individual threads on separate lines.
+By default, on systems which support threading, each process is shown
+with a count of the number of threads.
+This option shows each thread on a separate line.
+This option is not supported on all platforms.
+.It Fl u
+Do not take the time to map uid numbers to usernames.
+Normally,
+.Nm
+will read as much of the file
+.Pa /etc/passwd
+as is necessary to map all the user id numbers it encounters into login names.
+This option disables all that, while possibly decreasing execution time.
+The uid numbers are displayed instead of the names.
+.It Fl v
+Write version number information to stderr then exit immediately.
+No other processing takes place when this option is used.
+To see current revision information while top is running,
+use the help command
+.Dq \&? .
+.It Fl d Ar count
+Show only
+.Ar count
+displays, then exit.
+A display is considered to be one update of the screen.
+This option allows the user to select the number of displays he
+wants to see before
+.Nm
+automatically exits.
+Any proper prefix of the words
+.Sq Li infinity ,
+.Sq Li maximum ,
+or
+.Sq Li all
+can be used to indicate an infinite number of displays.
+The default for intelligent terminals is
+.Sq Li infinity .
+The default for dumb terminals is
+.Sq Li 1 .
+.It Fl m Ar mode
+Start the display in an alternate mode.
+Some platforms support multiple
+process displays to show additional process information.
+The value of
+.Ar mode
+is a number indicating which mode to display.
+The default is
+.Sq Li 0 .
+On platforms that do not have multiple display modes this option has
+no effect.
+.It Fl o Ar field
+Sort the process display area on the specified field.
+The field name is the name of the column as seen in the output,
+but in lower case.
+Likely values are
+.Sq Li cpu ,
+.Sq Li size ,
+.Sq Li res ,
+and
+.Sq Li time ,
+but may vary on different operating systems.
+Note that not all operating systems support this option.
+.It Fl s Ar time
+Set the delay between screen updates to
+.Ar time
+seconds.
+The default delay between updates is 5 seconds.
+.It Fl U Ar username
+Show only those processes owned by
+.Ar username .
+This option currently only accepts usernames and will not understand
+uid numbers.
+.El
+.Pp
+If
+.Ar number
+is given, then the top
+.Ar number
+processes will be displayed instead of the default.
+Both
+.Ar count
+and
+.Ar number
+fields can be specified as
+.Sq Li infinite ,
+indicating that they can stretch as far as possible.
+This is accomplished by using any proper prefix of the keywords
+.Sq Li infinity ,
+.Sq Li maximum ,
+or
+.Sq Li all .
+The default for
+.Ar count
+on an intelligent terminal is, in fact,
+.Sq Li infinity .
+.Ss INTERACTIVE MODE
+When
+.Nm
+is running in
+.Dq interactive mode ,
+it reads commands from the terminal and acts upon them accordingly.
+In this mode, the terminal is put in
+.Dq CBREAK ,
+so that a character will be processed as soon as it is typed.
+Almost always, a key will be pressed when
+.Nm
+is between displays; that is, while it is waiting for
+.Ar time
+seconds to elapse.
+If this is the case, the command will be
+processed and the display will be updated immediately thereafter
+(reflecting any changes that the command may have specified).
+This happens even if the command was incorrect.
+If a key is pressed while
+.Nm
+is in the middle of updating the display, it will finish the update and
+then process the command.
+Some commands require additional information,
+and the user will be prompted accordingly.
+While typing this information
+in, the user's erase and kill keys (as set up by the command
+.Xr stty 1 )
+are recognized, and a newline terminates the input.
+Note that a control\-L
+(^L) always redraws the current screen and a space forces an immediate
+update to the screen using new data.
+.Pp
+These commands are currently recognized:
+.Bl -tag -width "h or \&?" -offset indent
+.It h or \&?
+Display a summary of the commands (help screen).
+Version information is included in this display.
+.It C
+Toggle the use of color in the display.
+.It c
+Display only processes whose commands match the specified string.
+An empty string will display all processes.
+This command is not supported on all platforms.
+.It d
+Change the number of displays to show (prompt for new number).
+Remember that the next display counts as one, so typing
+.Dq d1
+will make
+.Nm
+show one final display and then immediately exit.
+.It f
+Toggle the display of the full command line.
+.It H
+Toggle the display of threads on separate lines.
+By default, on systems which support threading,
+each process is shown with a count of the number of threads.
+This command shows each thread on a separate line.
+This command is not supported on all platforms.
+.It i or I
+Toggle the display of idle processes.
+.It k
+Send a signal (
+.Dq kill
+by default) to a list of processes.
+This acts similarly to the command
+.Xr kill 1 .
+.It M
+Sort display by memory usage.
+Shorthand for
+.Dq Fl o Li size .
+.It m
+Change to a different process display mode.
+Some systems provide multiple
+display modes for the process display which shows different information.
+This command toggles between the available modes.
+This command is not supported on all platforms.
+.It N
+Sort by process id.
+Shorthand for
+.Dq Fl o Li pid .
+.It n or #
+Change the number of processes to display (prompt for new number).
+.It o
+Change the order in which the display is sorted.
+This command is not available on all systems.
+The sort key names vary fron system to system,
+but usually include:
+.Sq Li cpu ,
+.Sq Li res ,
+.Sq Li size ,
+and
+.Sq Li time .
+The default is
+.Sq Li cpu .
+.It P
+Sort by CPU usage.
+Shorthand for
+.Dq Fl o Li cpu .
+.It q
+Quit
+.Nm .
+.It r
+Change the priority (the niceness) of a list of processes.
+This acts similarly to the command
+.Xr renice 8 .
+.It s
+Change the number of seconds to delay between displays
+(prompt for new number).
+.It T
+Sort by CPU time.
+Shorthand for
+.Dq Fl o Li time .
+.It U
+Toggle between displaying usernames and uids.
+.It u
+Display only processes owned by a specific username (prompt for username).
+If the username specified is simply
+.Dq + ,
+then processes belonging to all users will be displayed.
+.El
+.Ss THE DISPLAY
+The actual display varies depending on the specific variant of Unix
+that the machine is running.
+This description may not exactly match what is seen by top running on
+this particular machine.
+Differences are listed at the end of this manual entry.
+.Pp
+The top lines of the display show general information
+about the state of the system.
+The first line shows
+(on some systems) the last process id assigned to a process,
+the three load averages,
+the system uptime, and the current time.
+The second line displays the total number of processes followed
+by a breakdown of processes per state.
+Examples of states common to Unix systems are sleeping, running, starting,
+stopped, zombie, and dumping (i.e., generating a core).
+The next line displays a percentage of time spent in each of the
+processor states (user, nice, system, interrupt, idle).
+These percentages show the processor activity during the time since
+the last update.
+For multi-processor systems, this information is an average of all processors.
+The next line shows kernel-related activity (not available on all systems).
+The numbers shown on this line are per-second rates sampled since the last
+update.
+The exact information displayed varies between systems, but some examples are:
+context switches, interrupts, traps, forks, and page faults.
+.Pp
+The last two lines show a summary of memory and swap activity.
+The fields are as follows:
+.Bl -tag -width "Active:" -offset indent
+.It Active:
+number of pages active
+.It Inact:
+number of pages inactive
+.It Wired:
+number of pages wired down, including cached file data pages
+.It Cache:
+number of pages used for VM-level disk caching
+.It Buf:
+number of pages used for BIO-level disk caching
+.It Free:
+number of pages free
+.It Total:
+total available swap usage
+.It Free:
+total free swap usage
+.It Inuse:
+swap usage
+.It In:
+pages paged in from swap devices (last interval)
+.It Out:
+pages paged out to swap devices (last interval)
+.It K:
+Kilobyte
+.It M:
+Megabyte
+.It %:
+1/100
+.El
+.Pp
+The remainder of the screen displays information about individual
+processes.
+This display is similar in spirit to
+.Xr ps 1 ,
+but it is not exactly the same.
+The columns displayed by top will differ slightly between operating systems.
+Generally, the following fields are displayed:
+.Bl -tag -width "USERNAME" -offset indent
+.It PID
+The process id.
+.It USERNAME
+Username of the process's owner (if
+.Fl u
+is specified, a UID column will be substituted for USERNAME).
+.It NICE
+Nice amount in the range \-20 to 20, as established by the use of
+the command
+.Xr nice 1 .
+.It SIZE
+Total size of the process (text, data, and stack) given in kilobytes.
+.It RES
+Resident memory: current amount of process memory that resides in physical
+memory, given in kilobytes, megabytes or gigabytes depending on the size to be reported.
+.It STATE
+Current state, may be:
+.Sq START ,
+.Sq RUN
+(shown as
+.Sq CPUn
+on SMP systems),
+.Sq SLEEP
+(generally shown as the event on which the process waits),
+.Sq STOP ,
+.Sq ZOMBIE ,
+or
+.Sq DUMP .
+.It C
+Number of CPU the process is currently running on (only on multi-CPU machines).
+.It TIME
+Number of system and user cpu seconds that the process has used.
+.It CTIME
+The cumulated CPU time of the process and its exited children.
+This value is similar to what
+.Xr ps 1
+displays as CPU time when run with the
+.Fl S
+option.
+.It CPU
+Percentage of available cpu time used by this process.
+.It COMMAND
+Name of the command that the process is currently running.
+.El
+.Ss COLOR
+Top supports the use of ANSI color in its output.
+By default, color is available but not used.
+The environment variable
+.Ev TOPCOLORS
+specifies colors to use and conditions for which they should be used.
+At the present time, only numbers in the summary display area can be
+colored.
+In a future version it will be possible to highlight numbers
+in the process display area as well.
+The environment variable is the only way to specify color:
+there is no equivalent command line option.
+Note that the environment variable
+.Ev TOPCOLOURS
+is also understood.
+The British spelling takes precedence.
+The use of color only works on terminals that understand and process
+ANSI color escape sequences.
+.Pp
+You can see a list of color codes recognized by this installation of top
+with the
+.Fl T
+option.
+This will also show the current set of tests used for
+color highligting, as specified in the environment.
+.Sh ENVIRONMENT
+The following environment variables affect the execution of
+.Nm :
+.Bl -tag -width "TOPCOLORS"
+.It Ev TOP
+The environment variable
+.Ev TOP
+is examined for options before the command line is scanned.
+This enables a user to set his or her own defaults.
+The number of processes to display
+can also be specified in the environment variable
+.Ev TOP .
+The options
+.Dq Fl C ,
+.Dq Fl I ,
+.Dq Fl S ,
+and
+.Dq Fl u
+are actually toggles.
+A second specification of any of these options will negate the first.
+Thus a user who has the environment variable
+.Ev TOP
+set to
+.Dq Fl I
+may use the command
+.Dq Nm Fl I
+to see idle processes.
+.It Ev TOPCOLORS
+The environment variable is a sequence of color specifications, separated
+by colons.
+Each specification takes the form tag=min,max#code where
+.Li tag
+is the name of the value to check,
+.Li min
+and
+.Li max
+specify a range for the value, and
+.Li code
+is an ANSI color code.
+Multiple color codes can be listed and separated with semi-colons.
+A missing
+.Li min
+implies the lowest possible value (usually 0)
+and a missing
+.Li max
+implies infinity.
+The comma must always be present.
+When specifying numbers for load averages, they should be multiplied by 100.
+For example, the specification
+.Li 1min=500,1000#31
+indicates that a 1 minute load average between
+5 and 10 should be displayed in red.
+Color attributes can be combined.
+For example, the specification
+.Li 5min=1000,#37;41
+indicates that a 5 minute load average higher than 10 should be displayed
+with white characters on a red background.
+A special tag named
+.Li header
+is used to control the color of the header for process display.
+It should be specified with no lower and upper limits, specifically
+.Li header=,#
+followed by the ANSI color code.
+.El
+.Sh SEE ALSO
+.Xr kill 1 ,
+.Xr ps 1 ,
+.Xr stty 1 ,
+.Xr mem 4 ,
+.Xr renice 8
+.Sh AUTHORS
+.An William LeFebvre
+.Sh BUGS
+As with
+.Xr ps 1 ,
+things can change while
+.Nm
+is collecting information for an update.
+The picture it gives is only a close approximation to reality.
+.\" .Sh COPYRIGHT
+.\" Copyright (C) 1984-2007 William LeFebvre.
+.\" For additional licensing information, see
+.\" http://www.unixtop.org/license/

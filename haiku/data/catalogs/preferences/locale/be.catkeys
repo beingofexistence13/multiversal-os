@@ -1,0 +1,29 @@
+1	belarusian	x-vnd.Haiku-Locale	288870027
+Medium format:	TimeFormatSettings		Сярэдні фармат:
+Negative:	TimeFormatSettings		Адмоўна:
+Language	Locale Preflet Window		Мова
+Short format:	TimeFormatSettings		Скарочаны фармат:
+24 hour	TimeFormatSettings		24 гадзіны
+Locale	Locale Preflet Window		Лакаль
+Time	TimeFormatSettings		Час
+Defaults	Locale Preflet Window		Прадвызначаныя
+Locale	System name		Лакаль
+Date	TimeFormatSettings		Дата
+OK	Locale Preflet Window		ОК
+Long format:	TimeFormatSettings		Доўгі фармат:
+Numbers	TimeFormatSettings		Лічбы
+Available languages	Locale Preflet Window		Наяўныя мовы
+Locale	Locale Preflet		Лакаль
+Unable to find the available languages! You can't use this preflet!	Locale Preflet Window		Спіс наяўных моваў не знойдзены! Немагчыма запусціць канфігурацыйную праграму!
+Formatting	Locale Preflet Window		Фарматаванне
+Use month/day-names from preferred language	TimeFormatSettings		Ужываць імены месяцоў і дзён з пажаданай мовы
+already chosen	LanguageListView		ужо выбрана
+Preferred languages	Locale Preflet Window		Пажаданыя мовы
+Full format:	TimeFormatSettings		Поўны фармат:
+Cancel	Locale Preflet Window		Скасаваць
+Revert	Locale Preflet Window		Вярнуць
+12 hour	TimeFormatSettings		12 гадзін
+Positive:	TimeFormatSettings		Станоўча:
+Deskbar and Tracker need to be restarted for this change to take effect. Would you like to restart them now?	Locale Preflet Window		Дзеля таго, каб выкарыстаць гэтыя наладки Дэскбар і Тракер павінны быць перазапушчаны. Жадаеце перазапусціць іх зараз жа?
+Restart	Locale Preflet Window		Перазапусціць
+Currency	TimeFormatSettings		Валюта

@@ -1,0 +1,26 @@
+SubDir HAIKU_TOP src system libroot posix crypt ;
+
+UsePrivateHeaders libroot ;
+UsePrivateSystemHeaders ;
+SubDirSysHdrs $(HAIKU_TOP) headers compatibility bsd ;
+SubDirSysHdrs $(HAIKU_TOP) headers compatibility gnu ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		# filter warnings we don't want here
+		TARGET_WARNING_CCFLAGS_$(architecture)
+			= [ FFilter $(TARGET_WARNING_CCFLAGS_$(architecture))
+				: -Wall -Wmissing-prototypes -Wsign-compare ] ;
+
+		MergeObject <$(architecture)>posix_crypt.o :
+			crypto_scrypt_smix.cpp
+			crypto_scrypt.cpp
+			crypt.cpp
+			pbkdf2.cpp
+			SHA256.cpp
+			;
+	}
+}

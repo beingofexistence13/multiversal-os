@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src add-ons kernel network datalink_protocols loopback_frame ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders net ;
+
+KernelAddon loopback_frame :
+	loopback_frame.cpp
+;
+
+# Installation
+HaikuInstall install-networking : /boot/home/config/add-ons/kernel/haiku_network/datalink_protocols
+	: loopback_frame ;

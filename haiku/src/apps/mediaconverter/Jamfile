@@ -1,0 +1,25 @@
+SubDir HAIKU_TOP src apps mediaconverter ;
+
+UsePrivateHeaders shared ;
+
+Application MediaConverter :
+	MediaConverterApp.cpp
+	MediaConverterWindow.cpp
+	MediaEncoderWindow.cpp
+	MediaFileInfo.cpp
+	MediaFileInfoView.cpp
+	MediaFileListView.cpp
+
+	: be media tracker localestub [ TargetLibstdc++ ]
+	: MediaConverter.rdef
+;
+
+DoCatalogs MediaConverter :
+	x-vnd.Haiku-MediaConverter
+	:
+	MediaFileInfoView.cpp
+	MediaFileInfo.cpp
+	MediaEncoderWindow.cpp
+	MediaConverterWindow.cpp
+	MediaConverterApp.cpp
+;

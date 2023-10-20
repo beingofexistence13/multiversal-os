@@ -1,0 +1,18 @@
+SubDir HAIKU_TOP src tests kits net service ;
+
+UsePrivateHeaders netservices private shared ;
+
+UnitTestLib servicekittest.so :
+	ServiceKitTestAddon.cpp
+
+	CookieTest.cpp
+	DataTest.cpp
+	GeolocationTest.cpp
+	HttpTest.cpp
+	UrlTest.cpp
+	FileTest.cpp
+	TestServer.cpp
+
+	: be libnetservices.a shared $(TARGET_NETWORK_LIBS) $(HAIKU_NETAPI_LIB)
+	[ TargetLibstdc++ ]
+	;

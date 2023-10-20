@@ -1,0 +1,165 @@
+/*
+ * Copyright 2007-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *		John Scipione, jscipione@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/support/Autolock.h	rev 33370
+ */
+
+
+/*!
+	\file Autolock.h
+	\ingroup support
+	\ingroup libbe
+	\brief Implements a handy locking utility.
+*/
+
+
+/*!
+	\class BAutolock
+	\ingroup support
+	\ingroup libbe
+	\brief Convenient utility to make parts of your code thread-safe easily.
+
+	The autolocker uses a BLooper or a BLocker in order to protect a part
+	of your code. This class is usually used in combination with a BLocker
+	that protects a certain part of your code and data that are being
+	accessed by multiple threads. While BAutolock does not add any features
+	to locking, it provides a mechanism to easily lock and protect a part of
+	your code. 
+
+	Normally, when you need to protect data, you would have to make sure that
+	all your locks are paired with unlocks. Below is a simple example, but you
+	can imagine that there are more complex situations where you might spend a
+	lot of time debugging a hang because you didn't pair all the Lock()s with 
+	an Unlock(). See the example:
+
+\code
+status_t
+Receiver::HandleCall(Call *call)
+{
+    ... work on call data ...
+
+    fDataLocker->Lock()
+
+    ... perform changes ...
+
+    if (!success) {
+      fDataLocker->Unlock();
+      return B_ERROR;
+    }
+
+    fDataLocker->Unlock()
+
+    return B_OK;
+}
+\endcode
+    With the BAutolock this example can be rewritten as follows:
+
+\code
+status_t
+Receiver::HandleCall(Call *call)
+{
+    ... work on call data ...
+
+    BAutolock autolock(fDataLocker);
+
+    ... perform changes ...
+
+    if (!success)
+        return B_ERROR;
+
+    return B_OK;
+}
+\endcode
+
+	Since the object is created on stack, it is destroyed as soon as we leave
+	the function. Because the destruction of the object causes it to unlock
+	the BLocker or BLooper, you don't have to manually make sure that every
+	exit from the function is properly unlocked.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BAutolock::BAutolock(BLooper* looper)
+	\brief Create an object and lock the BLooper
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BAutolock::BAutolock(BLocker* locker)
+	\brief Create an object and lock the BLocker
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BAutolock::BAutolock(BLocker& locker)
+	\brief Create an object and lock the BLocker
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BAutolock::~BAutolock()
+	\brief Destroy the object and unlock the associated BLocker or BLooper
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BAutolock::IsLocked()
+	\brief Verify whether the associated BLocker or BLooper are actually
+	       locked.
+
+	Basically you may assume that when the object is created, you are
+	almost always sure the actual locking succeeds. It might fail if the
+	BLocker or BLooper are destroyed though. The semaphore will be
+	released and the Lock() call will fail.
+
+	If you expect this to happen, you can use this method to help you
+	protect yourself from any harm.
+
+	\return Whether or not the BLocker or BLooper is locked.
+	\retval true The lock was acquired.
+	\retval false Failed to acquire the lock.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BAutolock::Lock()
+	\brief Lock the BAutolock if it has not already happened
+
+	Note that unlike BLocker, the object is not locked with lock count. That
+	means that if the lock is already taken, this method returns \c true
+	without any action.
+
+	\return Whether or not the BLocker or BLooper was locked.
+	\retval true The lock was acquired (or had already been acquired).
+	\retval false Failed to acquire the lock.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BAutolock::Unlock()
+	\brief Unlock the BAutolock if the lock is being held.
+
+	If the lock is not held, the method does nothing.
+
+	\since Haiku R1
+*/

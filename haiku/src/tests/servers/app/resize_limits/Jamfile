@@ -1,0 +1,8 @@
+SubDir HAIKU_TOP src tests servers app resize_limits ;
+
+AddSubDirSupportedPlatforms libbe_test ;
+
+Application ResizeLimits :
+	ResizeLimits.cpp
+	: be [ TargetLibstdc++ ] [ TargetLibsupc++ ]
+;

@@ -1,0 +1,12 @@
+SubDir HAIKU_TOP src preferences joysticks ;
+
+Preference Joysticks :
+	CalibWin.cpp
+	JoyWin.cpp
+	Joysticks.cpp
+	MessageWin.cpp
+	PortItem.cpp
+	: be libdevice.so [ TargetLibsupc++ ]
+	: Joysticks.rdef
+	;
+

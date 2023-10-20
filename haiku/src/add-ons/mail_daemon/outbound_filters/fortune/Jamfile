@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src add-ons mail_daemon outbound_filters fortune ;
+
+UsePrivateHeaders mail shared ;
+UsePublicHeaders [ FDirName add-ons mail_daemon ] ;
+
+SubDirHdrs [ FDirName $(HAIKU_TOP) headers os add-ons mail_daemon ] ;
+
+AddResources Fortune : Fortune.rdef ;
+
+Addon Fortune :
+	ConfigView.cpp
+	FortuneFilter.cpp
+	:
+	be libmail.so localestub [ TargetLibsupc++ ]
+;
+
+DoCatalogs Fortune :
+	x-vnd.Haiku-Fortune
+	:
+	ConfigView.cpp
+	FortuneFilter.cpp
+;

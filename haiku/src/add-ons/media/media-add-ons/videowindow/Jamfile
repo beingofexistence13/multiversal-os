@@ -1,0 +1,14 @@
+SubDir HAIKU_TOP src add-ons media media-add-ons videowindow ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup ] {
+	on $(architectureObject) {
+		Addon [ MultiArchDefaultGristFiles video_window_demo.media_addon ] :
+			VideoAddOn.cpp
+			VideoNode.cpp
+			VideoView.cpp
+			VideoWindow.cpp
+			: be media [ TargetLibsupc++ ]
+		;
+	}
+}

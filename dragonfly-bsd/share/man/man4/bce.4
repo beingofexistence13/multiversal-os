@@ -1,0 +1,354 @@
+.\" Copyright (c) 2006 Broadcom Corporation
+.\"  David Christensen <davidch@broadcom.com>.  All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\"
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 3. Neither the name of Broadcom Corporation nor the name of its contributors
+.\"    may be used to endorse or promote products derived from this software
+.\"    without specific prior written consent.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS'
+.\" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+.\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF
+.\" THE POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" $FreeBSD: src/share/man/man4/bce.4,v 1.7 2007/02/09 18:26:13 brueffer Exp $
+.\"
+.Dd June 1, 2017
+.Dt BCE 4
+.Os
+.Sh NAME
+.Nm bce
+.Nd "Broadcom NetXtreme II PCIe Gigabit Ethernet adapter driver"
+.Sh SYNOPSIS
+To compile this driver into the kernel,
+place the following lines in your
+kernel configuration file:
+.Bd -ragged -offset indent
+.Cd "device miibus"
+.Cd "device bce"
+.Ed
+.Pp
+Alternatively, to load the driver as a
+module at boot time, place the following line in
+.Xr loader.conf 5 :
+.Bd -literal -offset indent
+if_bce_load="YES"
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+driver supports Broadcom's NetXtreme II product family, including the
+BCM5706, BCM5708, BCM5709 and BCM5716 Ethernet controllers.
+.Pp
+The NetXtreme II product family is composed of various Converged NIC (or CNIC)
+Ethernet controllers which support a TCP Offload Engine (TOE), Remote DMA (RDMA),
+and iSCSI acceleration, in addition to standard L2 Ethernet traffic, all on the
+same controller.
+The following features are supported in the
+.Nm
+driver:
+.Pp
+.Bl -item -offset indent -compact
+.It
+.\"IP/TCP/UDP checksum offload
+TCP/UDP checksum offload
+.\".It
+.\"Jumbo frames (up to 9022 bytes)
+.It
+TCP segmentation offloading (TSO)
+.It
+VLAN tag stripping and inserting
+.It
+Interrupt coalescing
+.It
+10/100/1000Mbps operation in full-duplex mode
+.It
+10/100Mbps operation in half-duplex mode
+.El
+.Pp
+The following features are supported in the
+.Nm
+driver for BCM5709 and BCM5716:
+.Pp
+.Bl -item -offset indent -compact
+.It
+Receive side scaling (RSS), up to 8 reception queues
+.It
+Multiple tranmission queues, up to 8 transmission queues
+.It
+Multiple vector MSI-X
+.El
+.Pp
+For BCM5709 and BCM5716,
+by default, the
+.Nm
+driver will try enabling as many reception and transmission queues
+as are allowed by the number of CPUs in the system.
+If multiple transmission queues are enabled,
+the round-robin arbitration is performed among the transmission queues.
+It should be noted that
+if both TSO and multiple transmission queues are enabled,
+the round-robin arbitration between transmission queues is done
+at the TSO packet boundary.
+.Pp
+The
+.Nm
+driver supports the following media types:
+.Bl -tag -width ".Cm 10baseT/UTP"
+.It Cm autoselect
+Enable autoselection of the media type and options.
+The user can manually override
+the autoselected mode by adding media options to
+.Xr rc.conf 5 .
+.It Cm 10baseT/UTP
+Set 10Mbps operation.
+The
+.Xr ifconfig 8
+.Cm mediaopt
+option can also be used to select either
+.Cm full-duplex
+or
+.Cm half-duplex
+modes.
+.It Cm 100baseTX
+Set 100Mbps (Fast Ethernet) operation.
+The
+.Xr ifconfig 8
+.Cm mediaopt
+option can also be used to select either
+.Cm full-duplex
+or
+.Cm half-duplex
+modes.
+.It Cm 1000baseT
+Set 1000baseT operation over twisted pair.
+Only
+.Cm full-duplex
+mode is supported.
+.El
+.Pp
+The
+.Nm
+driver supports the following media options:
+.Bl -tag -width ".Cm full-duplex"
+.It Cm full-duplex
+Force full duplex operation.
+.It Cm half-duplex
+Force half duplex operation.
+.El
+.Pp
+For more information on configuring this device, see
+.Xr ifconfig 8 .
+The
+.Nm
+driver supports
+.Xr polling 4 .
+.Sh TUNABLES
+.Em X
+is the device unit number.
+.Bl -tag -width ".Va hw.bceX.npoll.offset"
+.It Va hw.bce.tx_bds
+Maximum number of sending BDs which must be processed by the device
+before the device updates the status block and generates interrupt.
+It is used together with
+.Va hw.bce.tx_ticks
+to achieve TX interrupt moderation.
+Default value is 255.
+.It Va hw.bce.tx_bds_int
+Maximum number of sending BDs which must be processed by the device
+before the device updates the status block
+during host interrupt processing.
+Default value is 255.
+.It Va hw.bce.tx_ticks
+How often status block should be updated and interrupt should be generated
+by the device,
+due to sending packets.
+It is used together with
+.Va hw.bce.tx_bds
+to achieve TX interrupt moderation.
+Default value is 1022 (microseconds).
+.It Va hw.bce.tx_ticks_int
+How often status block should be updated by the device
+during host interrupt processing,
+due to sending packets.
+Default value is 1022 (microseconds).
+.It Va hw.bce.rx_bds
+Maximum number of BDs which must be received by the device
+before the device updates the status block and generates interrupt.
+It is used together with
+.Va hw.bce.rx_ticks
+to achieve RX interrupt moderation.
+Default value is 0.
+.It Va hw.bce.rx_bds_int
+Maximum number of BDs which must be received by the device
+before the device updates the status block
+during host interrupt processing.
+Default value is 128.
+.It Va hw.bce.rx_ticks
+How often status block should be updated and interrupt should be generated
+by the device,
+due to receiving packets.
+It is used together with
+.Va hw.bce.rx_bds
+to achieve RX interrupt moderation.
+Default value is 150 (microseconds).
+.It Va hw.bce.rx_ticks_int
+How often status block should be updated by the device
+during host interrupt processing,
+due to receiving packets.
+Default value is 150 (microseconds).
+.It Va hw.bce.msi.enable Va hw.bceX.msi.enable
+For BCM5706 and BCM5708,
+by default,
+the driver will use MSI if it is supported.
+This behavior can be turned off by setting this tunable to 0.
+.It Va hw.bceX.msi.cpu
+If MSI is used, it specifies the MSI's target CPU.
+.It Va hw.bce.msix.enable Va hw.bceX.msix.enable
+For BCM5709 and BCM5716,
+by default,
+the driver will use MSI-X if it is supported.
+This behavior can be turned off by setting this tunable to 0.
+.It Va hw.bce.rx_pages Va hw.bceX.rx_pages
+How many reception descriptor pages should be used.
+One reception descriptor page holds 256 reception descriptors.
+Default value is 2.
+.It Va hw.bce.tx_pages Va hw.bceX.tx_pages
+How many transmission descriptor pages should be used.
+One transmission descriptor page holds 256 transmission descriptors.
+Default value is 2.
+.It Va hw.bce.rx_rings Va hw.bceX.rx_rings
+For BCM5709 and BCM5716,
+if MSI-X is used,
+this tunable specifies the number of reception queues to be enabled.
+Maximum allowed value for these tunables is 8.
+Setting these tunables to 0 allows the driver to enable as many reception queues
+as allowed by the number of CPUs.
+.It Va hw.bce.tx_rings Va hw.bceX.tx_rings
+For BCM5709 and BCM5716,
+if MSI-X is used,
+this tunable specifies the number of transmission queues to be enabled.
+Maximum allowed value for these tunables is 8,
+and it must be less than or equal to the number of reception queues enabled.
+Setting these tunables to 0 allows the driver to enable as many transmission queues
+as allowed by the number of CPUs and number reception queues enabled.
+.It Va hw.bce.tx_wreg
+The number of transmission descriptors should be setup before the hardware
+register is written.
+Setting this value too high will have negative effect
+on transmission timeliness.
+Setting this value too low will hurt overall transmission due to the frequent
+hardware register writing.
+Default value is 8.
+.El
+.Sh MIB Variables
+A number of per-interface variables are implemented in the
+.Va dev.bce. Ns Em X
+branch of the
+.Xr sysctl 3
+MIB.
+.Bl -tag -width "tx_ticks_int"
+.It Va tx_bds_int
+See the tunable
+.Va hw.bce.tx_bds_int .
+.It Va tx_bds
+See the tunable
+.Va hw.bce.tx_bds .
+.It Va tx_ticks_int
+See the tunable
+.Va hw.bce.tx_ticks_int .
+.It Va tx_ticks
+See the tunable
+.Va hw.bce.tx_ticks .
+.It Va rx_bds_int
+See the tunable
+.Va hw.bce.rx_bds_int .
+.It Va rx_bds
+See the tunable
+.Va hw.bce_rx_bds .
+.It Va rx_ticks_int
+See the tunable
+.Va hw.bce.rx_ticks_int .
+.It Va rx_ticks
+See the tunable
+.Va hw.bce.rx_ticks .
+.It Va rx_rings
+Number of reception queues actually enabled (read-only).
+For BCM5709 and BCM5716,
+if MSI-X is enabled,
+the enabled reception queues will be one more than the
+value specified in the tunable
+.Va hw.bce.rx_rings
+or
+.Va hw.bceX.rx_rings .
+The extra reception queue is for the packets whose RSS hash
+could not be calculated by the hardware.
+.It Va tx_rings
+Number of transmission queues enable (read-only).
+For BCM5709 and BCM5716,
+if MSI-X is enabled,
+use the tunable
+.Va hw.bce.tx_rings
+or
+.Va hw.bceX.tx_rings
+to configure it.
+.It Va rx_pages
+Number of reception descriptor pages enabled (read-only).
+Use the tunable
+.Va hw.bce.rx_pages
+or
+.Va hw.bceX.rx_pages
+to configure it.
+.It Va tx_pages
+Number of transmission descriptor pages enabled (read-only).
+Use the tunable
+.Va hw.bce.tx_pages
+or
+.Va hw.bceX.tx_pages
+to configure it.
+.It Va tx_wreg
+See the tunable
+.Va hw.bce.tx_wreg .
+.It Va stat_*
+Various hardware statistics.
+.El
+.Sh SEE ALSO
+.Xr altq 4 ,
+.Xr arp 4 ,
+.Xr ifmedia 4 ,
+.Xr miibus 4 ,
+.Xr netintro 4 ,
+.Xr ng_ether 4 ,
+.Xr polling 4 ,
+.Xr vlan 4 ,
+.Xr ifconfig 8
+.Sh HISTORY
+The
+.Nm
+device driver first appeared in
+.Fx 6.1 .
+.Sh AUTHORS
+The
+.Nm
+driver was written by
+.An David Christensen Aq Mt davidch@broadcom.com .
+.An Sepherosa Ziehau
+added receive side scaling,
+multiple transmission queues
+and multiple vector MSI-X support to
+.Dx .

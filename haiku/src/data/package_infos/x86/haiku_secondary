@@ -1,0 +1,49 @@
+name 			haiku_%HAIKU_SECONDARY_PACKAGING_ARCH%
+version			%HAIKU_VERSION%
+architecture	x86
+summary			"The Haiku base system %HAIKU_SECONDARY_PACKAGING_ARCH% secondary architecture support"
+
+description		"The Haiku base system %HAIKU_SECONDARY_PACKAGING_ARCH%
+secondary architecture support includes all system libraries, add-ons, and
+other files required to run programs build for that architecture."
+
+packager		"The Haiku build system"
+vendor			"Haiku Project"
+
+copyrights		"2001-2020 Haiku, Inc. et al"
+licenses {
+	MIT
+	"GNU LGPL v2.1"
+}
+flags			system_package
+
+provides {
+	haiku_%HAIKU_SECONDARY_PACKAGING_ARCH% = %HAIKU_VERSION% compat>=R1~alpha1
+	lib:libstdc++_%HAIKU_SECONDARY_PACKAGING_ARCH%
+}
+
+requires {
+	lib:libfreetype_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libicudata_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libicui18n_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libicuio_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libicuuc_%HAIKU_SECONDARY_PACKAGING_ARCH%
+#ifdef HAIKU_REGULAR_BUILD
+	lib:libicns_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libjasper_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libjpeg_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libpng_%HAIKU_SECONDARY_PACKAGING_ARCH% >= 16.0
+	lib:libtiff_%HAIKU_SECONDARY_PACKAGING_ARCH% >= 5.2
+	lib:libwebp_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libhalf_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libiex_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libiexmath_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libilmthread_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libimath_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libilmimf_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libilmimfutil_%HAIKU_SECONDARY_PACKAGING_ARCH%
+#endif
+	lib:libsolv_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libsolvext_%HAIKU_SECONDARY_PACKAGING_ARCH%
+	lib:libz_%HAIKU_SECONDARY_PACKAGING_ARCH%
+}

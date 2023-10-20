@@ -1,0 +1,79 @@
+#!/bin/sh
+
+export PATH=/bin:/sbin
+export HOME=/var/home
+export TERM=cons25
+
+# Where to mount the real root partition
+export NEW_ROOT=/new_root
+
+rescue_shell() {
+	echo "Starting the recovery shell ..."
+	cat /etc/motd
+	exec sh
+	exit 0
+}
+
+if [ ! -d "$NEW_ROOT" ]; then
+	echo "WARNING: trying to remount / RW and create $NEW_ROOT ..."
+	mount -u -w / &&
+	    mkdir $NEW_ROOT ||
+	    rescue_shell
+fi
+
+echo "Setting up /var directories ..."
+mount_tmpfs tmpfs /var
+mkdir /var/db /var/empty /var/home /var/run /var/tmp
+touch /var/run/utmpx
+
+echo "Starting udevd for LVM ..."
+udevd
+
+echo "Executing additional rc scripts ..."
+for rcs in /etc/rc.*; do
+	if [ -x "$rcs" ]; then
+		. $rcs
+	fi
+done
+
+echo "Mounting real root partition at $NEW_ROOT ..."
+
+IFS=':'
+REAL_ROOT=$(sysctl -n vfs.real_root)
+if [ $? -ne 0 ]; then
+	echo "ERROR: vfs.real_root sysctl no exist. The kernel is too old."
+	rescue_shell
+fi
+if [ -z "${REAL_ROOT}" ]; then
+	echo "ERROR: vfs.real_root sysctl not set."
+	rescue_shell
+fi
+set -- $REAL_ROOT
+unset IFS
+
+TYPE=$1
+if [ "$TYPE" = "local" ]; then
+	FSTYPE=$2
+	MOUNTFROM="/dev/${3#/dev/}"
+	echo "Executing: mount -t $FSTYPE $4 $MOUNTFROM $NEW_ROOT"
+	mount -o ro -t $FSTYPE $4 $MOUNTFROM $NEW_ROOT ||
+	    rescue_shell
+elif [ -x "/etc/rcmount_${TYPE}" ]; then
+	. /etc/rcmount_${TYPE} "$@" ||
+	    rescue_shell
+else
+	echo "ERROR: Unsupported root filesystem type: $TYPE."
+	rescue_shell
+fi
+
+echo "Stopping udevd ..."
+kill $(cat /var/run/udevd.pid)
+
+echo "Cleaning up and umounting /var ..."
+rm -rf /var/*
+cd /
+umount /var
+
+echo "Mounting devfs on real root ..."
+#mount_devfs $NEW_ROOT/dev
+mount_null /dev $NEW_ROOT/dev

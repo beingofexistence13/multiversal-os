@@ -1,0 +1,26 @@
+#!/bin/sh
+#
+# $NetBSD: rtsold,v 1.5 2002/03/22 04:34:00 thorpej Exp $
+# $FreeBSD: src/etc/rc.d/rtsold,v 1.2 2002/06/13 22:14:36 gordon Exp $
+# $DragonFly: src/etc/rc.d/rtsold,v 1.4 2005/11/19 21:47:32 swildner Exp $
+#
+
+# PROVIDE: rtsold
+# REQUIRE: DAEMON
+# BEFORE:  LOGIN
+
+. /etc/rc.subr
+
+name="rtsold"
+rcvar=`set_rcvar`
+command="/usr/sbin/${name}"
+start_postcmd="rtsold_poststart"
+
+rtsold_poststart()
+{
+        # wait for DAD
+        sleep $(($(${SYSCTL_N} net.inet6.ip6.dad_count) + 1))
+}
+
+load_rc_config $name
+run_rc_command "$1"

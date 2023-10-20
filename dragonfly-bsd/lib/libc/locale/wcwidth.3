@@ -1,0 +1,104 @@
+.\" Copyright (c) 2002 Tim J. Robbins
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR AND CONTRIBUTORS ``AS IS'' AND
+.\" ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+.\" IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+.\" FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+.\" DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+.\" OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+.\" LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+.\" OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+.\" SUCH DAMAGE.
+.\"
+.\" $FreeBSD: head/lib/libc/locale/wcwidth.3 133915 2004-08-17 04:56:03Z trhodes $
+.\"
+.Dd December 27, 2013
+.Dt WCWIDTH 3
+.Os
+.Sh NAME
+.Nm wcwidth ,
+.Nm wcwidth_l
+.Nd "number of column positions of a wide-character code"
+.Sh LIBRARY
+.Lb libc
+.Sh SYNOPSIS
+.In wchar.h
+.Ft int
+.Fn wcwidth "wchar_t wc"
+.In xlocale.h
+.Ft int
+.Fn wcwidth_l "wchar_t wc" "locale_t locale"
+.Sh DESCRIPTION
+The
+.Fn wcwidth
+and
+.Fn wcwidth_l
+functions determine the number of column positions required to
+display the wide character
+.Fa wc .
+.Pp
+The
+.Fn wcwidth_l
+function takes an explicit
+.Fa locale
+argument, whereas the
+.Fn wcwidth
+function uses the current global or per-thread locale.
+.Sh RETURN VALUES
+The
+.Fn wcwidth
+and
+.Fn wcwidth_l
+functions return 0 if the
+.Fa wc
+argument is a null wide character (L'\e0'),
+\-1 if
+.Fa wc
+is not printable,
+otherwise they return the number of column positions the
+character occupies.
+.Sh EXAMPLES
+This code fragment reads text from standard input and
+breaks lines that are more than 20 column positions wide,
+similar to the
+.Xr fold 1
+utility:
+.Bd -literal -offset indent
+wint_t ch;
+int column, w;
+
+column = 0;
+while ((ch = getwchar()) != WEOF) {
+	w = wcwidth(ch);
+	if (w > 0 && column + w >= 20) {
+		putwchar(L'\en');
+		column = 0;
+	}
+	putwchar(ch);
+	if (ch == L'\en')
+		column = 0;
+	else if (w > 0)
+		column += w;
+}
+.Ed
+.Sh SEE ALSO
+.Xr iswprint 3 ,
+.Xr wcswidth 3 ,
+.Xr xlocale 3
+.Sh STANDARDS
+The
+.Fn wcwidth
+function conforms to
+.St -p1003.1-2001 .

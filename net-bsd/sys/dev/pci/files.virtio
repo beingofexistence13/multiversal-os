@@ -1,0 +1,28 @@
+#	$NetBSD: files.virtio,v 1.2 2019/10/28 02:56:40 ozaki-r Exp $
+
+# VirtIO
+device	virtio {}
+file	dev/pci/virtio.c	virtio
+
+attach	ld at virtio with ld_virtio
+file	dev/pci/ld_virtio.c	ld_virtio
+
+device	viomb
+attach	viomb at virtio
+file	dev/pci/viomb.c		viomb
+
+device	vioif: ether, ifnet, arp
+attach	vioif at virtio
+file	dev/pci/if_vioif.c	vioif
+
+device	viornd
+attach	viornd at virtio
+file	dev/pci/viornd.c	viornd
+
+device	vioscsi: scsi
+attach	vioscsi at virtio
+file	dev/pci/vioscsi.c	vioscsi
+
+device	vio9p
+attach	vio9p at virtio
+file	dev/pci/vio9p.c		vio9p

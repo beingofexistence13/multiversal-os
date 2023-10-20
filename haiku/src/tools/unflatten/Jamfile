@@ -1,0 +1,4 @@
+SubDir HAIKU_TOP src tools unflatten ;
+
+BinCommand unflatten : unflatten.cpp : be ;
+

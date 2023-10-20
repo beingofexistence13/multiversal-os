@@ -1,0 +1,16 @@
+SubDir HAIKU_TOP src add-ons kernel drivers audio ac97 auich ;
+
+UsePrivateKernelHeaders ;
+UsePrivateHeaders audio ;
+
+SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) ] ;
+SEARCH_SOURCE += [ FDirName $(SUBDIR) $(DOTDOT) ] ;
+
+KernelAddon auich :
+	ac97.c
+	debug.c
+	auich.c
+	io.c
+	multi.c
+	util.c
+;

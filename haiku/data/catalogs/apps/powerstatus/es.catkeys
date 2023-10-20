@@ -1,0 +1,48 @@
+1	spanish; castilian	x-vnd.Haiku-PowerStatus	1085070685
+Run in window	PowerStatus		Ejecutar en ventana
+Extended battery info	PowerStatus		Información sobre la batería más extenso
+Show status icon	PowerStatus		Mostrar icono de estado
+Battery charging	PowerStatus		Batería está cambiando
+Design capacity low warning: 	PowerStatus		Advertencia sobre la capacidad baja de diseño:
+The battery level is critical, please plug in the device immediately.	PowerStatus		El nivel de batería es crítico, por favor conecte el dispositivo a la corriente inmediatamente.
+non-rechargeable	PowerStatus		No es recargable
+Last full charge: 	PowerStatus		Carga completa más reciente:
+ mV	PowerStatus		 mV
+Current rate: 	PowerStatus		Velocidad actual:
+Show text label	PowerStatus		Mostrar etiqueta texto
+Quit	PowerStatus		Salir
+Battery low	PowerStatus		Batería baja
+Model number: 	PowerStatus		Número del modelo:
+Battery unused	PowerStatus		Batería no es utilizado
+Type: 	PowerStatus		Tipo:
+Damaged battery	PowerStatus		Batería dañada
+You can run PowerStatus in a window or install it in the Deskbar.	PowerStatus		Puede ejecutar Estado de Energía en una ventana o puede instalarlo en barra de escritorio.
+ mAh	PowerStatus		 mAh
+Battery discharging	PowerStatus		Batería está descargando
+Design voltage: 	PowerStatus		Voltaje de diseño:
+discharging	PowerStatus		descargando
+rechargeable	PowerStatus		recargable
+Battery info…	PowerStatus		Info de batería...
+Show time	PowerStatus		Mostrar hora
+ mA	PowerStatus		 mA
+About…	PowerStatus		Sobre...
+Serial number: 	PowerStatus		Número en serie:
+Battery critical	PowerStatus		Batería críticamente baja
+Capacity: 	PowerStatus		Capacidad:
+ mW	PowerStatus		 mW
+No supported battery detected. PowerStatus cannot be used on your system.	PowerStatus		No se detectó una batería compatible. No se puede usar PowerStatus en su sistema.
+Show percent	PowerStatus		Mostrar porcentaje
+Capacity granularity 1: 	PowerStatus		Granulación de capacidad 1:
+The battery level is getting low, please plug in the device.	PowerStatus		El nivel de batería es bajo, por favor conecte el dispositivo a la corriente.
+Design capacity warning: 	PowerStatus		Advertencia de la capacidad de diseño:
+Capacity granularity 2: 	PowerStatus		Granulación de capacidad 2:
+Too bad!	PowerStatus		¡Qué mal!
+Technology: 	PowerStatus		Tecnología:
+ mWh	PowerStatus		 mWh
+PowerStatus	System name		PowerStatus
+Design capacity: 	PowerStatus		Capacidad de diseño:
+OEM info: 	PowerStatus		Información de OEM:
+no battery	PowerStatus		no batería
+Empty battery slot	PowerStatus		Espacio de batería vacío
+Install in Deskbar	PowerStatus		Instalar en barra de escritorio
+charging	PowerStatus		cargando

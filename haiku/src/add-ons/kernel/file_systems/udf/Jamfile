@@ -1,0 +1,22 @@
+SubDir HAIKU_TOP src add-ons kernel file_systems udf ;
+
+SubDirC++Flags -fno-rtti ;
+
+UsePrivateKernelHeaders ;
+
+KernelAddon udf :
+	DString.cpp
+	Icb.cpp
+	MetadataPartition.cpp
+	PhysicalPartition.cpp
+	Recognition.cpp
+	SparablePartition.cpp
+	UdfDebug.cpp
+	UdfString.cpp
+	UdfStructures.cpp
+	Utils.cpp
+	VirtualPartition.cpp
+	Volume.cpp
+
+	kernel_interface.cpp
+;

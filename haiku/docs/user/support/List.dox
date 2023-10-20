@@ -1,0 +1,595 @@
+/*
+ * Copyright 2007-2014 Haiku, Inc. All rights reserved.
+ * Distributed under the terms of the MIT License.
+ *
+ * Authors:
+ *		Niels Sascha Reedijk, niels.reedijk@gmail.com
+ *		John Scipione, jscipione@gmail.com
+ * 
+ * Proofreading:
+ *		David Weizades, ddewbofh@hotmail.com
+ *		Thom Holwerda, slakje@quicknet.nl
+ *		John Drinkwater, jdrinkwater@gmail.com
+ *
+ * Corresponds to:
+ *		headers/os/support/List.h	hrev47422
+ *		src/kits/support/List.cpp	hrev47422
+ */
+
+
+/*!
+	\file List.h
+	\ingroup support
+	\ingroup libbe
+	\brief Defines the BList class.
+*/
+
+
+/*!
+	\class BList
+	\ingroup support
+	\ingroup libbe
+	\brief An ordered container that is designed to hold generic \c void* 
+	       objects.
+
+	This class is designed to be used for a variety of tasks. Unlike similar
+	implementations in other libraries, this class is not based on templates
+	and as such is inherently not typed. So it will be the job of the programmer
+	to make sure proper data is entered since the compiler cannot check this by
+	itself.
+
+	BList contains a list of items that will grow and shrink depending on how
+	many items are in it. So you will not have to do any of the memory
+	management nor any ordering. These properties makes it useful in a whole
+	range of situations such as the interface kit within the BListView class.
+
+	A note on the ownership of the objects might come in handy. BList never
+	assumes ownership of the objects. As such, removing items from the list will
+	only remove the entries from the list; it will not delete the items
+	themselves. Similarly, you should also make sure that before you might
+	delete an object that is in a list, you will have to remove it from the list
+	first.
+
+	\warning This class is not thread-safe.
+
+	The class implements methods to add, remove, reorder, retrieve, and query
+	items as well as some advanced methods which let you perform a task on all
+	the items in the list.
+
+	\see BObjectList for a templated version of BList that adds type safety,
+	     optional object ownership, search, and insert operations.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BList::BList(int32 count = 20)
+	\brief Create a new list with a number of empty slots.
+
+	The memory management of this class allocates new memory per block. The
+	\c count parameter can be tweaked to determine the size of these blocks.
+	In general, if you know your list is only going to contain a certain number
+	of items at most, you can pass that value. If you expect your list to have
+	very few items, it is safe to choose a low number. This is to prevent the
+	list from taking up unneeded memory. If you expect the list to contain a
+	large number of items, choose a higher value. Every time the memory is full,
+	all the items have to be copied into a new piece of allocated memory, which
+	is an expensive operation.
+
+	If you are unsure, you do not have to worry too much. Just make sure you do
+	not use a lot of lists, and as long as the list is not used in one of the
+	performance critical parts of the code, you are safe to go with the default
+	values.
+
+	\param count The size of the blocks allocated in memory.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BList::BList(const BList& other)
+	\brief Copy constructor. Copy a complete list into this one.
+
+	\param other The list to copy from.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn BList::~BList()
+	\brief Destroy the list.
+
+	Please note that as BList does not assume ownership of the objects,
+	only the list will be freed, not the objects that are held in it.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\name Operators
+*/
+
+
+//! @{
+
+
+/*!
+	\fn BList& BList::operator=(const BList &other)
+	\brief Copy another list into this object.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::operator==(const BList& other) const
+	\brief Returns whether or not the BList and \a other are equal.
+
+	Equal means that they are the same object or their contents are the same.
+
+	\return \c true if the lists are equal, \c false if they are NOT equal.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BList::operator!=(const BList& other) const
+	\brief Returns whether or not the BList and \a other are NOT equal.
+
+	\return \c true if the lists are NOT equal, \c false if they are equal.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Adding and Removing Items
+*/
+
+
+//! @{
+
+
+/*!
+	\fn bool BList::AddItem(void* item, int32 index)
+	\brief Add \a item at the specified \a index.
+
+	\param item The \a item to add.
+	\param index The place in the list to add the \a item.
+
+	\return Whether or not the item was added.
+	\retval true The item was added.
+	\retval false Item was not added. Either the index is negative or invalid,
+	        or resizing the list failed.
+
+	\see AddItem(void*)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::AddItem(void* item)
+	\brief Append the \a item to the end of the list.
+
+	\param item The item to append.
+
+	\return Whether or not the \a item was appended.
+	\retval true The \a item was appended.
+	\retval false \a item was not appended, since resizing the BList failed.
+
+	\see AddItem(void*, int32)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::AddList(const BList* list, int32 index)
+	\brief Add a \a list of items to this list at the specified \a index.
+
+	Note that the \a list parameter is \c const, so the original list will not
+	be altered.
+
+	\param list The \a list to be added.
+	\param index The position in the current \a list where the new item(s)
+	       are added.
+
+	\return Whether or not the \a list was added.
+	\retval true The \a list was added.
+	\retval false Failed to insert the \a list resizing failed.
+
+	\see AddList(const BList*)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::AddList(const BList* list)
+	\brief Append a \a list of items to this list.
+
+	Note that the \a list parameter is a \c const, so the original list will not
+	be altered.
+
+	\param list The \a list to be added.
+
+	\return Whether or not the \a list was added.
+	\retval true The \a list was appended.
+	\retval false Failed to append the list, resizing failed.
+
+	\see AddList(const BList*, int32)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::RemoveItem(void* item)
+	\brief Remove \a item from the list.
+
+	\param item The \a item to be removed.
+
+	\return Whether or not the \a item was removed.
+	\retval true The \a item was found and removed.
+	\retval false The \a item was not in this list and thus not removed.
+
+	\see RemoveItem(int32)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void* BList::RemoveItem(int32 index)
+	\brief Remove the item at \a index from the list.
+
+	\param index The \a index of the item to be removed.
+
+	\return The pointer to the item that was removed, or \c NULL if the
+	        \a index was invalid.
+
+	\see RemoveItem(void*)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::RemoveItems(int32 index, int32 count)
+	\brief Remove a number of items starting at a certain position.
+
+	If the count parameter is larger than the number of items in the list,
+	all the items from the offset to the end will be removed.
+
+	\param index The offset in the list where removal should start.
+	\param count The number of items to remove.
+
+	\return Whether or not the items were removed.
+	\retval true Removal succeeded.
+	\retval false Failed to remove the items because the index was invalid.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::ReplaceItem(int32 index, void* item)
+	\brief Replace an item with another one.
+
+	\param index The offset in the list where to put the \a item.
+	\param item The new \a item to put in the list.
+
+	\return Whether or not the item was replaced.
+	\retval true The item was replaced.
+	\retval false The \a index was invalid.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void BList::MakeEmpty()
+	\brief Clear all the items from the list.
+
+	\note This does not free the items.
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\name Reordering Items
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BList::SortItems(int (*compareFunc)(const void*, const void*))
+	\brief Sort the items with the use of a supplied comparison function.
+
+	The function should take two \c const pointers as arguments and should
+	return an integer.
+
+	For an example, see the Compare(const BString *, const BString *) function.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::SwapItems(int32 indexA, int32 indexB)
+	\brief Swap the items at \a indexA and \a indexB.
+
+	\param indexA The first item.
+	\param indexB The second item.
+
+	\return Whether or not the items were swapped.
+	\retval true Swap succeeded.
+	\retval false Swap failed because one of the indexes was invalid.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn bool BList::MoveItem(int32 fromIndex, int32 toIndex)
+	\brief Move the item at \a fromIndex to the position of \a toIndex.
+
+	This moves a list item from position A to position B, moving the appropriate
+	block of list elements to make up for the move. For example, in the array:
+\verbatim
+A B C D E F G H I J
+\endverbatim
+
+	Moving 1(B)->6(G) would result in this:
+\verbatim
+A C D E F G B H I J
+\endverbatim
+
+	\param fromIndex The original location.
+	\param toIndex The new location.
+
+	\return Whether or not the items were moved.
+	\retval true Move succeeded.
+	\retval false Move failed due to the indexes being invalid.
+
+	\since Haiku R1
+*/
+
+
+//! @}
+
+
+/*!
+	\name Retrieving Items
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void* BList::ItemAt(int32 index) const
+	\brief Return a pointer to the item at the given \a index.
+
+	\param index The item to retrieve.
+
+	\return A pointer to the item in that position, or \c NULL if the
+	        \a index is out of bounds.
+
+	\see ItemAtFast(int32 index) const
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void* BList::FirstItem() const
+	\brief Return a pointer to the first item in the list.
+
+	\return A pointer to the first item or \c NULL if the list is empty.
+
+	\see LastItem() const
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void* BList::ItemAtFast(int32 index) const
+	\brief Return a pointer to the item at \a index.
+
+	This method does not perform any boundary checks when it retrieves an item.
+	Use this method in a performance critical area of your program where you are
+	sure you will not get an invalid item.
+
+	\return A pointer to the item.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn void* BList::LastItem() const
+	\brief Return a pointer to the last item in the list.
+
+	\return A pointer to the last item or \c NULL if the list is empty.
+
+	\see FirstItem() const
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void* BList::Items() const
+	\brief Return the internal list of objects.
+
+	This method will return a pointer to the internal pointer list. This means
+	that you should be careful what you are doing, since you are working with
+	the internals of the class directly.
+
+	It is not a good idea to make any changes to the list, since that will mess
+	up the internal consistency.
+
+	\warning If there is anything you want, for which you need the list of
+	         objects, please realize that that probably means that what you
+	         want to do is a bad idea to begin with and that you should avoid
+	         this method. The list of objects does not belong to you.
+
+	\return The internal list of pointers.
+
+	\sa DoForEach() for an alternate method.
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\name Querying Items
+*/
+
+
+//! @{
+
+
+/*!
+	\fn bool BList::HasItem(void* item) const
+	\brief Return whether or not \a item is in the list.
+
+	\return \c true if the \a item was in the list, \c false otherwise.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::HasItem(const void *item) const
+	\brief Return whether or not \a item is in the list.
+
+	\return \c true if the \a item was in the list, \c false otherwise.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int32 BList::IndexOf(void* item) const
+	\brief Return the index of \a item.
+
+	\return The index of the item, or -1 when the item is not in the list.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn int32 BList::IndexOf(const void *item) const
+	\brief Return the index of \a item.
+
+	\return The index of the item, or -1 when the item is not in the list.
+
+	\since Haiku R1
+*/
+
+
+/*!
+	\fn int32 BList::CountItems() const
+	\brief Returns the number of items in the list.
+
+	\return The number of items in the list as an int32.
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn bool BList::IsEmpty() const
+	\brief Return whether or not there are items in the list.
+
+	\return \c true if the list was empty, \c false otherwise.
+
+	\since BeOS R3
+*/
+
+
+//! @}
+
+
+/*!
+	\name Iterating Over Items
+*/
+
+
+//! @{
+
+
+/*!
+	\fn void BList::DoForEach(bool (*func)(void* item))
+	\brief Perform an action on every item in the list.
+
+	Iterates over all items in the list, and calls the \a func function on each of them,
+	until the function returns \c true.
+
+	\param func A pointer to a function that takes a \c void* list item, and
+	       returns a bool indicating if the iteration should stop.
+
+	\see DoForEach(bool (*func)(void*, void*), void*)
+
+	\since BeOS R3
+*/
+
+
+/*!
+	\fn void BList::DoForEach(bool (*func)(void* item, void* arg2), void* arg2)
+	\brief Perform an action on every item in the list with an argument.
+
+	The iteration stops when the \a func function returns \c true.
+	This can be used to implement a linear search of the list, for example:
+
+	\code{.cpp}
+	bool compareFunc(void* _item, void* arg2) {
+		Item* item = (Item*)_item;
+		Args* args = (Args*)arg2;
+		if (item->Matches(args->pattern)) {
+			args->result = item;
+			return true;
+		}
+		return false;
+	}
+
+	Args args = {0};
+	list.DoForEach(compareFunc, &args);
+	if (args->result != NULL) {
+		// Found it!
+	}
+	\endcode
+
+	\param func A function with the first \c void* argument being the item
+	       and the second \c void* being the argument that you supply.
+	\param arg2 An argument to supply to \a func.
+
+	\see DoForEach(bool (*func)(void*))
+
+	\since BeOS R3
+*/
+
+
+//! @}

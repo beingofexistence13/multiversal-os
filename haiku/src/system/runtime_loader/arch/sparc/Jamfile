@@ -1,0 +1,24 @@
+SubDir HAIKU_TOP src system runtime_loader arch sparc ;
+
+local architectureObject ;
+for architectureObject in [ MultiArchSubDirSetup sparc ] {
+	on $(architectureObject) {
+		local architecture = $(TARGET_PACKAGING_ARCH) ;
+
+		UsePrivateHeaders runtime_loader ;
+		UsePrivateSystemHeaders ;
+
+		SubDirHdrs [ FDirName $(SUBDIR) $(DOTDOT) $(DOTDOT) ] ;
+
+		DEFINES += _LOADER_MODE ;
+
+		StaticLibrary <$(architecture)>libruntime_loader_$(TARGET_ARCH).a :
+			arch_relocate.cpp
+			:
+			<src!system!libroot!os!arch!$(TARGET_ARCH)!$(architecture)>thread.o
+
+			<src!system!libroot!posix!string!arch!$(TARGET_ARCH)!$(architecture)>memcpy.o
+			<src!system!libroot!posix!string!arch!$(TARGET_ARCH)!$(architecture)>memset.o
+		;
+	}
+}

@@ -1,0 +1,157 @@
+#	$NetBSD: files.aarch64,v 1.43 2023/04/20 08:28:02 skrll Exp $
+
+defflag opt_cpuoptions.h	AARCH64_ALIGNMENT_CHECK
+defflag opt_cpuoptions.h	AARCH64_EL0_STACK_ALIGNMENT_CHECK
+defflag opt_cpuoptions.h	AARCH64_EL1_STACK_ALIGNMENT_CHECK
+defflag opt_cpuoptions.h	AARCH64_HAVE_L2CTLR
+defflag opt_cpuoptions.h	AARCH64_DEVICE_MEM_NONPOSTED
+defflag opt_cpuoptions.h	ARMV81_HAFDBS
+
+defflag	opt_cputypes.h		CPU_ARMV8
+defflag	opt_cputypes.h		CPU_CORTEX: CPU_ARMV8
+defflag	opt_cputypes.h		CPU_THUNDERX: CPU_ARMV8
+
+# Interrupt implementation header definition
+defparam opt_arm_intr_impl.h	ARM_INTR_IMPL
+
+# ARM-specific debug options (for compat arch/arm/*)
+defflag  opt_arm_debug.h	ARM_LOCK_CAS_DEBUG
+defflag  opt_arm_debug.h	VERBOSE_INIT_ARM
+defparam opt_arm_debug.h	EARLYCONS
+
+# Timer options
+defflag opt_arm_timer.h		__HAVE_GENERIC_CPU_INITCLOCKS
+
+# Board-specific bus_space(9)/bus_dma(9) definitions
+defflag  opt_arm_bus_space.h	__BUS_SPACE_HAS_STREAM_METHODS
+				__BUS_SPACE_HAS_PROBING_METHODS
+				_ARM32_NEED_BUS_DMA_BOUNCE
+				BUSDMA_COUNTERS
+
+# Console options
+defparam opt_console.h		CONSADDR
+defparam opt_console.h		CONSPEED
+defparam opt_console.h		CONMODE
+defparam opt_console.h		CONADDR
+
+# FP support
+file	arch/aarch64/aarch64/fpu.c
+
+# SMC Calling Convention
+define	smccc
+file	arch/arm/arm/smccc.c			smccc
+
+# Power State Coordination Interface (PSCI)
+device	psci: smccc
+file	arch/arm/arm/psci.c			psci
+file	arch/arm/arm/psci_arm.S			psci
+
+# EFI support
+file	arch/arm/arm/efi_runtime.c		efi_runtime
+
+# PMAP options
+defflag opt_pmap.h		PMAPHIST : KERNHIST
+defflag opt_pmap.h		PMAPCOUNTERS PMAP_STEAL_MEMORY
+				PMAP_NEED_ALLOC_POOLPAGE
+defflag opt_pmapboot.h		PMAPBOOT_DEBUG
+
+# MI PMAP flags
+#
+defflag	opt_pmap.h		PMAP_MI
+
+# MI support
+file	dev/cons.c
+
+# DDB
+file	arch/aarch64/aarch64/db_disasm.c		ddb
+file	arch/aarch64/aarch64/db_interface.c		ddb|kgdb
+file	arch/aarch64/aarch64/db_trace.c			ddb
+file	arch/aarch64/aarch64/db_machdep.c		ddb
+file	arch/aarch64/aarch64/disasm.c			ddb
+file	arch/aarch64/aarch64/kgdb_machdep.c		kgdb
+
+# mainbus files
+device	mainbus { [addr = -1], [size = 0], [intr = -1] }
+
+device cpu { }
+file	arch/aarch64/aarch64/cpu.c			cpu
+
+# bus_space(9)
+define	bus_space_generic
+file	arch/aarch64/aarch64/bus_space.c
+file	arch/aarch64/aarch64/bus_space_asm_generic.S	# bus_space_generic
+file	arch/aarch64/aarch64/bus_space_notimpl.S
+
+# Standard files
+file	arch/arm/arm/arm_cpu_topology.c
+file	arch/arm/arm/arm_generic_dma.c
+file	arch/arm/arm/bootconfig.c
+file	arch/arm/arm/bus_stubs.c
+file	arch/arm/arm/cpu_subr.c
+file	arch/arm/arm32/bus_dma.c
+file	arch/aarch64/aarch64/aarch64_machdep.c
+file	arch/aarch64/aarch64/aarch64_reboot.c
+file	arch/aarch64/aarch64/core_machdep.c		coredump
+file	arch/aarch64/aarch64/copyinout.S
+file	arch/aarch64/aarch64/cpu_in_cksum.S		(inet | inet6) & cpu_in_cksum
+file	arch/aarch64/aarch64/cpu_machdep.c
+file	arch/aarch64/aarch64/cpuswitch.S
+file	arch/aarch64/aarch64/cpufunc.c
+file	arch/aarch64/aarch64/cpufunc_asm_armv8.S
+file	arch/aarch64/aarch64/exec_machdep.c
+file	arch/aarch64/aarch64/fusu.S
+file	arch/aarch64/aarch64/idle_machdep.S
+file	arch/aarch64/aarch64/kobj_machdep.c		modular
+file	arch/aarch64/aarch64/lock_stubs.S
+file	arch/aarch64/aarch64/process_machdep.c
+file	arch/aarch64/aarch64/procfs_machdep.c		procfs
+file	arch/aarch64/aarch64/sig_machdep.c
+file	arch/aarch64/aarch64/sys_machdep.c
+file	arch/aarch64/aarch64/syscall.c
+file	arch/aarch64/aarch64/trap.c
+file	arch/aarch64/aarch64/fault.c
+file	arch/aarch64/aarch64/vectors.S
+file	arch/aarch64/aarch64/vm_machdep.c
+
+# pmap
+file	arch/aarch64/aarch64/aarch64_tlb.c
+file	arch/aarch64/aarch64/pmap.c		!pmap_mi
+file	arch/aarch64/aarch64/pmapboot.c
+file	arch/aarch64/aarch64/pmap_page.S
+file	arch/aarch64/aarch64/pmap_machdep.c	pmap_mi
+file	uvm/pmap/pmap.c				pmap_mi
+file	uvm/pmap/pmap_devmap.c
+file	uvm/pmap/pmap_pvt.c
+file	uvm/pmap/pmap_segtab.c			pmap_mi
+file	uvm/pmap/pmap_tlb.c
+
+# EFI runtime (machdep)
+file	arch/aarch64/aarch64/efi_machdep.c		efi_runtime
+
+# NetBSD 32-bit binary compatibility
+include "compat/netbsd32/files.netbsd32"
+file	arch/aarch64/aarch64/netbsd32_machdep.c		compat_netbsd32
+file	arch/aarch64/aarch64/netbsd32_syscall.c		compat_netbsd32
+
+# Linux binary compatibility (COMPAT_LINUX)
+include "compat/ossaudio/files.ossaudio"
+include "compat/linux/files.linux"
+include "compat/linux/arch/aarch64/files.linux_aarch64"
+file	arch/aarch64/aarch64/linux_syscall.c		compat_linux
+
+# Linux 32 bit compatibility (COMPAT_LINUX32)
+include "compat/linux32/files.linux32"
+include "compat/linux32/arch/aarch64/files.linux32_aarch64"
+file	arch/aarch64/aarch64/linux32_syscall.c		compat_linux32
+
+# profiling support
+file	dev/tprof/tprof_armv8.c			tprof	needs-flag
+
+# ARMv8.0-AES
+include "crypto/aes/arch/arm/files.aesarmv8"
+
+# vpaes with ARM NEON
+include "crypto/aes/arch/arm/files.aesneon"
+
+# ChaCha with ARM NEON
+include "crypto/chacha/arch/arm/files.chacha_arm"
